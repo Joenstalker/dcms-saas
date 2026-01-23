@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $stats = [
+            'total_tenants' => Tenant::count(),
+            'active_tenants' => Tenant::where('is_active', true)->count(),
+            'total_users' => User::where('is_system_admin', false)->count(),
+            'system_admins' => User::where('is_system_admin', true)->count(),
+        ];
+
+        $recentTenants = Tenant::with('pricingPlan')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $tenantsByPlan = Tenant::select('pricing_plan_id', DB::raw('count(*) as count'))
+            ->with('pricingPlan')
+            ->groupBy('pricing_plan_id')
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recentTenants', 'tenantsByPlan'));
+    }
+}
