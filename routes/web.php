@@ -1,119 +1,134 @@
 <?php
+declare(strict_types=1);
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TenantController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes (main domain only)
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+$baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
 
-// Main domain login route (for backward compatibility)
-Route::get('/login', function () {
-    return redirect()->route('home');
-})->name('login');
+/**
+ * 🏢 TENANT ROUTES (subdomain.dcmsapp.local)
+ */
+Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function () {
+    // Tenant root - redirect to login
+    Route::get('/', function (\App\Models\Tenant $tenant) {
+        return redirect()->route('tenant.login', ['tenant' => $tenant->slug]);
+    });
 
-Route::post('/login', function () {
-    return redirect()->route('home')->with('error', 'Invalid login request.');
-});
-
-// Tenant routes - apply tenant middleware (catches all tenant subdomains)
-Route::middleware(['tenant'])->group(function () {
     // Tenant login
     Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
     Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
+
+    // Tenant Authentication routes
+    Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+
+    // Tenant Subscription & Payment (Authenticated)
+    Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
+        Route::get('/select-plan', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
+        Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment');
+        Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
+        Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
+        Route::get('/success', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'success'])->name('success');
+        Route::get('/cancel', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'cancel'])->name('cancel');
+    });
+
+    // Tenant Setup Wizard (Authenticated)
+    Route::middleware(['auth'])->prefix('setup')->name('tenant.setup.')->group(function () {
+        Route::get('/{step?}', [\App\Http\Controllers\Tenant\SetupController::class, 'show'])->name('show')->where('step', '[1-5]');
+        Route::post('/branding', [\App\Http\Controllers\Tenant\SetupController::class, 'updateBranding'])->name('branding');
+        Route::post('/details', [\App\Http\Controllers\Tenant\SetupController::class, 'updateDetails'])->name('details');
+        Route::post('/consent', [\App\Http\Controllers\Tenant\SetupController::class, 'updateConsent'])->name('consent');
+        Route::post('/defaults', [\App\Http\Controllers\Tenant\SetupController::class, 'updateDefaults'])->name('defaults');
+        Route::post('/complete', [\App\Http\Controllers\Tenant\SetupController::class, 'complete'])->name('complete');
+        Route::get('/success', [\App\Http\Controllers\Tenant\SetupController::class, 'success'])->name('success');
+    });
+
+    // Tenant Dashboard & Modules (Protected)
+    Route::middleware(['auth'])->name('tenant.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'index'])->name('dashboard');
+        
+        // User Management (Owner only)
+        Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
+        
+        // Module routes
+        Route::get('/patients', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.patients.index', compact('tenant')); 
+        })->name('patients.index');
+        Route::get('/appointments', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.appointments.index', compact('tenant')); 
+        })->name('appointments.index');
+        Route::get('/services', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.services.index', compact('tenant')); 
+        })->name('services.index');
+        Route::get('/masterfile', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.masterfile.index', compact('tenant')); 
+        })->name('masterfile.index');
+        Route::get('/expenses', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.expenses.index', compact('tenant')); 
+        })->name('expenses.index');
+        Route::get('/settings', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.settings.index', compact('tenant')); 
+        })->name('settings.index');
+    });
 });
 
-// Tenant Authentication routes (on tenant subdomain)
-Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+/**
+ * 🏠 CENTRAL ROUTES (dcmsapp.local)
+ */
+Route::domain($baseDomain)->group(function () {
+    // Home Page
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('home');
 
-// Admin Authentication routes (Provider SaaS)
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/login', [\App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->name('login.submit');
-    Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+    // Admin login redirect
+    Route::get('/login', function () {
+        return redirect()->route('home');
+    })->name('login');
+
+    // Admin Authentication
+    Route::post('/login', function () {
+        return redirect()->route('home')->with('error', 'Invalid login request.');
+    });
+
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/login', [\App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->name('login.submit');
+        Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+
+        // Admin dashboard and management
+        Route::middleware(['auth', 'admin'])->group(function () {
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+            
+            // Tenants
+            Route::resource('tenants', TenantController::class);
+            Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
+            Route::post('tenants/{tenant}/mark-email-verified', [TenantController::class, 'markEmailVerified'])->name('tenants.mark-email-verified');
+            Route::post('tenants/{tenant}/resend-verification', [TenantController::class, 'resendVerificationEmail'])->name('tenants.resend-verification');
+            
+            // Pricing Plans
+            Route::resource('pricing-plans', \App\Http\Controllers\Admin\PricingPlanController::class);
+            Route::post('pricing-plans/{pricingPlan}/toggle-active', [\App\Http\Controllers\Admin\PricingPlanController::class, 'toggleActive'])->name('pricing-plans.toggle-active');
+        });
+    });
+
+    // Public Tenant Registration
+    Route::prefix('register')->name('tenant.registration.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Tenant\RegistrationController::class, 'show'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Tenant\RegistrationController::class, 'store'])->name('store');
+        Route::get('/check-subdomain', [\App\Http\Controllers\Tenant\RegistrationController::class, 'checkSubdomain'])->name('check-subdomain');
+        Route::post('/verify-email', [\App\Http\Controllers\Tenant\RegistrationController::class, 'verifyEmail'])->name('verify-email');
+        Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\RegistrationController::class, 'success'])->name('success');
+    });
+
+    // Tenant Email Verification (accessible from central domain for activation)
+    Route::prefix('verify')->name('tenant.verification.')->group(function () {
+        Route::get('/email/{token}/{email}', [\App\Http\Controllers\Tenant\VerificationController::class, 'verify'])->name('verify');
+        Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\VerificationController::class, 'success'])->name('success');
+        Route::get('/failed', [\App\Http\Controllers\Tenant\VerificationController::class, 'failed'])->name('failed');
+    });
 });
 
-// Tenant Registration (Public)
-Route::prefix('register')->name('tenant.registration.')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Tenant\RegistrationController::class, 'show'])->name('index');
-    Route::post('/', [\App\Http\Controllers\Tenant\RegistrationController::class, 'store'])->name('store');
-    Route::get('/check-subdomain', [\App\Http\Controllers\Tenant\RegistrationController::class, 'checkSubdomain'])->name('check-subdomain');
-    Route::post('/verify-email', [\App\Http\Controllers\Tenant\RegistrationController::class, 'verifyEmail'])->name('verify-email');
-    Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\RegistrationController::class, 'success'])->name('success');
-});
-
-// Tenant Email Verification (Public)
-Route::prefix('verify')->name('tenant.verification.')->group(function () {
-    Route::get('/email/{token}/{email}', [\App\Http\Controllers\Tenant\VerificationController::class, 'verify'])->name('verify');
-    Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\VerificationController::class, 'success'])->name('success');
-    Route::get('/failed', [\App\Http\Controllers\Tenant\VerificationController::class, 'failed'])->name('failed');
-});
-
-// Tenant Subscription - Suspended page (No auth required)
+// Non-domain specific routes or Fallbacks
 Route::get('/subscription/suspended/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'suspended'])->name('tenant.subscription.suspended');
-
-// Tenant Subscription & Payment (Authenticated - accessible from dashboard)
-Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
-    Route::get('/select-plan/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
-    Route::post('/process-payment/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment');
-    Route::get('/payment/{tenant}/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
-    Route::post('/confirm-payment/{tenant}/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
-    Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'success'])->name('success');
-    Route::get('/cancel/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'cancel'])->name('cancel');
-});
-
-// Tenant Setup Wizard (Authenticated - accessible from dashboard)
-Route::middleware(['auth'])->prefix('setup')->name('tenant.setup.')->group(function () {
-    Route::get('/{tenant}/{step?}', [\App\Http\Controllers\Tenant\SetupController::class, 'show'])->name('show')->where('step', '[1-5]');
-    Route::post('/branding/{tenant}', [\App\Http\Controllers\Tenant\SetupController::class, 'updateBranding'])->name('branding');
-    Route::post('/details/{tenant}', [\App\Http\Controllers\Tenant\SetupController::class, 'updateDetails'])->name('details');
-    Route::post('/consent/{tenant}', [\App\Http\Controllers\Tenant\SetupController::class, 'updateConsent'])->name('consent');
-    Route::post('/defaults/{tenant}', [\App\Http\Controllers\Tenant\SetupController::class, 'updateDefaults'])->name('defaults');
-    Route::post('/complete/{tenant}', [\App\Http\Controllers\Tenant\SetupController::class, 'complete'])->name('complete');
-    Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\SetupController::class, 'success'])->name('success');
-});
-
-// Tenant Dashboard & Modules (Protected)
-Route::middleware(['auth'])->prefix('tenant/{tenant}')->name('tenant.')->group(function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'index'])->name('dashboard');
-    
-    // User Management (Owner only)
-    Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
-    
-    // Module routes (placeholder - will be implemented)
-    Route::get('/patients', function(\App\Models\Tenant $tenant) { 
-        return view('tenant.patients.index', compact('tenant')); 
-    })->name('patients.index');
-    Route::get('/appointments', function(\App\Models\Tenant $tenant) { 
-        return view('tenant.appointments.index', compact('tenant')); 
-    })->name('appointments.index');
-    Route::get('/services', function(\App\Models\Tenant $tenant) { 
-        return view('tenant.services.index', compact('tenant')); 
-    })->name('services.index');
-    Route::get('/masterfile', function(\App\Models\Tenant $tenant) { 
-        return view('tenant.masterfile.index', compact('tenant')); 
-    })->name('masterfile.index');
-    Route::get('/expenses', function(\App\Models\Tenant $tenant) { 
-        return view('tenant.expenses.index', compact('tenant')); 
-    })->name('expenses.index');
-    Route::get('/settings', function(\App\Models\Tenant $tenant) { 
-        return view('tenant.settings.index', compact('tenant')); 
-    })->name('settings.index');
-});
-
-// Admin routes
-Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // Tenants
-    Route::resource('tenants', TenantController::class);
-    Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
-    Route::post('tenants/{tenant}/mark-email-verified', [TenantController::class, 'markEmailVerified'])->name('tenants.mark-email-verified');
-    Route::post('tenants/{tenant}/resend-verification', [TenantController::class, 'resendVerificationEmail'])->name('tenants.resend-verification');
-    
-    // Pricing Plans
-    Route::resource('pricing-plans', \App\Http\Controllers\Admin\PricingPlanController::class);
-    Route::post('pricing-plans/{pricingPlan}/toggle-active', [\App\Http\Controllers\Admin\PricingPlanController::class, 'toggleActive'])->name('pricing-plans.toggle-active');
-});

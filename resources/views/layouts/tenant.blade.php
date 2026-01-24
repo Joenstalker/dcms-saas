@@ -56,5 +56,7 @@
             </div>
         </div>
     @endif
+
+    @include('tenant.components.security-modal')
 </body>
 </html>

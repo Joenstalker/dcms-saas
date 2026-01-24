@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
+
+        $middleware->redirectGuestsTo(fn () => route('tenant.login', ['tenant' => session('tenant_slug', 'default')]));
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

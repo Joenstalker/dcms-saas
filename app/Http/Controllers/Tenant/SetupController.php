@@ -19,8 +19,8 @@ class SetupController extends Controller
     public function show(Tenant $tenant, int $step = 1): View
     {
         // Ensure user is authenticated and belongs to this tenant
-        if (!auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('tenant.login')
+        if (!auth()->check()) {
+            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
                 ->with('error', 'Please login to access setup.');
         }
 

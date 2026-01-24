@@ -143,4 +143,8 @@ class Tenant extends Model
 
         return null;
     }
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 }

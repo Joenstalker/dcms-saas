@@ -30,7 +30,7 @@ class TenantLoginController extends Controller
             abort(404, 'Clinic not found or inactive.');
         }
 
-        return view('tenant.auth.login', compact('tenant'));
+        return view('tenant.TenantLogin', compact('tenant'));
     }
 
     /**
@@ -64,7 +64,7 @@ class TenantLoginController extends Controller
         if (!$user || !\Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['email' => 'Invalid email or password for this clinic.']);
+                ->withErrors(['auth_failed' => 'Invalid email or password for this clinic.']);
         }
 
         // Verify user's email
@@ -82,9 +82,15 @@ class TenantLoginController extends Controller
 
         // Login the user
         Auth::login($user);
+        
+        // Regenerate session for security
+        $request->session()->regenerate();
+        
+        // Ensure tenant identity is locked in session
+        session(['tenant_id' => $tenant->id, 'tenant_slug' => $tenant->slug]);
 
         // Redirect to tenant dashboard
-        return redirect()->route('tenant.dashboard', $tenant)
+        return redirect()->route('tenant.dashboard', ['tenant' => $tenant->slug])
             ->with('success', 'Welcome back! ' . $tenant->name);
     }
 }
