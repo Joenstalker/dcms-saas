@@ -4,21 +4,43 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TenantController;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
+// Public routes (main domain only)
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Authentication routes
-Route::get('/login', [\App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
+// Main domain login route (for backward compatibility)
+Route::get('/login', function () {
+    return redirect()->route('home');
+})->name('login');
+
+Route::post('/login', function () {
+    return redirect()->route('home')->with('error', 'Invalid login request.');
+});
+
+// Tenant routes - apply tenant middleware (catches all tenant subdomains)
+Route::middleware(['tenant'])->group(function () {
+    // Tenant login
+    Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
+    Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
+});
+
+// Tenant Authentication routes (on tenant subdomain)
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+
+// Admin Authentication routes (Provider SaaS)
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::get('/login', [\App\Http\Controllers\Admin\AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [\App\Http\Controllers\Admin\AuthController::class, 'login'])->name('login.submit');
+    Route::post('/logout', [\App\Http\Controllers\Admin\AuthController::class, 'logout'])->name('logout');
+});
 
 // Tenant Registration (Public)
 Route::prefix('register')->name('tenant.registration.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Tenant\RegistrationController::class, 'show'])->name('index');
     Route::post('/', [\App\Http\Controllers\Tenant\RegistrationController::class, 'store'])->name('store');
     Route::get('/check-subdomain', [\App\Http\Controllers\Tenant\RegistrationController::class, 'checkSubdomain'])->name('check-subdomain');
+    Route::post('/verify-email', [\App\Http\Controllers\Tenant\RegistrationController::class, 'verifyEmail'])->name('verify-email');
     Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\RegistrationController::class, 'success'])->name('success');
 });
 
@@ -82,7 +104,7 @@ Route::middleware(['auth'])->prefix('tenant/{tenant}')->name('tenant.')->group(f
 });
 
 // Admin routes
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Tenants

@@ -13,8 +13,12 @@
             <li><a href="#">Features</a></li>
             <li><a href="#">Pricing</a></li>
             <li><a href="#">Docs</a></li>
-            <li><a href="{{ route('tenant.registration.index') }}" class="btn btn-ghost">Register</a></li>
-            <li><a href="{{ route('login') }}" class="btn btn-primary">Login</a></li>
+            @auth
+                @if(!auth()->user()->is_system_admin)
+                    <li><a href="{{ route('logout') }}" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a></li>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
+                @endif
+            @endauth
         </ul>
     </div>
 </nav>

@@ -1,2 +1,0 @@
-
-<?php echo $__env->make('admin.pricing-plans.create', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\dentistmng\dcms-saas\resources\views/admin/pricing-plans/edit.blade.php ENDPATH**/ ?>

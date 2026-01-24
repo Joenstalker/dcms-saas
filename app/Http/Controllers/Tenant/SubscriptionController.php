@@ -20,7 +20,7 @@ class SubscriptionController extends Controller
     {
         // Ensure user is authenticated and belongs to this tenant
         if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('login')
+            return redirect()->route('tenant.login')
                 ->with('error', 'Please login to select a plan.');
         }
 
@@ -41,7 +41,7 @@ class SubscriptionController extends Controller
     {
         // Ensure user is authenticated and belongs to this tenant
         if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('login')
+            return redirect()->route('tenant.login')
                 ->with('error', 'Please login to select a plan.');
         }
 
@@ -81,7 +81,7 @@ class SubscriptionController extends Controller
     {
         // Ensure user is authenticated and belongs to this tenant
         if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('login')
+            return redirect()->route('tenant.login')
                 ->with('error', 'Please login to complete payment.');
         }
 

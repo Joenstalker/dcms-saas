@@ -13,8 +13,12 @@
             <li><a href="#">Features</a></li>
             <li><a href="#">Pricing</a></li>
             <li><a href="#">Docs</a></li>
-            <li><a href="<?php echo e(route('tenant.registration.index')); ?>" class="btn btn-ghost">Register</a></li>
-            <li><a href="<?php echo e(route('login')); ?>" class="btn btn-primary">Login</a></li>
+            <?php if(auth()->guard()->check()): ?>
+                <?php if(!auth()->user()->is_system_admin): ?>
+                    <li><a href="<?php echo e(route('logout')); ?>" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a></li>
+                    <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
+                <?php endif; ?>
+            <?php endif; ?>
         </ul>
     </div>
 </nav>

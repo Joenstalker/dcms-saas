@@ -53,11 +53,11 @@ class VerificationController extends Controller
 
             DB::commit();
 
-            // Auto-login the user and redirect to dashboard
-            auth()->login($user);
+            // Don't auto-login - let user login with their credentials
+            // Redirect to login page instead of dashboard
 
-            return redirect()->route('tenant.dashboard', $tenant)
-                ->with('success', 'Email verified successfully! Welcome to your dashboard.');
+            return redirect()->route('tenant.verification.success', $tenant)
+                ->with('success', 'Email verified successfully! Please login to access your dashboard.');
 
         } catch (\Exception $e) {
             DB::rollBack();
