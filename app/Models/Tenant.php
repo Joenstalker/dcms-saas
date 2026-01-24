@@ -30,6 +30,9 @@ class Tenant extends Model
         'is_active',
         'trial_ends_at',
         'subscription_ends_at',
+        'subscription_status',
+        'last_payment_date',
+        'suspended_at',
         'email_verification_token',
         'email_verified_at',
         'setup_completed',
@@ -50,6 +53,8 @@ class Tenant extends Model
         'setup_completed' => 'boolean',
         'trial_ends_at' => 'datetime',
         'subscription_ends_at' => 'datetime',
+        'last_payment_date' => 'datetime',
+        'suspended_at' => 'datetime',
         'email_verified_at' => 'datetime',
         'business_hours' => 'array',
         'consent_forms' => 'array',
@@ -82,5 +87,60 @@ class Tenant extends Model
     public function isEmailVerified(): bool
     {
         return $this->email_verified_at !== null;
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        // Check if subscription is active or on trial
+        if ($this->subscription_status === 'active') {
+            return true;
+        }
+
+        if ($this->subscription_status === 'trial' && $this->isOnTrial()) {
+            return true;
+        }
+
+        // Check if subscription end date is in the future
+        if ($this->subscription_ends_at && $this->subscription_ends_at->isFuture()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isSubscriptionExpired(): bool
+    {
+        return in_array($this->subscription_status, ['expired', 'suspended', 'cancelled']);
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->subscription_status === 'suspended' ||
+               ($this->subscription_ends_at && $this->subscription_ends_at->isPast());
+    }
+
+    public function getSubscriptionStatusBadge(): string
+    {
+        return match ($this->subscription_status) {
+            'active' => '<span class="badge badge-success">Active</span>',
+            'trial' => '<span class="badge badge-info">Trial</span>',
+            'expired' => '<span class="badge badge-error">Expired</span>',
+            'suspended' => '<span class="badge badge-warning">Suspended</span>',
+            'cancelled' => '<span class="badge badge-ghost">Cancelled</span>',
+            default => '<span class="badge badge-ghost">Unknown</span>',
+        };
+    }
+
+    public function getDaysUntilExpiration(): ?int
+    {
+        if ($this->isOnTrial() && $this->trial_ends_at) {
+            return now()->diffInDays($this->trial_ends_at, false);
+        }
+
+        if ($this->subscription_ends_at) {
+            return now()->diffInDays($this->subscription_ends_at, false);
+        }
+
+        return null;
     }
 }

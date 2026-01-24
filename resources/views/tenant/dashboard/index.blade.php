@@ -23,7 +23,27 @@
     <!-- Welcome Banner -->
     <div class="bg-gradient-to-r from-primary to-secondary rounded-lg p-6 mb-6 text-white">
         <h1 class="text-3xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}!</h1>
-        <p class="text-white/80">{{ $tenant->name }}</p>
+        <p class="text-white/90 text-lg mb-1">{{ $tenant->name }}</p>
+        <div class="flex items-center gap-2 text-white/80">
+            <span class="text-sm">DCMS Portal</span>
+            @if($tenant->pricingPlan)
+                <span class="text-white/60">•</span>
+                <div class="flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="font-semibold">{{ $tenant->pricingPlan->name }} Plan</span>
+                    @if($tenant->subscription_status === 'trial')
+                        <span class="badge badge-warning badge-sm">Trial</span>
+                    @elseif($tenant->subscription_status === 'active')
+                        <span class="badge badge-success badge-sm">Active</span>
+                    @endif
+                </div>
+            @else
+                <span class="text-white/60">•</span>
+                <span class="badge badge-warning">No Plan Selected</span>
+            @endif
+        </div>
     </div>
 
     <!-- Statistics Cards -->

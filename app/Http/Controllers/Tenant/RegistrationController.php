@@ -110,6 +110,16 @@ class RegistrationController extends Controller
                     ->withErrors(['clinic_name' => 'A clinic with this name already exists. Please choose a different name.']);
             }
 
+            // Check for duplicate owner names (case-insensitive, trimmed)
+            $ownerNameExists = User::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($request->owner_name))])
+                ->exists();
+
+            if ($ownerNameExists) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['owner_name' => 'This owner name is already registered. Please use a different name.']);
+            }
+
             DB::beginTransaction();
 
             // Generate verification token

@@ -13,18 +13,30 @@ use Illuminate\View\View;
 
 class TenantController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $tenants = Tenant::with('pricingPlan')
-            ->latest()
-            ->paginate(15);
+        $query = Tenant::with('pricingPlan');
 
-        return view('admin.tenants.index', compact('tenants'));
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $tenants = $query->latest()->paginate(15)->withQueryString();
+        $pricingPlans = PricingPlan::where('is_active', true)->orderBy('sort_order')->get();
+
+        return view('admin.tenants.index', compact('tenants', 'pricingPlans'));
     }
 
     public function create(): View
     {
         $pricingPlans = PricingPlan::where('is_active', true)->orderBy('sort_order')->get();
+
         return view('admin.tenants.create', compact('pricingPlans'));
     }
 
@@ -52,12 +64,14 @@ class TenantController extends Controller
     public function show(Tenant $tenant): View
     {
         $tenant->load('pricingPlan', 'users');
+
         return view('admin.tenants.show', compact('tenant'));
     }
 
     public function edit(Tenant $tenant): View
     {
         $pricingPlans = PricingPlan::where('is_active', true)->orderBy('sort_order')->get();
+
         return view('admin.tenants.edit', compact('tenant', 'pricingPlans'));
     }
 
@@ -65,7 +79,7 @@ class TenantController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:tenants,slug,' . $tenant->id,
+            'slug' => 'required|string|max:255|unique:tenants,slug,'.$tenant->id,
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
             'pricing_plan_id' => 'required|exists:pricing_plans,id',
@@ -95,7 +109,7 @@ class TenantController extends Controller
 
     public function toggleActive(Tenant $tenant): RedirectResponse
     {
-        $tenant->update(['is_active' => !$tenant->is_active]);
+        $tenant->update(['is_active' => ! $tenant->is_active]);
 
         return redirect()->back()
             ->with('success', 'Tenant status updated.');
@@ -104,7 +118,7 @@ class TenantController extends Controller
     public function markEmailVerified(Tenant $tenant): RedirectResponse
     {
         \Illuminate\Support\Facades\DB::beginTransaction();
-        
+
         try {
             // Mark tenant email as verified
             $tenant->update([
@@ -116,7 +130,7 @@ class TenantController extends Controller
             $owner = \App\Models\User::where('tenant_id', $tenant->id)
                 ->where('email', $tenant->email)
                 ->first();
-            
+
             if ($owner) {
                 $owner->update([
                     'email_verified_at' => now(),
@@ -129,9 +143,9 @@ class TenantController extends Controller
                 ->with('success', 'Email marked as verified. Tenant can now login.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
-            
+
             return redirect()->back()
-                ->with('error', 'Failed to mark email as verified: ' . $e->getMessage());
+                ->with('error', 'Failed to mark email as verified: '.$e->getMessage());
         }
     }
 
@@ -140,7 +154,7 @@ class TenantController extends Controller
         try {
             // Generate new verification token
             $verificationToken = \Illuminate\Support\Str::random(64);
-            
+
             $tenant->update([
                 'email_verification_token' => $verificationToken,
             ]);
@@ -158,7 +172,7 @@ class TenantController extends Controller
                 ->with('success', 'Verification email sent successfully.');
         } catch (\Exception $e) {
             return redirect()->back()
-                ->with('error', 'Failed to send verification email: ' . $e->getMessage());
+                ->with('error', 'Failed to send verification email: '.$e->getMessage());
         }
     }
 }

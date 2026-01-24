@@ -29,6 +29,9 @@ Route::prefix('verify')->name('tenant.verification.')->group(function () {
     Route::get('/failed', [\App\Http\Controllers\Tenant\VerificationController::class, 'failed'])->name('failed');
 });
 
+// Tenant Subscription - Suspended page (No auth required)
+Route::get('/subscription/suspended/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'suspended'])->name('tenant.subscription.suspended');
+
 // Tenant Subscription & Payment (Authenticated - accessible from dashboard)
 Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
     Route::get('/select-plan/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
@@ -81,8 +84,14 @@ Route::middleware(['auth'])->prefix('tenant/{tenant}')->name('tenant.')->group(f
 // Admin routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Tenants
     Route::resource('tenants', TenantController::class);
     Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
     Route::post('tenants/{tenant}/mark-email-verified', [TenantController::class, 'markEmailVerified'])->name('tenants.mark-email-verified');
     Route::post('tenants/{tenant}/resend-verification', [TenantController::class, 'resendVerificationEmail'])->name('tenants.resend-verification');
+    
+    // Pricing Plans
+    Route::resource('pricing-plans', \App\Http\Controllers\Admin\PricingPlanController::class);
+    Route::post('pricing-plans/{pricingPlan}/toggle-active', [\App\Http\Controllers\Admin\PricingPlanController::class, 'toggleActive'])->name('pricing-plans.toggle-active');
 });

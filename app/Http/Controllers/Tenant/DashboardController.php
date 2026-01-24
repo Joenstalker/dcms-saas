@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -23,10 +22,13 @@ class DashboardController extends Controller
             abort(403, 'You do not have access to this clinic.');
         }
 
+        // Load pricing plan relationship
+        $tenant->load('pricingPlan');
+
         // Check if tenant needs to select a plan
-        $needsPlan = !$tenant->pricing_plan_id;
+        $needsPlan = ! $tenant->pricing_plan_id;
         $pricingPlans = null;
-        
+
         if ($needsPlan) {
             $pricingPlans = \App\Models\PricingPlan::where('is_active', true)
                 ->orderBy('sort_order')
@@ -45,7 +47,7 @@ class DashboardController extends Controller
         $recentAppointments = collect([]);
 
         // Get dashboard modules based on plan (if plan exists)
-        $modules = $tenant->pricing_plan_id 
+        $modules = $tenant->pricing_plan_id
             ? ($tenant->settings['dashboard_modules'] ?? ['patients', 'appointments', 'basic_reports'])
             : [];
 

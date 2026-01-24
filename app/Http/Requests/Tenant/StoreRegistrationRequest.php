@@ -23,6 +23,16 @@ class StoreRegistrationRequest extends FormRequest
                 'max:255',
                 'min:3',
                 'regex:/^[a-zA-Z0-9\s\-\'\.&]+$/u', // Allow letters, numbers, spaces, hyphens, apostrophes, periods, and ampersands
+                function ($attribute, $value, $fail) {
+                    $normalizedName = strtolower(trim($value));
+
+                    // Check tenants table (case-insensitive, trimmed)
+                    $exists = \App\Models\Tenant::whereRaw('LOWER(TRIM(name)) = ?', [$normalizedName])->exists();
+
+                    if ($exists) {
+                        $fail('A clinic with this name already exists. Please choose a different name.');
+                    }
+                },
             ],
             'subdomain' => [
                 'required',
@@ -30,8 +40,17 @@ class StoreRegistrationRequest extends FormRequest
                 'max:255',
                 'min:3',
                 'alpha_dash',
-                'unique:tenants,slug',
                 'regex:/^[a-z0-9\-_]+$/', // Only lowercase, numbers, hyphens, underscores
+                function ($attribute, $value, $fail) {
+                    $normalizedSubdomain = strtolower(trim($value));
+
+                    // Check tenants table (case-insensitive)
+                    $exists = \App\Models\Tenant::whereRaw('LOWER(TRIM(slug)) = ?', [$normalizedSubdomain])->exists();
+
+                    if ($exists) {
+                        $fail('This subdomain is already taken. Please choose another one.');
+                    }
+                },
             ],
             'address' => [
                 'nullable',
@@ -47,13 +66,34 @@ class StoreRegistrationRequest extends FormRequest
                 'max:255',
                 'min:2',
                 'regex:/^[a-zA-Z\s\-\'\.]+$/u', // Allow letters, spaces, hyphens, apostrophes, periods
+                function ($attribute, $value, $fail) {
+                    $normalizedName = strtolower(trim($value));
+
+                    // Check users table (case-insensitive, trimmed)
+                    $exists = \App\Models\User::whereRaw('LOWER(TRIM(name)) = ?', [$normalizedName])->exists();
+
+                    if ($exists) {
+                        $fail('This owner name is already registered. Please use a different name.');
+                    }
+                },
             ],
             'email' => [
                 'required',
-                'email:rfc,dns', // Strict email validation with DNS check
+                config('app.env') === 'local' ? 'email' : 'email:rfc,dns', // DNS check only in production
                 'max:255',
-                'unique:users,email',
-                'unique:tenants,email',
+                function ($attribute, $value, $fail) {
+                    $normalizedEmail = strtolower(trim($value));
+
+                    // Check users table (case-insensitive)
+                    $existsInUsers = \App\Models\User::whereRaw('LOWER(TRIM(email)) = ?', [$normalizedEmail])->exists();
+
+                    // Check tenants table (case-insensitive)
+                    $existsInTenants = \App\Models\Tenant::whereRaw('LOWER(TRIM(email)) = ?', [$normalizedEmail])->exists();
+
+                    if ($existsInUsers || $existsInTenants) {
+                        $fail('This email address is already registered. Please use a different email or try logging in.');
+                    }
+                },
             ],
             'phone' => [
                 'nullable',
@@ -61,7 +101,28 @@ class StoreRegistrationRequest extends FormRequest
                 'max:20',
                 'min:10',
                 'regex:/^[\+]?[0-9\s\-\(\)]+$/', // Allow numbers, spaces, hyphens, parentheses, and optional +
-                'unique:tenants,phone',
+                function ($attribute, $value, $fail) {
+                    if (empty($value)) {
+                        return; // Skip validation if phone is empty
+                    }
+
+                    // Normalize phone number
+                    $normalizedPhone = preg_replace('/[\s\-\(\)]/', '', $value);
+
+                    // Check tenants table with normalized phone numbers
+                    $exists = \App\Models\Tenant::whereNotNull('phone')
+                        ->get()
+                        ->filter(function ($tenant) use ($normalizedPhone) {
+                            $tenantPhone = preg_replace('/[\s\-\(\)]/', '', $tenant->phone ?? '');
+
+                            return $tenantPhone === $normalizedPhone;
+                        })
+                        ->isNotEmpty();
+
+                    if ($exists) {
+                        $fail('This phone number is already registered. Please use a different phone number.');
+                    }
+                },
             ],
 
             // Login Credentials
