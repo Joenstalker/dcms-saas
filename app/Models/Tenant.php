@@ -7,6 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
@@ -73,6 +74,11 @@ class Tenant extends Model
         return $this->hasMany(User::class);
     }
 
+    public function customization(): HasOne
+    {
+        return $this->hasOne(TenantSetting::class);
+    }
+
     public function isActive(): bool
     {
         // Tenant is active if email is verified and account is not soft deleted
@@ -134,11 +140,11 @@ class Tenant extends Model
     public function getDaysUntilExpiration(): ?int
     {
         if ($this->isOnTrial() && $this->trial_ends_at) {
-            return now()->diffInDays($this->trial_ends_at, false);
+            return (int) now()->diffInDays($this->trial_ends_at, false);
         }
 
         if ($this->subscription_ends_at) {
-            return now()->diffInDays($this->subscription_ends_at, false);
+            return (int) now()->diffInDays($this->subscription_ends_at, false);
         }
 
         return null;

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\PlatformSetting;
 use App\Models\Tenant;
+use App\Models\TenantSetting;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -58,8 +60,26 @@ class TenantMiddleware
         // Set default URL parameter for route generation
         \Illuminate\Support\Facades\URL::defaults(['tenant' => $tenant->slug]);
 
+        $platformSettings = PlatformSetting::first();
+        $tenantSettings = TenantSetting::where('tenant_id', $tenant->id)->first();
+
+        $customization = [
+            'theme_color_primary' => $tenantSettings?->theme_color_primary ?? $platformSettings?->default_theme_primary ?? '#0ea5e9',
+            'theme_color_secondary' => $tenantSettings?->theme_color_secondary ?? $platformSettings?->default_theme_secondary ?? '#10b981',
+            'sidebar_position' => $tenantSettings?->sidebar_position ?? $platformSettings?->default_sidebar_position ?? 'left',
+            'font_family' => $tenantSettings?->font_family ?? $platformSettings?->default_font_family ?? 'Figtree',
+            'logo_path' => $tenantSettings?->logo_path ?? $platformSettings?->default_logo_path,
+            'favicon_path' => $tenantSettings?->favicon_path ?? $platformSettings?->default_favicon_path,
+            'dashboard_widgets' => $tenantSettings?->dashboard_widgets ?? $platformSettings?->default_dashboard_widgets ?? [],
+            'available_theme_colors' => $platformSettings?->available_theme_colors ?? [],
+            'available_fonts' => $platformSettings?->available_fonts ?? [],
+        ];
+
+        app()->instance('tenant_customization', $customization);
+        view()->share('tenantCustomization', $customization);
+
         // PROTECT: Ensure authenticated users belong to this specific tenant
-        if (auth()->check() && auth()->user()->tenant_id !== $tenant->id) {
+        if (auth()->check() && (string)auth()->user()->tenant_id !== (string)$tenant->id) {
             // Get the user's actual clinic slug
             $userTenantSlug = auth()->user()->tenant->slug ?? null;
             

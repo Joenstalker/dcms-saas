@@ -10,6 +10,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class TenantLoginController extends Controller
@@ -74,6 +76,12 @@ class TenantLoginController extends Controller
                 ->withErrors(['email' => 'Please verify your email before logging in.']);
         }
 
+        if (!$tenant->email_verified_at) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['email' => 'Please verify your clinic email before logging in.']);
+        }
+
         // Check tenant subscription
         if (!$tenant->hasActiveSubscription()) {
             return redirect()->route('tenant.subscription.suspended', $tenant)
@@ -89,8 +97,38 @@ class TenantLoginController extends Controller
         // Ensure tenant identity is locked in session
         session(['tenant_id' => $tenant->id, 'tenant_slug' => $tenant->slug]);
 
+        // Check if password reset is required
+        if ($user->must_reset_password) {
+             Log::info('Redirecting to force change password', ['user_id' => $user->id]);
+             return redirect()->route('tenant.password.force-change', ['tenant' => $tenant->slug]);
+        }
+
         // Redirect to tenant dashboard
         return redirect()->route('tenant.dashboard', ['tenant' => $tenant->slug])
             ->with('success', 'Welcome back! ' . $tenant->name);
+    }
+
+    public function showForceChangeForm(): View
+    {
+        return view('tenant.auth.force-change-password', [
+            'tenant' => app('tenant')
+        ]);
+    }
+
+    public function forceChange(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        $user = $request->user();
+        
+        $user->update([
+            'password' => Hash::make($request->password),
+            'must_reset_password' => false,
+        ]);
+
+        return redirect()->route('tenant.dashboard', ['tenant' => $user->tenant->slug])
+            ->with('success', 'Password updated successfully.');
     }
 }

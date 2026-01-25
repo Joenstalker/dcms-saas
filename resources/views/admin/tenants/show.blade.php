@@ -87,7 +87,19 @@
                                 <tr>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
-                                    <td><span class="badge badge-ghost">User</span></td>
+                                    <td>
+                                        <div class="flex flex-wrap gap-1">
+                                            @if($user->is_system_admin)
+                                                <span class="badge badge-primary badge-xs">Super Admin</span>
+                                            @else
+                                                @forelse($user->roles as $role)
+                                                    <span class="badge badge-ghost badge-xs border-base-300">{{ ucfirst($role->name) }}</span>
+                                                @empty
+                                                    <span class="badge badge-ghost badge-xs">User</span>
+                                                @endforelse
+                                            @endif
+                                        </div>
+                                    </td>
                                 </tr>
                                 @endforeach
                             </tbody>

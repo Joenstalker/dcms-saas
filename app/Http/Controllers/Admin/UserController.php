@@ -1,0 +1,81 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class UserController extends Controller
+{
+    public function index(Request $request): View
+    {
+        $query = User::with(['tenant', 'roles']);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('tenant', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter by Role
+        if ($request->filled('role')) {
+            switch ($request->role) {
+                case 'superadmin':
+                    $query->where('is_system_admin', true);
+                    break;
+                case 'tenant_owner': // "Tenant" in user request usually means Owner
+                    $query->whereHas('roles', function ($q) {
+                        $q->where('name', 'owner');
+                    });
+                    break;
+                case 'dentist':
+                    $query->whereHas('roles', function ($q) {
+                        $q->where('name', 'dentist');
+                    });
+                    break;
+                case 'assistant': // "Staff"
+                    $query->whereHas('roles', function ($q) {
+                        $q->where('name', 'assistant');
+                    });
+                    break;
+            }
+        }
+
+        $users = $query->latest()->paginate(15)->withQueryString();
+
+        return view('admin.users.index', compact('users'));
+    }
+
+    public function show(User $user): View
+    {
+        $user->load('tenant', 'roles');
+        return view('admin.users.show', compact('user'));
+    }
+
+    public function toggleActive(User $user): RedirectResponse
+    {
+        // Prevent disabling self
+        if ($user->id === auth()->id()) {
+            return redirect()->back()->with('error', 'You cannot disable your own account.');
+        }
+
+        // We don't have an is_active column on users table yet based on previous file reads, 
+        // but often it's on the user or we rely on the tenant status.
+        // Checking User model again... it didn't show is_active in fillable.
+        // Let's re-check User model before adding this. 
+        // For now, I will omit toggleActive until confirmed, or just return back.
+        
+        return redirect()->back()->with('warning', 'User activation toggling not yet implemented.');
+    }
+}

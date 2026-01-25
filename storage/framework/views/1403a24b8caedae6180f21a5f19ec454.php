@@ -12,8 +12,9 @@
 
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>
+</head>
 <body class="font-sans antialiased">
-    <div class="min-h-screen bg-base-200">
+    <div class="bg-base-200">
         <!-- Mobile Sidebar Overlay -->
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="document.getElementById('mobile-sidebar').classList.add('hidden'); document.getElementById('mobile-overlay').classList.add('hidden');"></div>
 
@@ -25,31 +26,32 @@
             <?php echo $__env->make('admin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
 
-        <!-- Main Content -->
         <div class="lg:pl-64">
             <!-- Top Navbar -->
             <?php echo $__env->make('admin.components.navbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <!-- Page Content -->
-            <main class="p-4 sm:p-6 lg:p-8">
-                <?php if(session('success')): ?>
-                    <div class="alert alert-success shadow-lg mb-6 animate-in slide-in-from-top">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span class="font-medium"><?php echo e(session('success')); ?></span>
-                        <button class="btn btn-sm btn-ghost" onclick="this.parentElement.remove()">✕</button>
-                    </div>
-                <?php endif; ?>
+            <main class="pt-24 p-4 sm:p-6 lg:p-8">
+                <?php if (! (request()->routeIs('admin.pricing-plans.*'))): ?>
+                    <?php if(session('success')): ?>
+                        <div class="alert alert-success shadow-lg mb-6 animate-in slide-in-from-top">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-medium"><?php echo e(session('success')); ?></span>
+                            <button class="btn btn-sm btn-ghost" onclick="this.parentElement.remove()">✕</button>
+                        </div>
+                    <?php endif; ?>
 
-                <?php if(session('error')): ?>
-                    <div class="alert alert-error shadow-lg mb-6 animate-in slide-in-from-top">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span class="font-medium"><?php echo e(session('error')); ?></span>
-                        <button class="btn btn-sm btn-ghost" onclick="this.parentElement.remove()">✕</button>
-                    </div>
+                    <?php if(session('error')): ?>
+                        <div class="alert alert-error shadow-lg mb-6 animate-in slide-in-from-top">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-medium"><?php echo e(session('error')); ?></span>
+                            <button class="btn btn-sm btn-ghost" onclick="this.parentElement.remove()">✕</button>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <?php echo $__env->yieldContent('content'); ?>

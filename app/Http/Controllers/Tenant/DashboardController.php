@@ -47,8 +47,9 @@ class DashboardController extends Controller
         $recentAppointments = collect([]);
 
         // Get dashboard modules based on plan (if plan exists)
+        $customization = app('tenant_customization') ?? [];
         $modules = $tenant->pricing_plan_id
-            ? ($tenant->settings['dashboard_modules'] ?? ['patients', 'appointments', 'basic_reports'])
+            ? ($customization['dashboard_widgets'] ?? ['patients', 'appointments', 'basic_reports'])
             : [];
 
         return view('tenant.dashboard.index', compact('tenant', 'stats', 'recentAppointments', 'modules', 'needsPlan', 'pricingPlans'));

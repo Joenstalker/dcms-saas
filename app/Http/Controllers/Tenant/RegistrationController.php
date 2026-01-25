@@ -158,6 +158,7 @@ class RegistrationController extends Controller
                 'password' => Hash::make($request->password),
                 'tenant_id' => $tenant->id,
                 'is_system_admin' => false,
+                'must_reset_password' => true,
                 'email_verified_at' => null, // Will be verified after tenant verification
             ]);
 
@@ -297,6 +298,7 @@ class RegistrationController extends Controller
         // Mark user email as verified
         User::where('tenant_id', $tenant->id)->update([
             'email_verified_at' => now(),
+            'must_reset_password' => true,
         ]);
 
         // Generate new domain URL

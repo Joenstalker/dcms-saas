@@ -1,5 +1,11 @@
 @php
     $tenant = $tenant ?? auth()->user()->tenant ?? null;
+    $tenantCustomization = $tenantCustomization ?? app('tenant_customization') ?? [];
+    $fontFamily = $tenantCustomization['font_family'] ?? 'Figtree';
+    $fontFamilyLabel = trim(explode(',', $fontFamily)[0]);
+    $primaryColor = $tenantCustomization['theme_color_primary'] ?? null;
+    $secondaryColor = $tenantCustomization['theme_color_secondary'] ?? null;
+    $faviconPath = $tenantCustomization['favicon_path'] ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -8,11 +14,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $tenant->name ?? 'DCMS' }} - Dashboard</title>
+    @if($faviconPath)
+        <link rel="icon" href="{{ asset('storage/' . $faviconPath) }}">
+    @endif
+    @if($fontFamilyLabel && strtolower($fontFamilyLabel) !== 'system')
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family={{ str_replace(' ', '+', $fontFamilyLabel) }}:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @endif
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-base-200">
+<body class="bg-base-200" style="font-family: {{ $fontFamily }}; @if($primaryColor) --p: {{ $primaryColor }}; @endif @if($secondaryColor) --s: {{ $secondaryColor }}; @endif">
     @if($tenant)
-    <div class="drawer lg:drawer-open">
+    <div class="drawer lg:drawer-open {{ ($tenantCustomization['sidebar_position'] ?? 'left') === 'right' ? 'drawer-end' : '' }}">
         <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
         
         <!-- Page content -->

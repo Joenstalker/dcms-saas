@@ -86,7 +86,19 @@
                                 <tr>
                                     <td><?php echo e($user->name); ?></td>
                                     <td><?php echo e($user->email); ?></td>
-                                    <td><span class="badge badge-ghost">User</span></td>
+                                    <td>
+                                        <div class="flex flex-wrap gap-1">
+                                            <?php if($user->is_system_admin): ?>
+                                                <span class="badge badge-primary badge-xs">Super Admin</span>
+                                            <?php else: ?>
+                                                <?php $__empty_1 = true; $__currentLoopData = $user->roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                                    <span class="badge badge-ghost badge-xs border-base-300"><?php echo e(ucfirst($role->name)); ?></span>
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                                    <span class="badge badge-ghost badge-xs">User</span>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
                                 </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody>

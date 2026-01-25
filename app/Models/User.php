@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'tenant_id',
         'is_system_admin',
+        'must_reset_password',
+        'profile_photo_path',
     ];
 
     /**
@@ -47,7 +49,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_system_admin' => 'boolean',
+            'must_reset_password' => 'boolean',
         ];
+    }
+
+    protected $appends = [
+        'profile_photo_url',
+    ];
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        if ($this->profile_photo_path) {
+            return asset('storage/' . $this->profile_photo_path);
+        }
+
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
     }
 
     public function tenant()

@@ -72,71 +72,73 @@
                 </div>
             </form>
             <!-- Add New Tenant Button -->
-            <a href="<?php echo e(route('admin.tenants.create')); ?>" class="btn btn-primary gap-2 whitespace-nowrap">
+            <button type="button" onclick="createTenantModal.showModal()" class="btn btn-primary gap-2 whitespace-nowrap">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 Add New Tenant
-            </a>
+            </button>
         </div>
     </div>
 
 <div class="card bg-base-100 shadow-xl border border-base-300">
     <div class="card-body p-0">
         <div class="table-wrapper">
-            <table class="table w-full">
+            <table class="table table-sm w-full">
                 <thead>
                     <tr class="bg-base-200/50 border-b border-base-300">
-                        <th class="font-bold text-base py-4 px-6">Clinic</th>
-                        <th class="font-bold text-base py-4 px-6">Subdomain</th>
-                        <th class="font-bold text-base py-4 px-6 hidden md:table-cell">Email</th>
-                        <th class="font-bold text-base py-4 px-6">Plan</th>
-                        <th class="font-bold text-base py-4 px-6 hidden xl:table-cell">Subscription</th>
-                        <th class="font-bold text-base py-4 px-6">Status</th>
-                        <th class="font-bold text-base py-4 px-6 hidden lg:table-cell">Created</th>
-                        <th class="font-bold text-base py-4 px-6 text-right">Actions</th>
+                        <th class="font-bold text-sm py-2 px-3">Clinic</th>
+                        <th class="font-bold text-sm py-2 px-3">Subdomain</th>
+                        <th class="font-bold text-sm py-2 px-3 hidden md:table-cell">Email</th>
+                        <th class="font-bold text-sm py-2 px-3">Plan</th>
+                        <th class="font-bold text-sm py-2 px-3 hidden xl:table-cell">Subscription</th>
+                        <th class="font-bold text-sm py-2 px-3">Status</th>
+                        <th class="font-bold text-sm py-2 px-3 hidden lg:table-cell">Created</th>
+                        <th class="font-bold text-sm py-2 px-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php $__empty_1 = true; $__currentLoopData = $tenants; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tenant): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                     <tr class="border-b border-base-200 hover:bg-base-50 transition-colors duration-150">
-                        <td class="py-4 px-6">
-                            <div class="flex items-center gap-3">
+                        <td class="py-2 px-3">
+                            <div class="flex items-center gap-2">
                                 <div class="avatar placeholder">
-                                    <div class="bg-gradient-to-br from-primary/20 to-primary/10 text-primary rounded-full w-12 h-12 ring-2 ring-primary/20">
-                                        <span class="text-sm font-bold"><?php echo e(substr($tenant->name, 0, 2)); ?></span>
+                                    <div class="bg-gradient-to-br from-primary/20 to-primary/10 text-primary rounded-full w-8 h-8 ring-1 ring-primary/20">
+                                        <span class="text-xs font-bold"><?php echo e(substr($tenant->name, 0, 2)); ?></span>
                                     </div>
                                 </div>
-                                <div>
-                                    <div class="font-semibold text-base"><?php echo e($tenant->name); ?></div>
-                                    <div class="text-xs text-base-content/60 md:hidden mt-0.5"><?php echo e($tenant->email); ?></div>
+                                <div class="min-w-0 max-w-[200px]">
+                                    <div class="font-semibold text-sm truncate" title="<?php echo e($tenant->name); ?>"><?php echo e($tenant->name); ?></div>
+                                    <div class="text-xs text-base-content/60 md:hidden mt-0.5 truncate"><?php echo e($tenant->email); ?></div>
                                 </div>
                             </div>
                         </td>
-                        <td class="py-4 px-6">
-                            <span class="badge badge-outline badge-md font-mono border-base-300"><?php echo e($tenant->slug); ?></span>
+                        <td class="py-2 px-3">
+                            <span class="badge badge-outline badge-sm font-mono border-base-300"><?php echo e($tenant->slug); ?></span>
                         </td>
-                        <td class="py-4 px-6 hidden md:table-cell">
-                            <span class="text-sm text-base-content/80"><?php echo e($tenant->email); ?></span>
+                        <td class="py-2 px-3 hidden md:table-cell max-w-[200px]">
+                            <div class="text-sm text-base-content/80 truncate" title="<?php echo e($tenant->email); ?>"><?php echo e($tenant->email); ?></div>
                         </td>
-                        <td class="py-4 px-6">
+                        <td class="py-2 px-3">
                             <?php if($tenant->pricingPlan): ?>
-                                <span class="badge badge-primary badge-md"><?php echo e($tenant->pricingPlan->name); ?></span>
+                                <span class="badge badge-primary badge-sm"><?php echo e($tenant->pricingPlan->name); ?></span>
                             <?php else: ?>
-                                <span class="badge badge-warning badge-md gap-1">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <span class="badge badge-warning badge-sm gap-1">
+                                    <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                     </svg>
                                     No plan
                                 </span>
                             <?php endif; ?>
                         </td>
-                        <td class="py-4 px-6 hidden xl:table-cell">
-                            <div class="flex flex-col gap-1">
-                                <?php echo $tenant->getSubscriptionStatusBadge(); ?>
+                        <td class="py-2 px-3 hidden xl:table-cell">
+                            <div class="flex flex-col gap-0.5">
+                                <div class="scale-90 origin-left">
+                                    <?php echo $tenant->getSubscriptionStatusBadge(); ?>
 
+                                </div>
                                 <?php if($tenant->subscription_ends_at): ?>
-                                    <span class="text-xs text-base-content/60">
+                                    <span class="text-[10px] text-base-content/60">
                                         <?php echo e($tenant->subscription_ends_at->format('M d, Y')); ?>
 
                                     </span>
@@ -151,37 +153,37 @@
                                 <?php endif; ?>
                             </div>
                         </td>
-                        <td class="py-4 px-6">
+                        <td class="py-2 px-3">
                             <?php if($tenant->is_active): ?>
-                                <span class="badge badge-success badge-md gap-1.5 shadow-sm">
-                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <span class="badge badge-success badge-sm gap-1 shadow-sm">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                     </svg>
                                     Active
                                 </span>
                             <?php else: ?>
-                                <span class="badge badge-error badge-md gap-1.5 shadow-sm">
-                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <span class="badge badge-error badge-sm gap-1 shadow-sm">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                     </svg>
                                     Inactive
                                 </span>
                             <?php endif; ?>
                         </td>
-                        <td class="py-4 px-6 hidden lg:table-cell text-sm text-base-content/70">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <td class="py-2 px-3 hidden lg:table-cell">
+                            <div class="flex items-center gap-1.5 text-xs text-base-content/70">
+                                <svg class="w-3.5 h-3.5 text-base-content/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
                                 <?php echo e($tenant->created_at->format('M d, Y')); ?>
 
                             </div>
                         </td>
-                        <td class="py-4 px-6">
+                        <td class="py-2 px-3">
                             <div class="flex items-center justify-end relative z-10">
                                 <div class="dropdown dropdown-end">
-                                    <div tabindex="0" role="button" class="btn btn-sm btn-ghost btn-circle hover:bg-base-200">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div tabindex="0" role="button" class="btn btn-sm btn-ghost btn-circle h-8 w-8 min-h-0 hover:bg-base-200">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                         </svg>
                                     </div>
@@ -248,12 +250,12 @@
                                 <div>
                                     <p class="text-xl font-bold text-base-content mb-2">No tenants found</p>
                                     <p class="text-sm text-base-content/60 mb-6">Get started by creating your first tenant clinic</p>
-                                    <a href="<?php echo e(route('admin.tenants.create')); ?>" class="btn btn-primary gap-2">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <button type="button" onclick="createTenantModal.showModal()" class="btn btn-primary gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                         </svg>
                                         Create First Tenant
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </td>
@@ -619,5 +621,7 @@
 </dialog>
 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 <?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('admin.tenants.partials.create-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
 <?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\dentistmng\dcms-saas\resources\views/admin/tenants/index.blade.php ENDPATH**/ ?>

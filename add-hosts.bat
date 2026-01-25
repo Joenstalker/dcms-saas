@@ -1,30 +1,32 @@
 @echo off
-REM Add DCMS local development entries to hosts file
-REM Run this file as Administrator
+setlocal
+set "HOSTS=C:\Windows\System32\drivers\etc\hosts"
+set "BASE=dcmsapp.local"
 
-echo Adding dcmsapp.local entries to hosts file...
+if "%~1"=="" goto add_defaults
+
+call :add_domain "%~1.%BASE%"
+goto done
+
+:add_defaults
+call :add_domain "%BASE%"
+call :add_domain "dental.%BASE%"
+call :add_domain "dentalcare.%BASE%"
+call :add_domain "dddc.%BASE%"
+call :add_domain "cudalblanco.%BASE%"
+
+:done
 echo.
-
-REM Add entries to hosts file
-(
-echo.
-echo # DCMS Development Environments
-echo 127.0.0.1       dcmsapp.local
-echo 127.0.0.1       dental.dcmsapp.local
-echo 127.0.0.1       dentalcare.dcmsapp.local
-echo 127.0.0.1       dddc.dcmsapp.local
-) >> C:\Windows\System32\drivers\etc\hosts
-
 echo Hosts file updated!
 echo.
 echo Flushing DNS cache...
 ipconfig /flushdns
-
 echo.
-echo Done! You can now access:
-echo   http://dcmsapp.local:8000
-echo   http://dental.dcmsapp.local:8000
-echo   http://dentalcare.dcmsapp.local:8000
-echo   http://dddc.dcmsapp.local:8000
-
 pause
+
+:add_domain
+findstr /I /C:" %~1" "%HOSTS%" >nul 2>&1
+if errorlevel 1 (
+    echo 127.0.0.1       %~1>>"%HOSTS%"
+)
+goto :eof

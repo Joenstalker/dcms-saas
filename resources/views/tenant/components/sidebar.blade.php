@@ -1,11 +1,15 @@
 <div class="drawer-side">
-    <label for="drawer-toggle" class="drawer-overlay"></label>
+    <label for="drawer-toggle" class="drawer-overlay lg:hidden"></label>
+    @php
+        $widgets = $tenantCustomization['dashboard_widgets'] ?? [];
+        $logoPath = $tenantCustomization['logo_path'] ?? $tenant->logo;
+    @endphp
     <aside class="w-64 min-h-full bg-base-100 border-r border-base-300">
         <!-- Logo/Brand -->
         <div class="p-4 border-b border-base-300">
             <div class="flex items-center gap-3">
-                @if($tenant->logo)
-                    <img src="{{ asset('storage/' . $tenant->logo) }}" alt="Logo" class="w-10 h-10 rounded">
+                @if($logoPath)
+                    <img src="{{ asset('storage/' . $logoPath) }}" alt="Logo" class="w-10 h-10 rounded">
                 @else
                     <div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
                         <span class="text-primary-content font-bold text-lg">{{ substr($tenant->name, 0, 1) }}</span>
@@ -28,6 +32,7 @@
                     Home
                 </a>
             </li>
+            @if(request()->routeIs('tenant.settings.*') || empty($widgets) || in_array('patients', $widgets))
             <li>
                 <a href="{{ route('tenant.patients.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.patients.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,6 +41,8 @@
                     Patients
                 </a>
             </li>
+            @endif
+            @if(request()->routeIs('tenant.settings.*') || empty($widgets) || in_array('appointments', $widgets))
             <li>
                 <a href="{{ route('tenant.appointments.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.appointments.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,6 +51,8 @@
                     Appointments
                 </a>
             </li>
+            @endif
+            @if(request()->routeIs('tenant.settings.*') || empty($widgets) || in_array('services', $widgets))
             <li>
                 <a href="{{ route('tenant.services.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.services.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,6 +61,8 @@
                     Services
                 </a>
             </li>
+            @endif
+            @if(request()->routeIs('tenant.settings.*') || empty($widgets) || in_array('masterfile', $widgets))
             <li>
                 <a href="{{ route('tenant.masterfile.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.masterfile.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,6 +71,8 @@
                     Masterfile
                 </a>
             </li>
+            @endif
+            @if(request()->routeIs('tenant.settings.*') || empty($widgets) || in_array('expenses', $widgets))
             <li>
                 <a href="{{ route('tenant.expenses.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.expenses.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,13 +81,14 @@
                     Expenses
                 </a>
             </li>
+            @endif
             <li>
                 <a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.settings.*') ? 'active' : '' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    Admin Settings
+                    Customization
                 </a>
             </li>
             @if(auth()->user()->isOwner())

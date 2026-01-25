@@ -189,7 +189,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
                                         <p class="text-base-content/70">No tenants yet</p>
-                                        <a href="<?php echo e(route('admin.tenants.create')); ?>" class="btn btn-sm btn-primary">Create First Tenant</a>
+                                        <a href="<?php echo e(route('admin.tenants.index', ['create' => 1])); ?>" class="btn btn-sm btn-primary">Create First Tenant</a>
                                     </div>
                                 </td>
                             </tr>
@@ -249,7 +249,7 @@
                 <div class="card-body">
                     <h2 class="card-title mb-4">Quick Actions</h2>
                     <div class="space-y-2">
-                        <a href="<?php echo e(route('admin.tenants.create')); ?>" class="btn btn-primary btn-block justify-start gap-2">
+                        <a href="<?php echo e(route('admin.tenants.index', ['create' => 1])); ?>" class="btn btn-primary btn-block justify-start gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>

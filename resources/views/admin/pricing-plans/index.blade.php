@@ -16,46 +16,51 @@
     </a>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success shadow-lg mb-6">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <span>{{ session('success') }}</span>
-    </div>
-@endif
-
-@if(session('error'))
-    <div class="alert alert-error shadow-lg mb-6">
-        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-        </svg>
-        <span>{{ session('error') }}</span>
-    </div>
+@if(session('success') || session('error'))
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const message = @json(session('success') ?? session('error'));
+            const icon = @json(session('success') ? 'success' : 'error');
+            Swal.fire({
+                icon: icon,
+                title: icon === 'success' ? 'Success' : 'Error',
+                text: message,
+                confirmButtonText: 'OK',
+                customClass: {
+                    popup: 'bg-base-100 text-base-content rounded-2xl shadow-2xl',
+                    title: 'text-xl font-bold',
+                    htmlContainer: 'text-sm text-base-content/70',
+                    confirmButton: 'btn btn-primary w-28'
+                },
+                buttonsStyling: false
+            });
+        });
+    </script>
 @endif
 
 <!-- Pricing Plans Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
     @forelse($pricingPlans as $plan)
-    <div class="card bg-base-100 shadow-xl {{ $plan->is_popular ? 'ring-2 ring-primary' : 'border border-base-300' }} relative">
+    <div class="card bg-base-100 shadow-xl {{ $plan->is_popular ? 'ring-2 ring-primary' : 'border border-base-300' }} relative overflow-hidden">
         @if($plan->is_popular)
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span class="badge {{ $plan->badge_color ?? 'badge-primary' }} badge-lg shadow-lg">
+            <div class="absolute top-3 right-3">
+                <span class="badge {{ $plan->badge_color ?? 'badge-primary' }} badge-md shadow-lg max-w-[150px] truncate">
                     {{ $plan->badge_text ?? 'Popular' }}
                 </span>
             </div>
         @endif
 
-        <div class="card-body">
+        <div class="card-body pt-8">
             <!-- Plan Header -->
             <div class="text-center mb-4">
-                <h2 class="card-title text-2xl justify-center">{{ $plan->name }}</h2>
-                <p class="text-sm text-base-content/60 mt-1">{{ $plan->slug }}</p>
+                <h2 class="card-title text-xl sm:text-2xl justify-center break-words">{{ $plan->name }}</h2>
+                <p class="text-xs sm:text-sm text-base-content/60 mt-1 break-all">{{ $plan->slug }}</p>
             </div>
 
             <!-- Price -->
             <div class="text-center mb-4">
-                <div class="text-4xl font-bold">{{ $plan->getFormattedPrice() }}</div>
+                <div class="text-3xl sm:text-4xl font-bold break-words">{{ $plan->getFormattedPrice() }}</div>
                 @if($plan->price > 0)
                     <div class="text-sm text-base-content/60">per {{ $plan->getFormattedBillingCycle() }}</div>
                 @endif

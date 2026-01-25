@@ -6,13 +6,83 @@ namespace App\Services;
 
 use App\Models\Tenant;
 use App\Models\User;
+use App\Mail\WelcomeTenantAdminMail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 class TenantProvisioningService
 {
+    public function createTenant(array $data): Tenant
+    {
+        return DB::transaction(function () use ($data) {
+            // Auto-generate domain from slug if not provided
+            if (!isset($data['domain'])) {
+                $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
+                $data['domain'] = $data['slug'] . '.' . $baseDomain;
+            }
+
+            // 1. Create Tenant
+            $tenant = Tenant::create($data);
+
+            // 2. Generate Random Password
+            $rawPassword = Str::random(12);
+
+            // 3. Create User (Tenant Admin)
+            $user = User::create([
+                'name' => $data['name'] . ' Admin',
+                'email' => $data['email'],
+                'password' => Hash::make($rawPassword),
+                'tenant_id' => $tenant->id,
+                'is_system_admin' => false,
+                'must_reset_password' => true,
+                'email_verified_at' => now(),
+            ]);
+
+            // 4. Provision Tenant (Roles, Permissions, Masterfiles)
+            $this->provision($tenant);
+
+            // 5. Send Welcome Email
+            // Use the domain set in provision/setupDomain or fallback
+            $domain = $tenant->fresh()->domain ?? ($tenant->slug . '.' . env('LOCAL_BASE_DOMAIN', 'dcmsapp.local'));
+            $protocol = app()->environment('local') ? 'http' : 'https';
+            
+            // In local dev with port 8000, we might need to append port if not using vhost
+            $port = '';
+            if (app()->environment('local')) {
+                $appUrl = config('app.url');
+                $parsedUrl = parse_url($appUrl);
+                if (isset($parsedUrl['port'])) {
+                    $port = ':' . $parsedUrl['port'];
+                }
+            }
+
+            $loginUrl = "{$protocol}://{$domain}{$port}/login";
+
+            try {
+                Mail::to($user->email)->send(new WelcomeTenantAdminMail(
+                    $tenant->name,
+                    $loginUrl,
+                    $user->email,
+                    $rawPassword
+                ));
+            } catch (\Exception $e) {
+                Log::error('Failed to send welcome email to tenant admin', [
+                    'tenant_id' => $tenant->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage()
+                ]);
+                // Don't fail the transaction just because email failed, but log it.
+            }
+
+            return $tenant;
+        });
+    }
+
     public function provision(Tenant $tenant): bool
     {
         try {

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\PricingPlan;
 use App\Models\Tenant;
+use App\Services\TenantProvisioningService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -40,12 +41,12 @@ class TenantController extends Controller
         return view('admin.tenants.create', compact('pricingPlans'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request, TenantProvisioningService $provisioningService): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:tenants,slug',
-            'email' => 'required|email|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'pricing_plan_id' => 'required|exists:pricing_plans,id',
             'address' => 'nullable|string',
@@ -55,15 +56,15 @@ class TenantController extends Controller
             'country' => 'nullable|string|max:255',
         ]);
 
-        $tenant = Tenant::create($validated);
+        $tenant = $provisioningService->createTenant($validated);
 
         return redirect()->route('admin.tenants.show', $tenant)
-            ->with('success', 'Tenant created successfully.');
+            ->with('success', 'Tenant created successfully. Credentials have been emailed to the administrator.');
     }
 
     public function show(Tenant $tenant): View
     {
-        $tenant->load('pricingPlan', 'users');
+        $tenant->load(['pricingPlan', 'users.roles']);
 
         return view('admin.tenants.show', compact('tenant'));
     }

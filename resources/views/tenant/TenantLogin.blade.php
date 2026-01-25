@@ -13,13 +13,9 @@
                 @if($tenant->logo)
                     <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }}" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
                 @else
-                    <div class="h-20 w-20 mx-auto bg-gradient-to-tr from-sky-500 to-indigo-600 rounded-[2rem] flex items-center justify-center shadow-lg shadow-sky-100 transform -rotate-6 hover:rotate-0 transition-all duration-500">
-                        <svg class="h-12 w-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                        </svg>
-                    </div>
+                    <img src="{{ asset('images/dcms-logo.png') }}" alt="DCMS Logo" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500">
                 @endif
-            </div>
+            </img>
 
             <!-- Welcome Message -->
             <div class="text-center mb-6">
@@ -133,20 +129,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-        20%, 40%, 60%, 80% { transform: translateX(10px); }
-    }
-    .animate-shake {
-        animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
-        transform: translate3d(0, 0, 0);
-    }
-    
-    .loading .loading-spinner {
-        display: inline-block;
-    }
-</style>
-@endsection
