@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('content'); ?>
 <div class="min-h-screen bg-gradient-to-br from-primary/5 via-base-100 to-secondary/5 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-2xl mx-auto">
@@ -12,7 +10,7 @@
         <!-- Registration Form -->
         <div class="card bg-base-100 shadow-2xl">
             <div class="card-body p-6 sm:p-8">
-                <?php if($errors->any() && !$errors->has('error')): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->any() && !$errors->has('error')): ?>
                     <div class="alert alert-error mb-6">
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -20,13 +18,13 @@
                         <div>
                             <h3 class="font-bold">Please correct the following errors:</h3>
                             <ul class="list-disc list-inside mt-2">
-                                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                     <li><?php echo e($error); ?></li>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             </ul>
                         </div>
                     </div>
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                 <form id="registration-form" class="space-y-6">
                     <?php echo csrf_field(); ?>
@@ -160,7 +158,7 @@
                     </div>
 
                     <p class="text-center text-sm text-base-content/70">
-                        Already have an account? <a href="<?php echo e(route('tenant.login')); ?>" class="link link-primary">Log in here</a>
+                        Already have an account? <a href="<?php echo e(route('home')); ?>" class="link link-primary">Use your clinic URL to log in</a>
                     </p>
                 </form>
             </div>
@@ -220,7 +218,7 @@
                 class="input input-bordered w-full text-sm font-mono" maxlength="64">
             <div id="code-error" class="text-error text-sm hidden"></div>
             
-            <div id="loading-state" class="hidden flex items-center justify-center gap-2">
+            <div id="loading-state" class="hidden items-center justify-center gap-2">
                 <span class="loading loading-spinner loading-sm"></span>
                 <span>Verifying...</span>
             </div>
@@ -263,7 +261,7 @@ document.getElementById('registration-form').addEventListener('submit', async (e
     });
     
     try {
-        const response = await fetch('<?php echo e(route('tenant.registration.store')); ?>', {
+        const response = await fetch("<?php echo e(route('tenant.registration.store')); ?>", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -333,7 +331,7 @@ async function verifyCode() {
     loadingState.classList.remove('hidden');
 
     try {
-        const response = await fetch('<?php echo e(route('tenant.registration.verify-email')); ?>', {
+        const response = await fetch("<?php echo e(route('tenant.registration.verify-email')); ?>", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

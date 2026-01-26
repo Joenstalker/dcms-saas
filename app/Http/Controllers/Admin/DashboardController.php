@@ -17,8 +17,8 @@ class DashboardController extends Controller
         $stats = [
             'total_tenants' => Tenant::count(),
             'active_tenants' => Tenant::where('is_active', true)->count(),
-            'total_users' => User::where('is_system_admin', false)->count(),
-            'system_admins' => User::where('is_system_admin', true)->count(),
+            'total_users' => User::where('role', '!=', User::ROLE_SYSTEM_ADMIN)->count(),
+            'system_admins' => User::where('role', User::ROLE_SYSTEM_ADMIN)->count(),
         ];
 
         $recentTenants = Tenant::with('pricingPlan')

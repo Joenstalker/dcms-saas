@@ -27,8 +27,8 @@ class StoreUserRequest extends FormRequest
                     return $query->where('tenant_id', $this->user()->tenant_id);
                 }),
             ],
-            'password' => 'required|string|min:8|confirmed',
             'role' => 'required|string|in:dentist,assistant',
+            'status' => 'required|string|in:active,inactive',
         ];
     }
 
@@ -39,11 +39,9 @@ class StoreUserRequest extends FormRequest
             'email.required' => 'Email address is required.',
             'email.email' => 'Please provide a valid email address.',
             'email.unique' => 'This email is already registered in your clinic.',
-            'password.required' => 'Password is required.',
-            'password.confirmed' => 'Password confirmation does not match.',
-            'password.min' => 'Password must be at least 8 characters.',
             'role.required' => 'Please select a role.',
             'role.in' => 'Role must be either dentist or assistant.',
+            'status.required' => 'Status is required.',
         ];
     }
 }

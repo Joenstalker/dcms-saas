@@ -101,7 +101,7 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <p class="text-xs text-base-content/60 uppercase tracking-wide">Phone</p>
-                                    <p class="font-semibold truncate">{{ config('app.support_phone', '+63 123 456 7890') }}</p>
+                                    <p class="font-semibold truncate">{{ config('app.support_phone', '+63 975 686 4187') }}</p>
                                 </div>
                             </a>
                         </div>

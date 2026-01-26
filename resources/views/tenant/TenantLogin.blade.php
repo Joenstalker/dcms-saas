@@ -46,12 +46,30 @@
                         <span class="font-bold">{{ $errors->first('auth_failed') }}</span>
                     </div>
                 @endif
+
+                @if($errors->has('email'))
+                    <div class="alert alert-error rounded-2xl shadow-sm border-none bg-rose-50 text-rose-800 text-xs py-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-bold">{{ $errors->first('email') }}</span>
+                    </div>
+                @endif
+
+                @if($errors->any() && !$errors->has('auth_failed') && !$errors->has('email'))
+                    <div class="alert alert-error rounded-2xl shadow-sm border-none bg-rose-50 text-rose-800 text-xs py-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-bold">{{ $errors->first() }}</span>
+                    </div>
+                @endif
             </div>
 
             <!-- Login Form -->
             <form method="POST" action="{{ route('tenant.login.submit', ['tenant' => $tenant->slug]) }}" 
                   class="space-y-4" 
-                  onsubmit="this.querySelector('button[type=submit]').classList.add('loading'); this.querySelector('button[type=submit]').disabled = true;">
+                  onsubmit="const btn=document.getElementById('submit-btn'); const spinner=document.getElementById('spinner'); const text=document.getElementById('btn-text'); if(btn){btn.disabled=true;} if(spinner){spinner.classList.remove('hidden');} if(text){text.classList.add('hidden');}">
                 @csrf
 
                 <!-- Email -->
@@ -63,7 +81,7 @@
                             value="{{ old('email') }}"
                             required
                             autofocus
-                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl @error('email') border-rose-300 @enderror"
+                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl @error('email') @enderror"
                             placeholder="Email Address"
                         >
                         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors">
@@ -81,7 +99,7 @@
                             type="password" 
                             name="password" 
                             required
-                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl @error('password') border-rose-300 @enderror"
+                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl @error('password') @enderror"
                             placeholder="Password"
                         >
                         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors">
@@ -95,7 +113,7 @@
                 <!-- Privacy Policy Checkbox -->
                 <div class="form-control mt-4 bg-sky-50/50 p-4 rounded-2xl border border-sky-100/50">
                     <label class="label cursor-pointer justify-start gap-3 items-center">
-                        <input type="checkbox" required class="checkbox checkbox-primary checkbox-sm rounded-lg" />
+                        <input type="checkbox" class="checkbox checkbox-primary checkbox-sm rounded-lg" />
                         <span class="label-text text-[10px] font-black uppercase tracking-[0.1em] text-sky-900/60 leading-tight">
                             I agree to the <a href="#" class="text-sky-600 no-underline hover:underline font-black">DCMS Privacy Policy</a>
                         </span>
@@ -106,10 +124,10 @@
                 <button 
                     type="submit"
                     id="submit-btn"
-                    class="btn btn-primary w-full shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-white font-black uppercase tracking-widest rounded-2xl h-14"
+                    class="btn btn-primary w-full bg-sky-500 hover:bg-sky-600 border-sky-500 hover:border-sky-600 shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-white font-black uppercase tracking-widest rounded-2xl h-14"
                 >
                     <span class="loading-spinner loading-sm hidden" id="spinner"></span>
-                    Secure Access
+                    <span id="btn-text">Secure Access</span>
                 </button>
             </form>
 

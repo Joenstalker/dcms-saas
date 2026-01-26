@@ -1,4 +1,4 @@
-<div class="navbar bg-base-100 border-b border-base-300 px-6">
+<div class="navbar bg-base-100 border-b border-base-300 px-6 sticky top-0 z-30">
     <div class="flex-none lg:hidden">
         <label for="drawer-toggle" class="btn btn-square btn-ghost">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,16 +30,16 @@
         <!-- User Menu -->
         <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-circle avatar">
-                <div class="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center">
-                    <span class="font-semibold">{{ substr(auth()->user()->name, 0, 1) }}</span>
+                <div class="w-10 rounded-full bg-primary text-primary-content flex items-center justify-center overflow-hidden">
+                    <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                 </div>
             </label>
             <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 shadow-lg border border-base-300 p-2 mt-2">
                 <li class="menu-title">
                     <span>{{ auth()->user()->name }}</span>
                 </li>
-                <li><a>Profile</a></li>
-                <li><a>Settings</a></li>
+                <li><a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}">Profile Photo</a></li>
+                <li><a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
                     <form action="{{ route('logout') }}" method="POST">

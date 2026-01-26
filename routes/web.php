@@ -24,7 +24,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
     // Tenant Subscription & Payment (Authenticated)
-    Route::middleware(['auth', \App\Http\Middleware\EnsurePasswordIsChanged::class])->prefix('subscription')->name('tenant.subscription.')->group(function () {
+    Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
         Route::get('/select-plan', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
         Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment');
         Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
@@ -34,7 +34,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     });
 
     // Tenant Setup Wizard (Authenticated)
-    Route::middleware(['auth', \App\Http\Middleware\EnsurePasswordIsChanged::class])->prefix('setup')->name('tenant.setup.')->group(function () {
+    Route::middleware(['auth'])->prefix('setup')->name('tenant.setup.')->group(function () {
         Route::get('/{step?}', [\App\Http\Controllers\Tenant\SetupController::class, 'show'])->name('show')->where('step', '[1-5]');
         Route::post('/branding', [\App\Http\Controllers\Tenant\SetupController::class, 'updateBranding'])->name('branding');
         Route::post('/details', [\App\Http\Controllers\Tenant\SetupController::class, 'updateDetails'])->name('details');
@@ -45,34 +45,31 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     });
 
     // Tenant Dashboard & Modules (Protected)
-    Route::middleware(['auth', \App\Http\Middleware\EnsurePasswordIsChanged::class])->name('tenant.')->group(function () {
-        // Force Password Reset Routes
-        Route::get('/password/force-change', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showForceChangeForm'])->name('password.force-change');
-        Route::post('/password/force-change', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'forceChange'])->name('password.force-update');
-
+    Route::middleware(['auth'])->name('tenant.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'index'])->name('dashboard');
         
         // User Management (Owner only)
         Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
         
         // Module routes
-        Route::get('/patients', function(\App\Models\Tenant $tenant) { 
-            return view('tenant.patients.index', compact('tenant')); 
-        })->name('patients.index');
-        Route::get('/appointments', function(\App\Models\Tenant $tenant) { 
-            return view('tenant.appointments.index', compact('tenant')); 
-        })->name('appointments.index');
+        Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class);
+        
+        Route::resource('appointments', \App\Http\Controllers\Tenant\AppointmentController::class);
+        Route::patch('/appointments/{appointment}/status', [\App\Http\Controllers\Tenant\AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
         Route::get('/services', function(\App\Models\Tenant $tenant) { 
             return view('tenant.services.index', compact('tenant')); 
         })->name('services.index');
-        Route::get('/masterfile', function(\App\Models\Tenant $tenant) { 
-            return view('tenant.masterfile.index', compact('tenant')); 
-        })->name('masterfile.index');
+        Route::get('/role-permission', function(\App\Models\Tenant $tenant) { 
+            return view('tenant.RolePermission', compact('tenant')); 
+        })->name('role-permission.index');
+        
         Route::get('/expenses', function(\App\Models\Tenant $tenant) { 
             return view('tenant.expenses.index', compact('tenant')); 
         })->name('expenses.index');
         Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
         Route::post('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'update'])->name('settings.update');
+        Route::put('/settings/profile-photo', [\App\Http\Controllers\Tenant\SettingsController::class, 'updateProfilePhoto'])->name('settings.profile-photo.update');
+        Route::put('/settings/password', [\App\Http\Controllers\Tenant\SettingsController::class, 'updatePassword'])->name('settings.password.update');
     });
 });
 

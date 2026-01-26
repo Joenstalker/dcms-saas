@@ -145,22 +145,30 @@
                             <span>Services</span>
                         </a>
                         @endif
-                        @if(empty($modules) || in_array('masterfile', $modules))
-                        <a href="{{ route('tenant.masterfile.index', $tenant) }}" class="btn btn-outline btn-lg flex-col h-auto py-4">
-                            <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span>Masterfile</span>
-                        </a>
+                        @if(auth()->user()->isOwner())
+                            @if(empty($modules) || in_array('masterfile', $modules))
+                            <a href="{{ route('tenant.users.index', $tenant) }}" class="btn btn-outline btn-lg flex-col h-auto py-4">
+                                <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Masterfile</span>
+                            </a>
+                            @endif
                         @endif
-                        @if(empty($modules) || in_array('expenses', $modules))
-                        <a href="{{ route('tenant.expenses.index', $tenant) }}" class="btn btn-outline btn-lg flex-col h-auto py-4">
+                        @if(empty($modules) || in_array('finance', $modules))
+                        <a href="#" class="btn btn-outline btn-lg flex-col h-auto py-4">
                             <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span>Expenses</span>
+                            <span>Finance</span>
                         </a>
                         @endif
+                        <a href="#" class="btn btn-outline btn-lg flex-col h-auto py-4">
+                            <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                            </svg>
+                            <span>Concerns</span>
+                        </a>
                         @if(auth()->user()->isOwner())
                         <a href="{{ route('tenant.settings.index', $tenant) }}" class="btn btn-outline btn-lg flex-col h-auto py-4">
                             <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

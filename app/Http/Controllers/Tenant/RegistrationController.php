@@ -157,6 +157,7 @@ class RegistrationController extends Controller
                 'email' => $normalizedEmail,
                 'password' => Hash::make($request->password),
                 'tenant_id' => $tenant->id,
+                'role' => User::ROLE_TENANT,
                 'is_system_admin' => false,
                 'must_reset_password' => true,
                 'email_verified_at' => null, // Will be verified after tenant verification

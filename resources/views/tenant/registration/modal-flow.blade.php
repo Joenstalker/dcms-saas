@@ -160,7 +160,7 @@
                     </div>
 
                     <p class="text-center text-sm text-base-content/70">
-                        Already have an account? <a href="{{ route('tenant.login') }}" class="link link-primary">Log in here</a>
+                        Already have an account? <a href="{{ route('home') }}" class="link link-primary">Use your clinic URL to log in</a>
                     </p>
                 </form>
             </div>
@@ -220,7 +220,7 @@
                 class="input input-bordered w-full text-sm font-mono" maxlength="64">
             <div id="code-error" class="text-error text-sm hidden"></div>
             
-            <div id="loading-state" class="hidden flex items-center justify-center gap-2">
+            <div id="loading-state" class="hidden items-center justify-center gap-2">
                 <span class="loading loading-spinner loading-sm"></span>
                 <span>Verifying...</span>
             </div>
@@ -263,7 +263,7 @@ document.getElementById('registration-form').addEventListener('submit', async (e
     });
     
     try {
-        const response = await fetch('{{ route('tenant.registration.store') }}', {
+        const response = await fetch("{{ route('tenant.registration.store') }}", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -333,7 +333,7 @@ async function verifyCode() {
     loadingState.classList.remove('hidden');
 
     try {
-        const response = await fetch('{{ route('tenant.registration.verify-email') }}', {
+        const response = await fetch("{{ route('tenant.registration.verify-email') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

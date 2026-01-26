@@ -32,22 +32,16 @@ class UserController extends Controller
         if ($request->filled('role')) {
             switch ($request->role) {
                 case 'superadmin':
-                    $query->where('is_system_admin', true);
+                    $query->where('role', User::ROLE_SYSTEM_ADMIN);
                     break;
-                case 'tenant_owner': // "Tenant" in user request usually means Owner
-                    $query->whereHas('roles', function ($q) {
-                        $q->where('name', 'owner');
-                    });
+                case 'tenant_owner':
+                    $query->where('role', User::ROLE_TENANT);
                     break;
                 case 'dentist':
-                    $query->whereHas('roles', function ($q) {
-                        $q->where('name', 'dentist');
-                    });
+                    $query->where('role', User::ROLE_DENTIST);
                     break;
-                case 'assistant': // "Staff"
-                    $query->whereHas('roles', function ($q) {
-                        $q->where('name', 'assistant');
-                    });
+                case 'assistant':
+                    $query->where('role', User::ROLE_ASSISTANT);
                     break;
             }
         }

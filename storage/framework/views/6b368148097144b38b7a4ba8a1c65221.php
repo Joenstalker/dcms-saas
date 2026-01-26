@@ -12,7 +12,7 @@
 
             </button>
         </form>
-        <button onclick="deleteModal<?php echo e($tenant->id); ?>.showModal()" class="btn btn-error">
+        <button onclick="document.getElementById('deleteModal<?php echo e($tenant->id); ?>').showModal()" class="btn btn-error">
             Delete Permanently
         </button>
     </div>
@@ -71,7 +71,7 @@
         <div class="card bg-base-100 shadow">
             <div class="card-body">
                 <h2 class="card-title">Users (<?php echo e($tenant->users->count()); ?>)</h2>
-                <?php if($tenant->users->count() > 0): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->users->count() > 0): ?>
                     <div class="overflow-x-auto mt-4">
                         <table class="table table-sm">
                             <thead>
@@ -82,31 +82,31 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php $__currentLoopData = $tenant->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $tenant->users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                 <tr>
                                     <td><?php echo e($user->name); ?></td>
                                     <td><?php echo e($user->email); ?></td>
                                     <td>
                                         <div class="flex flex-wrap gap-1">
-                                            <?php if($user->is_system_admin): ?>
+                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->is_system_admin): ?>
                                                 <span class="badge badge-primary badge-xs">Super Admin</span>
                                             <?php else: ?>
-                                                <?php $__empty_1 = true; $__currentLoopData = $user->roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $user->roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                                     <span class="badge badge-ghost badge-xs border-base-300"><?php echo e(ucfirst($role->name)); ?></span>
-                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                                                     <span class="badge badge-ghost badge-xs">User</span>
-                                                <?php endif; ?>
-                                            <?php endif; ?>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 <?php else: ?>
                     <p class="text-base-content/70 mt-4">No users yet</p>
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
     </div>
@@ -121,17 +121,17 @@
                     <div>
                         <label class="text-sm text-base-content/70">Status</label>
                         <div class="mt-1">
-                            <?php if($tenant->is_active): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->is_active): ?>
                                 <span class="badge badge-success">Active</span>
                             <?php else: ?>
                                 <span class="badge badge-error">Inactive</span>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
                     </div>
                     <div>
                         <label class="text-sm text-base-content/70">Email Verification</label>
                         <div class="mt-1">
-                            <?php if($tenant->isEmailVerified()): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->isEmailVerified()): ?>
                                 <span class="badge badge-success gap-2">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
@@ -145,9 +145,9 @@
                                     </svg>
                                     Not Verified
                                 </span>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
-                        <?php if(!$tenant->isEmailVerified()): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$tenant->isEmailVerified()): ?>
                             <div class="mt-2 space-y-1">
                                 <form action="<?php echo e(route('admin.tenants.mark-email-verified', $tenant)); ?>" method="POST" class="inline">
                                     <?php echo csrf_field(); ?>
@@ -162,17 +162,17 @@
                                     </button>
                                 </form>
                             </div>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                     <div>
                         <label class="text-sm text-base-content/70">Pricing Plan</label>
-                        <?php if($tenant->pricingPlan): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->pricingPlan): ?>
                             <p class="font-medium mt-1"><?php echo e($tenant->pricingPlan->name); ?></p>
                             <p class="text-sm text-base-content/70">₱<?php echo e(number_format($tenant->pricingPlan->price, 2)); ?>/<?php echo e($tenant->pricingPlan->billing_cycle); ?></p>
                         <?php else: ?>
                             <p class="font-medium mt-1"><span class="badge badge-warning">No plan</span></p>
                             <p class="text-sm text-base-content/70">Tenant has not selected a plan yet.</p>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                     <div>
                         <label class="text-sm text-base-content/70">Created</label>
@@ -190,7 +190,7 @@
                     <a href="<?php echo e(route('admin.tenants.edit', $tenant)); ?>" class="btn btn-block btn-sm btn-ghost">Edit Tenant</a>
                     <button class="btn btn-block btn-sm btn-ghost">View Dashboard</button>
                     <button class="btn btn-block btn-sm btn-ghost">Manage Users</button>
-                    <?php if(!$tenant->isEmailVerified()): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$tenant->isEmailVerified()): ?>
                         <hr class="my-2">
                         <form action="<?php echo e(route('admin.tenants.mark-email-verified', $tenant)); ?>" method="POST" class="inline w-full">
                             <?php echo csrf_field(); ?>
@@ -204,9 +204,9 @@
                                 Resend Verification Email
                             </button>
                         </form>
-                    <?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     <hr class="my-2">
-                    <button onclick="deleteModal<?php echo e($tenant->id); ?>.showModal()" class="btn btn-block btn-sm btn-error">
+                    <button onclick="document.getElementById('deleteModal<?php echo e($tenant->id); ?>').showModal()" class="btn btn-block btn-sm btn-error">
                         Delete Permanently
                     </button>
                 </div>

@@ -3,7 +3,7 @@
         <!-- Logo -->
         <div class="flex items-center justify-center h-20 border-b border-base-300 bg-gradient-to-r from-primary/5 to-secondary/5">
             <div class="flex items-center gap-3">
-                <?php if(file_exists(public_path('images/dcms-logo.png'))): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('images/dcms-logo.png'))): ?>
                     <img src="<?php echo e(asset('images/dcms-logo.png')); ?>" alt="DCMS Logo" class="h-10 w-auto object-contain" />
                 <?php else: ?>
                     <div class="avatar placeholder">
@@ -11,9 +11,9 @@
                             <span class="text-xl font-bold">D</span>
                         </div>
                     </div>
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <div>
-                    <div class="text-lg font-bold text-primary">DCMS</div>
+                    <!-- <div class="text-lg font-bold text-primary">DCMS</div> -->
                     <div class="text-xs text-base-content/70">Admin Panel</div>
                 </div>
             </div>

@@ -13,7 +13,7 @@
                 {{ $tenant->is_active ? 'Deactivate' : 'Activate' }}
             </button>
         </form>
-        <button onclick="deleteModal{{ $tenant->id }}.showModal()" class="btn btn-error">
+        <button onclick="document.getElementById('deleteModal{{ $tenant->id }}').showModal()" class="btn btn-error">
             Delete Permanently
         </button>
     </div>
@@ -207,7 +207,7 @@
                         </form>
                     @endif
                     <hr class="my-2">
-                    <button onclick="deleteModal{{ $tenant->id }}.showModal()" class="btn btn-block btn-sm btn-error">
+                    <button onclick="document.getElementById('deleteModal{{ $tenant->id }}').showModal()" class="btn btn-block btn-sm btn-error">
                         Delete Permanently
                     </button>
                 </div>

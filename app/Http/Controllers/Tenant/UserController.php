@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Illuminate\View\View;
 
@@ -37,14 +38,13 @@ class UserController extends Controller
         }
 
         $users = User::where('tenant_id', $tenant->id)
-            ->with('roles')
             ->get()
             ->map(function ($user) {
-                $user->role_name = $user->getTenantRoles()->first()?->name ?? 'No Role';
+                $user->role_name = $user->role ?? 'No Role';
                 return $user;
             });
 
-        return view('tenant.users.index', compact('tenant', 'users'));
+        return view('tenant.UserManagement', compact('tenant', 'users'));
     }
 
     public function create(Tenant $tenant): View
@@ -67,13 +67,19 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
 
+            // Generate a random password
+            $randomPassword = Str::random(12);
+
             // Create the user
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'password' => Hash::make($randomPassword),
                 'tenant_id' => $tenant->id,
+                'status' => $request->status,
+                'role' => $request->role,
                 'is_system_admin' => false,
+                'must_reset_password' => true,
             ]);
 
             // Assign the selected role (dentist or assistant)
@@ -88,7 +94,9 @@ class UserController extends Controller
             DB::commit();
 
             return redirect()->route('tenant.users.index', $tenant)
-                ->with('success', ucfirst($request->role) . ' added successfully!');
+                ->with('success', ucfirst($request->role) . ' added successfully!')
+                ->with('temp_password', $randomPassword)
+                ->with('staff_email', $request->email);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -110,8 +118,7 @@ class UserController extends Controller
             abort(403);
         }
 
-        $user->load('roles');
-        $user->role_name = $user->getTenantRoles()->first()?->name ?? 'No Role';
+        $user->role_name = $user->role ?? 'No Role';
 
         return view('tenant.users.show', compact('tenant', 'user'));
     }
@@ -129,8 +136,7 @@ class UserController extends Controller
                 ->with('error', 'Owner account cannot be edited here.');
         }
 
-        $user->load('roles');
-        $user->current_role = $user->getTenantRoles()->first()?->name ?? null;
+        $user->current_role = $user->role;
 
         return view('tenant.users.edit', compact('tenant', 'user'));
     }
@@ -170,6 +176,7 @@ class UserController extends Controller
             $data = [
                 'name' => $request->name,
                 'email' => $request->email,
+                'role' => $request->role,
             ];
 
             if ($request->filled('password')) {

@@ -31,9 +31,9 @@
 
             <!-- Search Bar -->
             <form method="GET" action="<?php echo e(route('admin.users.index')); ?>" class="flex-1 lg:flex-initial">
-                <?php if(request('role')): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(request('role')): ?>
                     <input type="hidden" name="role" value="<?php echo e(request('role')); ?>">
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <div class="form-control">
                     <div class="input-group">
                         <input 
@@ -69,7 +69,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                         <tr class="border-b border-base-200 hover:bg-base-50 transition-colors duration-150">
                             <td class="py-2 px-3">
                                 <div class="flex items-center gap-3">
@@ -85,7 +85,7 @@
                                 </div>
                             </td>
                             <td class="py-2 px-3">
-                                <?php if($user->is_system_admin): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->is_system_admin): ?>
                                     <span class="badge badge-primary badge-sm">Super Admin</span>
                                 <?php else: ?>
                                     <?php
@@ -93,26 +93,26 @@
                                         $roles = $user->roles; 
                                         // If using Spatie roles, this collection should be available due to 'with' loading
                                     ?>
-                                    <?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
                                         <span class="badge badge-ghost badge-sm border-base-300"><?php echo e(ucfirst($role->name)); ?></span>
-                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    <?php if($roles->isEmpty()): ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($roles->isEmpty()): ?>
                                         <span class="badge badge-ghost badge-sm">Tenant</span>
-                                    <?php endif; ?>
-                                <?php endif; ?>
+                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
                             <td class="py-2 px-3">
-                                <?php if($user->tenant): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->tenant): ?>
                                     <a href="<?php echo e(route('admin.tenants.show', $user->tenant)); ?>" class="link link-hover text-sm font-medium">
                                         <?php echo e($user->tenant->name); ?>
 
                                     </a>
                                 <?php else: ?>
                                     <span class="text-xs text-base-content/50 italic">System</span>
-                                <?php endif; ?>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
                             <td class="py-2 px-3">
-                                <?php if($user->email_verified_at): ?>
+                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->email_verified_at): ?>
                                     <span class="badge badge-success badge-xs gap-1">
                                         Verified
                                     </span>
@@ -120,7 +120,7 @@
                                     <span class="badge badge-warning badge-xs gap-1">
                                         Unverified
                                     </span>
-                                <?php endif; ?>
+                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>
                             <td class="py-2 px-3 text-xs text-base-content/70">
                                 <?php echo e($user->created_at->format('M d, Y')); ?>
@@ -137,7 +137,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
                         <tr>
                             <td colspan="6" class="text-center py-12 text-base-content/70">
                                 <div class="flex flex-col items-center gap-2">
@@ -148,22 +148,22 @@
                                 </div>
                             </td>
                         </tr>
-                        <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tbody>
                 </table>
             </div>
             
-            <?php if($users->hasPages()): ?>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($users->hasPages()): ?>
             <div class="p-4 border-t border-base-300">
                 <?php echo e($users->links()); ?>
 
             </div>
-            <?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
 </div>
 
-<?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
 <!-- User Details Modal -->
 <dialog id="viewUser<?php echo e($user->id); ?>" class="modal">
     <div class="modal-box w-11/12 max-w-2xl">
@@ -180,15 +180,15 @@
             <div>
                 <h3 class="font-bold text-2xl"><?php echo e($user->name); ?></h3>
                 <p class="text-base-content/70">
-                    <?php if($user->is_system_admin): ?>
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->is_system_admin): ?>
                         Super Administrator
                     <?php else: ?>
                         <?php echo e($user->roles->pluck('name')->map(fn($n) => ucfirst($n))->join(', ') ?: 'User'); ?>
 
-                        <?php if($user->tenant): ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->tenant): ?>
                             <span class="mx-1">•</span> <span class="text-primary"><?php echo e($user->tenant->name); ?></span>
-                        <?php endif; ?>
-                    <?php endif; ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 </p>
             </div>
         </div>
@@ -201,7 +201,7 @@
                         <label class="text-xs text-base-content/60 block">Email Address</label>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="font-medium"><?php echo e($user->email); ?></span>
-                            <?php if($user->email_verified_at): ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->email_verified_at): ?>
                                 <div class="badge badge-success badge-xs gap-1" title="Verified on <?php echo e($user->email_verified_at->format('M d, Y')); ?>">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -210,7 +210,7 @@
                                 </div>
                             <?php else: ?>
                                 <div class="badge badge-warning badge-xs">Unverified</div>
-                            <?php endif; ?>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -234,7 +234,7 @@
             </div>
         </div>
 
-        <?php if($user->tenant): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($user->tenant): ?>
         <div class="mt-6 pt-6 border-t border-base-300">
             <h4 class="font-bold text-sm mb-3 uppercase tracking-wider text-base-content/50">Clinic Association</h4>
             <div class="card bg-base-200/50 border border-base-300">
@@ -249,12 +249,12 @@
                         <div class="text-xs text-base-content/70"><?php echo e($user->tenant->email); ?></div>
                     </div>
                     <div class="ml-auto">
-                        <a href="<?php echo e(route('admin.tenants.show', $user->tenant)); ?>" class="btn btn-xs btn-outline">View Clinic</a>
+                        <a href="<?php echo e(route('tenant.dashboard', ['tenant' => $user->tenant->slug])); ?>" class="btn btn-xs btn-outline" target="_blank" rel="noopener noreferrer">View Clinic</a>
                     </div>
                 </div>
             </div>
         </div>
-        <?php endif; ?>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
         <div class="modal-action border-t border-base-300 mt-8 pt-4">
             <form method="dialog">
@@ -272,7 +272,7 @@
         <button>close</button>
     </form>
 </dialog>
-<?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
 
 <?php $__env->stopSection(); ?>
 

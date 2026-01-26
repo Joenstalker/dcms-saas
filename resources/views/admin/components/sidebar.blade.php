@@ -13,7 +13,7 @@
                     </div>
                 @endif
                 <div>
-                    <div class="text-lg font-bold text-primary">DCMS</div>
+                    <!-- <div class="text-lg font-bold text-primary">DCMS</div> -->
                     <div class="text-xs text-base-content/70">Admin Panel</div>
                 </div>
             </div>

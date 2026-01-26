@@ -53,6 +53,7 @@ class TenantMiddleware
         }
 
         // Set tenant in session and app
+        // We explicitly overwrite the session tenant_id to match the current request
         Session::put('tenant_id', $tenant->id);
         Session::put('tenant_slug', $tenant->slug);
         app()->instance('tenant', $tenant);
@@ -78,13 +79,17 @@ class TenantMiddleware
         app()->instance('tenant_customization', $customization);
         view()->share('tenantCustomization', $customization);
 
+        if (auth()->check() && auth()->user()->isSystemAdmin()) {
+            return $next($request);
+        }
+
         // PROTECT: Ensure authenticated users belong to this specific tenant
         if (auth()->check() && (string)auth()->user()->tenant_id !== (string)$tenant->id) {
             // Get the user's actual clinic slug
             $userTenantSlug = auth()->user()->tenant->slug ?? null;
             
             if ($userTenantSlug) {
-                return redirect()->route('tenant.dashboard', ['tenant' => userTenantSlug])
+                return redirect()->route('tenant.dashboard', ['tenant' => $userTenantSlug])
                     ->with('tenant_access_error', 'You do not have access to ' . $tenant->name . '. Redirected to your clinic.');
             }
 
@@ -97,6 +102,7 @@ class TenantMiddleware
         // Allow public routes (login, register, verification) even on tenant subdomains
         if ($request->routeIs('login') 
             || $request->routeIs('tenant.login')
+            || $request->routeIs('tenant.login.submit')
             || $request->routeIs('tenant.registration.*') 
             || $request->routeIs('tenant.verification.*')
             || $request->routeIs('tenant.subscription.suspended')) {
@@ -115,6 +121,14 @@ class TenantMiddleware
 
         // Check if tenant has active subscription
         if (! $tenant->hasActiveSubscription()) {
+            if (! $tenant->pricing_plan_id) {
+                if (! $request->routeIs('tenant.subscription.*')) {
+                    return redirect()->route('tenant.subscription.select-plan', ['tenant' => $tenant->slug]);
+                }
+
+                return $next($request);
+            }
+
             // Mark as suspended if not already
             if ($tenant->subscription_status !== 'suspended') {
                 $tenant->update([

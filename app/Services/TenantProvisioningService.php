@@ -217,6 +217,9 @@ class TenantProvisioningService
             ->first();
 
         if ($owner) {
+            // Update the role column to 'tenant' as per user request
+            $owner->update(['role' => User::ROLE_TENANT]);
+
             // Assign owner role (scoped to this tenant)
             $role = Role::where('tenant_id', $tenant->id)
                 ->where('name', 'owner')

@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('page-title', 'Settings'); ?>
 
 <?php $__env->startSection('content'); ?>

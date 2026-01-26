@@ -25,6 +25,10 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-base-200" style="font-family: {{ $fontFamily }}; @if($primaryColor) --p: {{ $primaryColor }}; @endif @if($secondaryColor) --s: {{ $secondaryColor }}; @endif">
+    @php
+        $navbarComponent = $navbarComponent ?? 'tenant.components.navbar';
+        $sidebarComponent = $sidebarComponent ?? 'tenant.components.sidebar';
+    @endphp
     @if($tenant)
     <div class="drawer lg:drawer-open {{ ($tenantCustomization['sidebar_position'] ?? 'left') === 'right' ? 'drawer-end' : '' }}">
         <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
@@ -32,34 +36,16 @@
         <!-- Page content -->
         <div class="drawer-content flex flex-col">
             <!-- Navbar -->
-            @include('tenant.components.navbar', ['tenant' => $tenant])
+            @include($navbarComponent, ['tenant' => $tenant])
             
             <!-- Main content -->
             <main class="flex-1 overflow-y-auto">
-                @if(session('success'))
-                    <div class="alert alert-success mx-6 mt-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ session('success') }}</span>
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="alert alert-error mx-6 mt-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{{ session('error') }}</span>
-                    </div>
-                @endif
-
                 @yield('content')
             </main>
         </div>
         
         <!-- Sidebar -->
-        @include('tenant.components.sidebar', ['tenant' => $tenant])
+        @include($sidebarComponent, ['tenant' => $tenant])
     </div>
     @else
         <div class="min-h-screen flex items-center justify-center">
@@ -72,5 +58,66 @@
     @endif
 
     @include('tenant.components.security-modal')
+
+    <script>
+        // Global SweetAlert2 Toast/Popup handling
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: "{{ session('success') }}",
+                confirmButtonColor: 'var(--p, #0ea5e9)',
+                timer: 3000
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: "{{ session('error') }}",
+                confirmButtonColor: 'var(--p, #0ea5e9)'
+            });
+        @endif
+
+        @if(session('info'))
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: "{{ session('info') }}",
+                confirmButtonColor: 'var(--p, #0ea5e9)'
+            });
+        @endif
+
+        @if(session('warning'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: "{{ session('warning') }}",
+                confirmButtonColor: 'var(--p, #0ea5e9)'
+            });
+        @endif
+        
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                html: '<ul class="text-left text-sm">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
+                confirmButtonColor: 'var(--p, #0ea5e9)'
+            });
+        @endif
+    </script>
 </body>
 </html>

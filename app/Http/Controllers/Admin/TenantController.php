@@ -125,18 +125,14 @@ class TenantController extends Controller
             $tenant->update([
                 'email_verified_at' => now(),
                 'email_verification_token' => null,
+                'is_active' => true,
             ]);
 
-            // Also mark the owner user's email as verified
-            $owner = \App\Models\User::where('tenant_id', $tenant->id)
-                ->where('email', $tenant->email)
-                ->first();
-
-            if ($owner) {
-                $owner->update([
+            // Mark all users in this tenant as verified (normalize email case)
+            \App\Models\User::where('tenant_id', $tenant->id)
+                ->update([
                     'email_verified_at' => now(),
                 ]);
-            }
 
             \Illuminate\Support\Facades\DB::commit();
 

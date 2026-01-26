@@ -10,6 +10,7 @@ use App\Models\Tenant;
 use App\Models\TenantSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -87,5 +88,59 @@ class SettingsController extends Controller
 
         return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
             ->with('success', 'Customization updated successfully.');
+    }
+
+    public function updatePassword(Tenant $tenant, Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if (! $user || $user->tenant_id !== $tenant->id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|confirmed|min:8',
+        ]);
+
+        if (! Hash::check($validated['current_password'], $user->password)) {
+            return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+                ->withErrors(['current_password' => 'Current password is incorrect.'])
+                ->withInput();
+        }
+
+        $user->update([
+            'password' => Hash::make($validated['password']),
+            'must_reset_password' => false,
+        ]);
+
+        return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+            ->with('success', 'Password updated successfully.');
+    }
+
+    public function updateProfilePhoto(Tenant $tenant, Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if (! $user || $user->tenant_id !== $tenant->id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'photo' => ['required', 'image', 'max:1024'],
+        ]);
+
+        if ($request->hasFile('photo')) {
+            if ($user->profile_photo_path) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+
+            $path = $request->file('photo')->store('profile-photos', 'public');
+            $user->profile_photo_path = $path;
+            $user->save();
+        }
+
+        return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+            ->with('success', 'Profile photo updated successfully.');
     }
 }

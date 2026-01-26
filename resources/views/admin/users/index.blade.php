@@ -244,7 +244,7 @@
                         <div class="text-xs text-base-content/70">{{ $user->tenant->email }}</div>
                     </div>
                     <div class="ml-auto">
-                        <a href="{{ route('admin.tenants.show', $user->tenant) }}" class="btn btn-xs btn-outline">View Clinic</a>
+                        <a href="{{ route('tenant.dashboard', ['tenant' => $user->tenant->slug]) }}" class="btn btn-xs btn-outline" target="_blank" rel="noopener noreferrer">View Clinic</a>
                     </div>
                 </div>
             </div>

@@ -1,6 +1,6 @@
 @extends('layouts.tenant', ['tenant' => $tenant])
 
-@section('page-title', 'Customization')
+@section('page-title', 'Account Settings')
 @section('content')
 @php
     $tenantCustomization = $tenantCustomization ?? [];
@@ -26,8 +26,73 @@
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold">Customization</h1>
-            <p class="text-sm text-base-content/70">Adjust your clinic portal appearance and widgets</p>
+            <h1 class="text-2xl font-bold">Account Settings</h1>
+            <p class="text-sm text-base-content/70">Manage your profile and clinic information</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body space-y-4">
+                <h2 class="text-xl font-bold">Profile Photo</h2>
+                <form action="{{ route('tenant.settings.profile-photo.update', $tenant) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    @method('PUT')
+                    <div class="flex items-center gap-4">
+                        <div class="avatar">
+                            <div class="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden">
+                                <img src="{{ auth()->user()->profile_photo_url }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-semibold">{{ auth()->user()->name }}</p>
+                            <p class="text-sm text-base-content/70">{{ auth()->user()->email }}</p>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Upload New Photo</span>
+                        </label>
+                        <input type="file" name="photo" class="file-input file-input-bordered w-full" accept="image/*" required>
+                        @error('photo')
+                            <span class="text-error text-sm">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn btn-primary">Update Photo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body space-y-4">
+                <h2 class="text-xl font-bold">Clinic Information</h2>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Clinic Name</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="{{ $tenant->name }}" disabled>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Email</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="{{ $tenant->email }}" disabled>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Phone</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="{{ $tenant->phone }}" disabled>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Address</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="{{ $tenant->address }}" disabled>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -44,12 +109,28 @@
         </div>
     @endif
 
+    @if(session('success'))
+        <div class="alert alert-success shadow">
+            <div>
+                <h3 class="font-bold">{{ session('success') }}</h3>
+            </div>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-error shadow">
+            <div>
+                <h3 class="font-bold">{{ session('error') }}</h3>
+            </div>
+        </div>
+    @endif
+
     <form action="{{ route('tenant.settings.update', $tenant) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
         <div class="card bg-base-100 shadow-lg">
             <div class="card-body space-y-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold">Theme & Layout</h2>
+                    <h2 class="text-xl font-bold">Customization</h2>
                     <button type="submit" class="btn btn-primary" {{ $canCustomize ? '' : 'disabled' }}>Save Changes</button>
                 </div>
 
@@ -164,5 +245,45 @@
             </div>
         </div>
     </form>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body space-y-4">
+                <h2 class="text-xl font-bold">Security</h2>
+                <p class="text-sm text-base-content/70">Update your account password</p>
+                <form action="{{ route('tenant.settings.password.update', $tenant) }}" method="POST" class="space-y-4">
+                    @csrf
+                    @method('PUT')
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Current Password</span>
+                        </label>
+                        <input type="password" name="current_password" class="input input-bordered w-full" required>
+                        @error('current_password')
+                            <span class="text-error text-sm">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">New Password</span>
+                        </label>
+                        <input type="password" name="password" class="input input-bordered w-full" required>
+                        @error('password')
+                            <span class="text-error text-sm">{{ $message }}</span>
+                        @enderror
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Confirm New Password</span>
+                        </label>
+                        <input type="password" name="password_confirmation" class="input input-bordered w-full" required>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

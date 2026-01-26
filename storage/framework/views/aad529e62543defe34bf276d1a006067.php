@@ -10,11 +10,11 @@
             
             <!-- Clinic Logo/Icon -->
             <div class="text-center mb-6">
-                <?php if($tenant->logo): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->logo): ?>
                     <img src="<?php echo e(asset('storage/' . $tenant->logo)); ?>" alt="<?php echo e($tenant->name); ?>" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
                 <?php else: ?>
                     <img src="<?php echo e(asset('images/dcms-logo.png')); ?>" alt="DCMS Logo" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500">
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </img>
 
             <!-- Welcome Message -->
@@ -29,29 +29,47 @@
 
             <!-- Security & Alert Messages -->
             <div class="space-y-3 mb-6">
-                <?php if(session('tenant_access_error')): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('tenant_access_error')): ?>
                     <div class="alert alert-warning rounded-2xl shadow-sm border-none bg-amber-50 text-amber-800 text-xs py-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <span class="font-bold"><?php echo e(session('tenant_access_error')); ?></span>
                     </div>
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                <?php if($errors->has('auth_failed')): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->has('auth_failed')): ?>
                     <div class="alert alert-error rounded-2xl shadow-sm border-none bg-rose-50 text-rose-800 text-xs py-3">
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span class="font-bold"><?php echo e($errors->first('auth_failed')); ?></span>
                     </div>
-                <?php endif; ?>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($errors->has('email')): ?>
+                    <div class="alert alert-error rounded-2xl shadow-sm border-none bg-rose-50 text-rose-800 text-xs py-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-bold"><?php echo e($errors->first('email')); ?></span>
+                    </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                <?php if($errors->any() && !$errors->has('auth_failed') && !$errors->has('email')): ?>
+                    <div class="alert alert-error rounded-2xl shadow-sm border-none bg-rose-50 text-rose-800 text-xs py-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-bold"><?php echo e($errors->first()); ?></span>
+                    </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
             <!-- Login Form -->
             <form method="POST" action="<?php echo e(route('tenant.login.submit', ['tenant' => $tenant->slug])); ?>" 
                   class="space-y-4" 
-                  onsubmit="this.querySelector('button[type=submit]').classList.add('loading'); this.querySelector('button[type=submit]').disabled = true;">
+                  onsubmit="const btn=document.getElementById('submit-btn'); const spinner=document.getElementById('spinner'); const text=document.getElementById('btn-text'); if(btn){btn.disabled=true;} if(spinner){spinner.classList.remove('hidden');} if(text){text.classList.add('hidden');}">
                 <?php echo csrf_field(); ?>
 
                 <!-- Email -->
@@ -67,7 +85,7 @@
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> border-rose-300 <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?> <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>"
@@ -92,7 +110,7 @@ unset($__errorArgs, $__bag); ?>"
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> border-rose-300 <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?> <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>"
@@ -109,7 +127,7 @@ unset($__errorArgs, $__bag); ?>"
                 <!-- Privacy Policy Checkbox -->
                 <div class="form-control mt-4 bg-sky-50/50 p-4 rounded-2xl border border-sky-100/50">
                     <label class="label cursor-pointer justify-start gap-3 items-center">
-                        <input type="checkbox" required class="checkbox checkbox-primary checkbox-sm rounded-lg" />
+                        <input type="checkbox" class="checkbox checkbox-primary checkbox-sm rounded-lg" />
                         <span class="label-text text-[10px] font-black uppercase tracking-[0.1em] text-sky-900/60 leading-tight">
                             I agree to the <a href="#" class="text-sky-600 no-underline hover:underline font-black">DCMS Privacy Policy</a>
                         </span>
@@ -120,10 +138,10 @@ unset($__errorArgs, $__bag); ?>"
                 <button 
                     type="submit"
                     id="submit-btn"
-                    class="btn btn-primary w-full shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-white font-black uppercase tracking-widest rounded-2xl h-14"
+                    class="btn btn-primary w-full bg-sky-500 hover:bg-sky-600 border-sky-500 hover:border-sky-600 shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-white font-black uppercase tracking-widest rounded-2xl h-14"
                 >
                     <span class="loading-spinner loading-sm hidden" id="spinner"></span>
-                    Secure Access
+                    <span id="btn-text">Secure Access</span>
                 </button>
             </form>
 
@@ -143,4 +161,5 @@ unset($__errorArgs, $__bag); ?>"
         </div>
     </div>
 </div>
+
 <?php echo $__env->make('layouts.guest', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\dentistmng\dcms-saas\resources\views/tenant/TenantLogin.blade.php ENDPATH**/ ?>

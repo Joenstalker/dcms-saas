@@ -7,11 +7,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
+use App\Traits\BelongsToTenant;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, BelongsToTenant;
 
     /**
      * The attributes that are mass assignable.
@@ -24,9 +26,16 @@ class User extends Authenticatable
         'password',
         'tenant_id',
         'is_system_admin',
+        'role',
+        'status',
         'must_reset_password',
         'profile_photo_path',
     ];
+
+    public const ROLE_SYSTEM_ADMIN = 'system_admin';
+    public const ROLE_TENANT = 'tenant';
+    public const ROLE_DENTIST = 'dentist';
+    public const ROLE_ASSISTANT = 'assistant';
 
     /**
      * The attributes that should be hidden for serialization.
@@ -63,22 +72,33 @@ class User extends Authenticatable
             return asset('storage/' . $this->profile_photo_path);
         }
 
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+        if ($this->isDentist() || $this->isAssistant()) {
+            return $this->initialAvatarDataUrl();
+        }
+        
+        return asset('images/dcms-logo.png');
     }
 
-    public function tenant()
+    protected function initialAvatarDataUrl(): string
     {
-        return $this->belongsTo(Tenant::class);
+        $name = trim((string) $this->name);
+        $initial = $name !== '' ? Str::upper(Str::substr($name, 0, 1)) : '?';
+        $colors = ['#0ea5e9', '#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#a855f7', '#ec4899'];
+        $index = abs(crc32($name)) % count($colors);
+        $background = $colors[$index];
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="100%" height="100%" fill="' . $background . '"/><text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle" font-family="Inter, Arial, sans-serif" font-size="64" fill="#ffffff">' . $initial . '</text></svg>';
+
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 
     public function isSystemAdmin(): bool
     {
-        return $this->is_system_admin ?? false;
+        return $this->role === self::ROLE_SYSTEM_ADMIN || ($this->is_system_admin ?? false);
     }
 
     public function isTenantAdmin(): bool
     {
-        return $this->tenant_id !== null && !$this->is_system_admin;
+        return $this->tenant_id !== null && !$this->isSystemAdmin();
     }
 
     /**
@@ -115,7 +135,7 @@ class User extends Authenticatable
      */
     public function isOwner(): bool
     {
-        return $this->hasTenantRole('owner');
+        return $this->role === self::ROLE_TENANT || $this->hasTenantRole('owner');
     }
 
     /**
@@ -123,7 +143,7 @@ class User extends Authenticatable
      */
     public function isDentist(): bool
     {
-        return $this->hasTenantRole('dentist');
+        return $this->role === self::ROLE_DENTIST || $this->hasTenantRole('dentist');
     }
 
     /**
@@ -131,6 +151,6 @@ class User extends Authenticatable
      */
     public function isAssistant(): bool
     {
-        return $this->hasTenantRole('assistant');
+        return $this->role === self::ROLE_ASSISTANT || $this->hasTenantRole('assistant');
     }
 }

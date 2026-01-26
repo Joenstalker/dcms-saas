@@ -32,7 +32,10 @@ class AuthController extends Controller
 
         // Check if user exists and is system admin
         $user = \App\Models\User::where('email', $credentials['email'])
-            ->where('is_system_admin', true)
+            ->where(function($q) {
+                $q->where('role', \App\Models\User::ROLE_SYSTEM_ADMIN)
+                  ->orWhere('is_system_admin', true);
+            })
             ->first();
 
         if (!$user) {

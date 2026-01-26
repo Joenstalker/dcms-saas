@@ -23,7 +23,7 @@ class AdminMiddleware
         }
 
         // Check if user is system admin
-        if (!auth()->user()->is_system_admin) {
+        if (!auth()->user()->isSystemAdmin()) {
             abort(403, 'Unauthorized. Admin access required.');
         }
 
