@@ -160,7 +160,7 @@ class RegistrationController extends Controller
                 'role' => User::ROLE_TENANT,
                 'is_system_admin' => false,
                 'must_reset_password' => true,
-                'email_verified_at' => null, // Will be verified after tenant verification
+                'email_verified_at' => now(), // Auto-verify email - no verification required
             ]);
 
             DB::commit();

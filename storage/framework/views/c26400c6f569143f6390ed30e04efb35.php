@@ -76,12 +76,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
                     </div>
+                    <!-- 
                     <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box shadow-lg w-52 p-2 border border-base-300">
                         <li><a>Profile Settings</a></li>
                         <li><a>Account Settings</a></li>
                         <li><hr class="my-2"></li>
                         <li><a class="text-error">Logout</a></li>
                     </ul>
+                    -->
                 </div>
             </div>
         </div>

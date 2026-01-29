@@ -131,6 +131,7 @@
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
             <!-- Finance Section -->
+            <?php if(auth()->user()->isOwner() || auth()->user()->isAssistant()): ?>
             <li>
                 <a href="#" class="text-base-content/80 font-semibold flex items-center gap-3 hover:bg-base-200 rounded-lg p-2.5 transition-all">
                     <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -139,6 +140,20 @@
                     <span class="flex-1">Finance</span>
                 </a>
             </li>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <!-- User Management Section (Owner Only) -->
+            <?php if(auth()->user()->isOwner()): ?>
+            <li>
+                <a href="<?php echo e(route('tenant.users.index', ['tenant' => $tenant->slug])); ?>" 
+                   class="<?php echo e(request()->routeIs('tenant.users.*') ? 'active bg-primary/10 text-primary font-bold' : 'text-base-content/80 font-semibold'); ?> flex items-center gap-3 hover:bg-base-200 rounded-lg p-2.5 transition-all">
+                    <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span class="flex-1">Staff Management</span>
+                </a>
+            </li>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
             <!-- Account Section -->
             <li>
@@ -154,21 +169,6 @@
                             <a href="<?php echo e(route('tenant.settings.index', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.settings.index') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
                                 Settings
                             </a>
-                            <?php if(auth()->user()->isOwner()): ?>
-                            <ul class="mt-1 ml-4 border-l-2 border-base-200 pl-2 gap-1">
-                                <li>
-                                    <a href="<?php echo e(route('tenant.users.index', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.users.*') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
-                                        User Management
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="<?php echo e(route('tenant.role-permission.index', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.role-permission.index') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md flex justify-between items-center">
-                                        Roles & Permission
-                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$hasProAccess): ?> <span class="badge badge-ghost badge-xs">Pro</span> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                                    </a>
-                                </li>
-                            </ul>
-                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </li>
                         <!-- Concerns Section -->
                         <li>

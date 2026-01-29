@@ -12,7 +12,6 @@
 
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>
-</head>
 <body class="font-sans antialiased">
     <div class="bg-base-200">
         <!-- Mobile Sidebar Overlay -->

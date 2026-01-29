@@ -12164,3 +12164,4 @@ Did you mean one of these?
 #34 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('D://dentistmng//d...')
 #35 {main}
 "} 
+[2026-01-29 06:05:42] local.WARNING: Tenant login failed {"email":"joenilpanal@gmail.com","tenant_id":5,"tenant_slug":"dddc","reason":"user_not_found"} 

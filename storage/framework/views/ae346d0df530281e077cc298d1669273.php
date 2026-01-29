@@ -1,4 +1,4 @@
-<?php $__env->startSection('page-title', 'Customization'); ?>
+<?php $__env->startSection('page-title', 'Account Settings'); ?>
 <?php $__env->startSection('content'); ?>
 <?php
     $tenantCustomization = $tenantCustomization ?? [];
@@ -24,8 +24,80 @@
 <div class="p-6 space-y-6">
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold">Customization</h1>
-            <p class="text-sm text-base-content/70">Adjust your clinic portal appearance and widgets</p>
+            <h1 class="text-2xl font-bold">Account Settings</h1>
+            <p class="text-sm text-base-content/70">Manage your profile and clinic information</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body space-y-4">
+                <h2 class="text-xl font-bold">Profile Photo</h2>
+                <form action="<?php echo e(route('tenant.settings.profile-photo.update', $tenant)); ?>" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    <?php echo csrf_field(); ?>
+                    <?php echo method_field('PUT'); ?>
+                    <div class="flex items-center gap-4">
+                        <div class="avatar">
+                            <div class="w-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden">
+                                <img src="<?php echo e(auth()->user()->profile_photo_url); ?>" alt="<?php echo e(auth()->user()->name); ?>" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-semibold"><?php echo e(auth()->user()->name); ?></p>
+                            <p class="text-sm text-base-content/70"><?php echo e(auth()->user()->email); ?></p>
+                        </div>
+                    </div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium">Upload New Photo</span>
+                        </label>
+                        <input type="file" name="photo" class="file-input file-input-bordered w-full" accept="image/*" required>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['photo'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                            <span class="text-error text-sm"><?php echo e($message); ?></span>
+                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn btn-primary">Update Photo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card bg-base-100 shadow-lg">
+            <div class="card-body space-y-4">
+                <h2 class="text-xl font-bold">Clinic Information</h2>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Clinic Name</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="<?php echo e($tenant->name); ?>" disabled>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Email</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="<?php echo e($tenant->email); ?>" disabled>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Phone</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="<?php echo e($tenant->phone); ?>" disabled>
+                </div>
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Address</span>
+                    </label>
+                    <input type="text" class="input input-bordered w-full" value="<?php echo e($tenant->address); ?>" disabled>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -63,7 +135,7 @@
         <div class="card bg-base-100 shadow-lg">
             <div class="card-body space-y-6">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-bold">Theme & Layout</h2>
+                    <h2 class="text-xl font-bold">Customization</h2>
                     <button type="submit" class="btn btn-primary" <?php echo e($canCustomize ? '' : 'disabled'); ?>>Save Changes</button>
                 </div>
 

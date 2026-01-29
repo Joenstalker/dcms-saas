@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Illuminate\View\View;
+use App\Http\Controllers\Tenant\DashboardController;
 
 class UserController extends Controller
 {
@@ -28,6 +29,33 @@ class UserController extends Controller
             }
             return $next($request);
         });
+    }
+
+    /**
+     * View a staff member's portal (owner only)
+     */
+    public function viewPortal(Tenant $tenant, User $user): View
+    {
+        // Ensure owner belongs to this tenant
+        if (auth()->user()->tenant_id !== $tenant->id) {
+            abort(403);
+        }
+
+        // Ensure the user being viewed belongs to this tenant
+        if ($user->tenant_id !== $tenant->id) {
+            abort(403, 'This user does not belong to your clinic.');
+        }
+
+        // Only allow viewing dentist and assistant portals
+        if ($user->isDentist()) {
+            $dashboardController = new DashboardController();
+            return $dashboardController->dentistDashboard($tenant);
+        } elseif ($user->isAssistant()) {
+            $dashboardController = new DashboardController();
+            return $dashboardController->assistantDashboard($tenant);
+        }
+
+        abort(404, 'Portal not available for this user role.');
     }
 
     public function index(Tenant $tenant): View
@@ -44,7 +72,7 @@ class UserController extends Controller
                 return $user;
             });
 
-        return view('tenant.UserManagement', compact('tenant', 'users'));
+        return view('tenant.users.index', compact('tenant', 'users'));
     }
 
     public function create(Tenant $tenant): View
@@ -80,6 +108,7 @@ class UserController extends Controller
                 'role' => $request->role,
                 'is_system_admin' => false,
                 'must_reset_password' => true,
+                'email_verified_at' => now(), // Auto-verify email - no verification required
             ]);
 
             // Assign the selected role (dentist or assistant)

@@ -49,6 +49,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
         Route::get('/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'index'])->name('dashboard');
         
         // User Management (Owner only)
+        Route::get('/users/{user}/view-portal', [\App\Http\Controllers\Tenant\UserController::class, 'viewPortal'])->name('users.view-portal');
         Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
         
         // Module routes

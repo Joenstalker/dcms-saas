@@ -92,19 +92,6 @@ class TenantLoginController extends Controller
                 ->withErrors(['auth_failed' => 'Invalid email or password for this clinic.']);
         }
 
-        // Verify user's email
-        if (!$user->email_verified_at) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['email' => 'Please verify your email before logging in.']);
-        }
-
-        if (!$tenant->email_verified_at) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['email' => 'Please verify your clinic email before logging in.']);
-        }
-
         // Login the user
         Auth::login($user);
         
