@@ -172,4 +172,42 @@ class TenantController extends Controller
                 ->with('error', 'Failed to send verification email: '.$e->getMessage());
         }
     }
+
+    public function impersonate(Tenant $tenant, \App\Models\User $user): RedirectResponse
+    {
+        // Ensure user belongs to this tenant
+        if ($user->tenant_id !== $tenant->id) {
+            return redirect()->back()->with('error', 'User does not belong to this tenant.');
+        }
+
+        // Construct the target URL on the tenant's domain
+        $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
+        $tenantDomain = "{$tenant->slug}.{$baseDomain}";
+        $scheme = $request->secure() ? 'https://' : 'http://';
+        
+        // We need to generate a valid signature for the tenant's domain
+        // The URL::signedRoute uses the APP_KEY. Both admin and tenant apps share the same APP_KEY (monolith/saas),
+        // so we can manually generate the signature.
+        
+        $expiration = now()->addMinutes(5);
+        $routeParams = ['user' => $user->id];
+        
+        // Manually construct the URL that the route() helper WOULD generate on the subdomain
+        $path = "/impersonate/{$user->id}";
+        $urlToSign = $scheme . $tenantDomain . $path;
+        
+        // Add expiration
+        if ($expiration) {
+            $urlToSign .= '?expires=' . $expiration->getTimestamp();
+        }
+        
+        // Generate signature
+        $key = config('app.key');
+        $signature = hash_hmac('sha256', $urlToSign, $key);
+        
+        // Append signature
+        $finalUrl = $urlToSign . '&signature=' . $signature;
+
+        return redirect()->away($finalUrl);
+    }
 }

@@ -28,6 +28,7 @@
 
                 <form id="registration-form" class="space-y-6">
                     <?php echo csrf_field(); ?>
+                    <input type="hidden" name="pricing_plan_id" value="<?php echo e(request('plan')); ?>">
 
                     <!-- Clinic Information Section -->
                     <div>

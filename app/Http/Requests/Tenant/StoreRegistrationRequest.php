@@ -137,6 +137,9 @@ class StoreRegistrationRequest extends FormRequest
 
             // Terms
             'terms' => 'required|accepted',
+            
+            // Pricing Plan
+            'pricing_plan_id' => 'required|exists:pricing_plans,id',
         ];
     }
 

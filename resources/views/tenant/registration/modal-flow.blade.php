@@ -30,6 +30,7 @@
 
                 <form id="registration-form" class="space-y-6">
                     @csrf
+                    <input type="hidden" name="pricing_plan_id" value="{{ request('plan') }}">
 
                     <!-- Clinic Information Section -->
                     <div>

@@ -147,6 +147,7 @@ class RegistrationController extends Controller
                 'email' => $normalizedEmail,
                 'phone' => $normalizedPhone,
                 'address' => $request->address ? trim($request->address) : null,
+                'pricing_plan_id' => $request->pricing_plan_id,
                 'email_verification_token' => $verificationToken,
                 'is_active' => false, // Will be activated after email verification
             ]);

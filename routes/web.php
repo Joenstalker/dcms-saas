@@ -22,6 +22,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
 
     // Tenant Authentication routes
     Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+    Route::get('/impersonate/{user}', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'impersonate'])->name('impersonate')->middleware('signed');
 
     // Tenant Subscription & Payment (Authenticated)
     Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
@@ -82,7 +83,10 @@ $centralGroupOptions = app()->environment('local') ? [] : ['domain' => $baseDoma
 Route::group($centralGroupOptions, function () {
     // Home Page
     Route::get('/', function () {
-        return view('welcome');
+        $pricingPlans = \App\Models\PricingPlan::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+        return view('welcome', compact('pricingPlans'));
     })->name('home');
 
     // Admin login redirect
@@ -109,6 +113,7 @@ Route::group($centralGroupOptions, function () {
             Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
             Route::post('tenants/{tenant}/mark-email-verified', [TenantController::class, 'markEmailVerified'])->name('tenants.mark-email-verified');
             Route::post('tenants/{tenant}/resend-verification', [TenantController::class, 'resendVerificationEmail'])->name('tenants.resend-verification');
+            Route::get('tenants/{tenant}/impersonate/{user}', [TenantController::class, 'impersonate'])->name('tenants.impersonate');
             
             // Users
             Route::resource('users', \App\Http\Controllers\Admin\UserController::class);
