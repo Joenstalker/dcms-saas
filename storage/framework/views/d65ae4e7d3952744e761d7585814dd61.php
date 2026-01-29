@@ -59,6 +59,254 @@
 
     <?php echo $__env->make('tenant.components.security-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($tenant) && isset($pricingPlans) && $pricingPlans->isNotEmpty()): ?>
+    <!-- Subscription Modal -->
+    <dialog id="subscription_modal" class="modal">
+        <div class="modal-box w-11/12 max-w-5xl">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onclick="closePayment()">✕</button>
+            </form>
+            <h3 class="font-bold text-2xl mb-6 text-center" id="modal-title">Upgrade Your Plan</h3>
+            
+            <!-- Plan List (Default View) -->
+            <div id="plan-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $pricingPlans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                <div class="card bg-base-100 shadow-xl border border-base-200 hover:border-primary transition-all <?php echo e($plan->is_popular ? 'border-primary ring-1 ring-primary' : ''); ?>">
+                    <div class="card-body p-6">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->is_popular): ?>
+                            <div class="badge badge-primary font-bold mb-2">Most Popular</div>
+                        <?php else: ?>
+                           <div class="badge badge-ghost font-bold mb-2 invisible">Placeholder</div>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <h2 class="card-title text-xl"><?php echo e($plan->name); ?></h2>
+                        <div class="text-3xl font-bold my-2"><?php echo e($plan->getFormattedPrice()); ?> <span class="text-sm font-normal text-base-content/60">/ <?php echo e($plan->getFormattedBillingCycle()); ?></span></div>
+                        <p class="text-sm text-base-content/70 h-10"><?php echo e($plan->description); ?></p>
+                        
+                        <div class="divider my-2"></div>
+                        
+                        <ul class="text-sm space-y-2 mb-4 flex-1">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = array_slice($plan->features ?? [], 0, 5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoop($loop->index); ?><?php endif; ?>
+                                <li class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <?php echo e($feature); ?>
+
+                                </li>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(count($plan->features ?? []) > 5): ?>
+                                <li class="text-xs text-base-content/50">+ <?php echo e(count($plan->features) - 5); ?> more...</li>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        </ul>
+
+                        <div class="card-actions justify-center mt-auto">
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->pricing_plan_id === $plan->id): ?>
+                                <button class="btn btn-disabled w-full">Current Plan</button>
+                            <?php else: ?>
+                                <button onclick="selectPlan('<?php echo e($plan->id); ?>')" class="btn btn-primary btn-outline w-full hover:!text-white">Select <?php echo e($plan->name); ?></button>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
+            </div>
+
+            <!-- Stripe Payment Form (Hidden by default) -->
+            <div id="stripe-payment-container" class="hidden max-w-md mx-auto">
+                <div class="text-center mb-6">
+                    <p class="text-base-content/70">You are upgrading to <span id="selected-plan-name" class="font-bold"></span></p>
+                    <p class="text-3xl font-bold text-primary mt-2">₱<span id="selected-plan-amount"></span></p>
+                </div>
+
+                <form id="payment-form">
+                    <div id="payment-element" class="mb-4">
+                        <!-- Stripe Elements will create form elements here -->
+                    </div>
+                    
+                    <div id="error-message" class="alert alert-error mt-4 hidden text-sm"></div>
+
+                    <div class="flex flex-col gap-3 mt-6">
+                        <button type="submit" id="submit" class="btn btn-primary btn-block">
+                            <span id="button-text">Pay Now</span>
+                            <span id="spinner" class="loading loading-spinner hidden"></span>
+                        </button>
+                        <button type="button" onclick="closePayment()" class="btn btn-ghost btn-block">Cancel</button>
+                    </div>
+                </form>
+                
+                <div class="alert alert-info mt-6 p-3 text-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Payments are securely processed by Stripe.</span>
+                </div>
+            </div>
+        </div>
+    </dialog>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let stripe;
+            let elements;
+            let paymentIntentId;
+
+            window.selectPlan = async function(planId) {
+                const planList = document.getElementById('plan-list');
+                const paymentContainer = document.getElementById('stripe-payment-container');
+                const modalTitle = document.getElementById('modal-title');
+                
+                try {
+                    const response = await fetch(`/subscription/initiate/${planId}`, { 
+                        method: "POST",
+                        headers: {
+                             "Content-Type": "application/json",
+                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                    });
+                    
+                    if (!response.ok) {
+                        let errorMessage = 'Network response was not ok';
+                        try {
+                            const errorData = await response.json();
+                            errorMessage = errorData.error || errorMessage;
+                        } catch(e) {}
+                        throw new Error(errorMessage);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        showGlobalError(data.error);
+                        return;
+                    }
+
+                    stripe = Stripe(data.stripeKey);
+                    const options = {
+                        clientSecret: data.clientSecret,
+                        appearance: { theme: 'stripe' },
+                    };
+
+                    elements = stripe.elements(options);
+                    const paymentElement = elements.create('payment');
+                    paymentElement.mount('#payment-element');
+                    
+                    // Update UI
+                    document.getElementById('selected-plan-name').textContent = data.planName;
+                    document.getElementById('selected-plan-amount').textContent = data.amount;
+                    
+                    planList.classList.add('hidden');
+                    paymentContainer.classList.remove('hidden');
+                    modalTitle.textContent = 'Complete Payment';
+                    
+                    // Save planId for confirmation
+                    document.getElementById('payment-form').dataset.planId = planId;
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    showGlobalError(error.message || 'Could not initialize payment. Please try again.');
+                }
+            }
+
+            window.closePayment = function() {
+                document.getElementById('plan-list').classList.remove('hidden');
+                document.getElementById('stripe-payment-container').classList.add('hidden');
+                document.getElementById('modal-title').textContent = 'Upgrade Your Plan';
+                if(elements) {
+                    const paymentElement = elements.getElement('payment');
+                    if(paymentElement) paymentElement.unmount();
+                }
+            }
+
+            document.getElementById('payment-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setLoading(true);
+
+                if (!stripe || !elements) {
+                    return;
+                }
+
+                const { error, paymentIntent } = await stripe.confirmPayment({
+                    elements,
+                    redirect: 'if_required',
+                });
+
+                if (error) {
+                    showMessage(error.message);
+                    setLoading(false);
+                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                    confirmBackendPayment(paymentIntent.id);
+                }
+            });
+
+            async function confirmBackendPayment(paymentIntentId) {
+                const planId = document.getElementById('payment-form').dataset.planId;
+                
+                try {
+                    const response = await fetch(`/subscription/confirm-payment/${planId}`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ payment_intent_id: paymentIntentId })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setLoading(false);
+                        document.getElementById('subscription_modal').close();
+                        
+                        // Use a native alert or DaisyUI notification if Swal fails
+                        alert('Success! Your subscription has been activated.');
+                        window.location.reload();
+                    } else {
+                        showMessage(data.error || 'Payment recorded but subscription update failed.');
+                        setLoading(false);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showMessage('An unexpected error occurred.');
+                    setLoading(false);
+                }
+            }
+
+            function showMessage(messageText) {
+                const messageContainer = document.querySelector("#error-message");
+                messageContainer.classList.remove("hidden");
+                messageContainer.textContent = messageText;
+                setTimeout(function () {
+                    messageContainer.classList.add("hidden");
+                    messageContainer.textContent = "";
+                }, 4000);
+            }
+
+            function showGlobalError(msg) {
+                // Show error at top of modal
+                const container = document.getElementById('plan-list');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-error mb-4 col-span-full';
+                errorDiv.innerHTML = `<span>${msg}</span>`;
+                container.prepend(errorDiv);
+                setTimeout(() => errorDiv.remove(), 5000);
+            }
+
+            function setLoading(isLoading) {
+                const submitBtn = document.querySelector("#submit");
+                const spinner = document.querySelector("#spinner");
+                const buttonText = document.querySelector("#button-text");
+                if (isLoading) {
+                    submitBtn.disabled = true;
+                    spinner.classList.remove("hidden");
+                    buttonText.classList.add("hidden");
+                } else {
+                    submitBtn.disabled = false;
+                    spinner.classList.add("hidden");
+                    buttonText.classList.remove("hidden");
+                }
+            }
+        });
+    </script>
+    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
     <script>
         // Global SweetAlert2 Toast/Popup handling
         const Toast = Swal.mixin({

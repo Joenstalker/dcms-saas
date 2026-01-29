@@ -27,9 +27,11 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     // Tenant Subscription & Payment (Authenticated)
     Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
         Route::get('/select-plan', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
-        Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment');
-        Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
+        Route::post('/initiate/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePayment'])->name('initiate');
         Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
+        // Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment'); // Refactored to separate steps
+        Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
+        // Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment'); // Replaced by AJAX version
         Route::get('/success', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'success'])->name('success');
         Route::get('/cancel', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'cancel'])->name('cancel');
     });

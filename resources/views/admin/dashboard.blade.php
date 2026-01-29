@@ -99,6 +99,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Total Income Card -->
+        <div class="card bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 shadow-lg hover:shadow-xl transition-shadow">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-base-content/70 mb-1">Total Income</p>
+                        <p class="text-4xl font-bold text-accent">₱{{ number_format($stats['total_income'], 2) }}</p>
+                        <p class="text-xs text-base-content/60 mt-2">Total platform revenue</p>
+                    </div>
+                    <div class="avatar placeholder">
+                        <div class="bg-accent/20 text-accent rounded-full w-16">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Content Grid -->
@@ -192,6 +212,53 @@
                                         <p class="text-base-content/70">No tenants yet</p>
                                         <a href="{{ route('admin.tenants.index', ['create' => 1]) }}" class="btn btn-sm btn-primary">Create First Tenant</a>
                                     </div>
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Payments - Takes 2 columns -->
+        <div class="lg:col-span-2 card bg-base-100 shadow-lg border-t-4 border-accent">
+            <div class="card-body">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="card-title text-2xl flex items-center gap-2">
+                            <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Recent Income
+                        </h2>
+                        <p class="text-sm text-base-content/70 mt-1">Latest successful transactions</p>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="table table-zebra">
+                        <thead>
+                            <tr class="bg-base-200">
+                                <th class="font-semibold">Clinic</th>
+                                <th class="font-semibold">Plan</th>
+                                <th class="font-semibold">Amount</th>
+                                <th class="font-semibold">Date</th>
+                                <th class="font-semibold">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentPayments as $payment)
+                            <tr class="hover">
+                                <td class="font-medium">{{ $payment->tenant->name }}</td>
+                                <td>{{ $payment->pricingPlan->name }}</td>
+                                <td class="font-bold text-accent">₱{{ number_format($payment->amount, 2) }}</td>
+                                <td class="text-sm text-base-content/70">{{ $payment->paid_at->format('M d, Y H:i') }}</td>
+                                <td>
+                                    <span class="badge badge-success badge-sm">Paid</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-12 text-base-content/50">
+                                    No transaction history yet.
                                 </td>
                             </tr>
                             @endforelse

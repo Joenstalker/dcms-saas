@@ -93,82 +93,26 @@
             </div>
         </div>
 
-        <!-- Payment Form -->
+        <!-- Stripe Payment Form -->
         <div class="card bg-base-100 shadow-2xl">
             <div class="card-body">
                 <h2 class="card-title mb-4">Payment Information</h2>
                 
-                <form action="{{ route('tenant.subscription.confirm-payment', ['tenant' => $tenant, 'plan' => $plan->id]) }}" method="POST" id="payment-form">
-                    @csrf
-
-                    <!-- Payment Method Selection -->
-                    <div class="form-control mb-4">
-                        <label class="label">
-                            <span class="label-text font-semibold">Payment Method</span>
-                        </label>
-                        <select name="payment_method" class="select select-bordered" required>
-                            <option value="credit_card">Credit Card</option>
-                            <option value="debit_card">Debit Card</option>
-                            <option value="gcash">GCash</option>
-                            <option value="paymaya">PayMaya</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                        </select>
+                <form id="payment-form">
+                    <div id="payment-element">
+                        <!-- Stripe Elements will create form elements here -->
                     </div>
-
-                    <!-- Card Details (for credit/debit card) -->
-                    <div id="card-details" class="space-y-4 mb-4">
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-semibold">Card Number</span>
-                            </label>
-                            <input type="text" name="card_number" class="input input-bordered" placeholder="1234 5678 9012 3456" maxlength="19">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold">Expiry Date</span>
-                                </label>
-                                <input type="text" name="expiry_date" class="input input-bordered" placeholder="MM/YY" maxlength="5">
-                            </div>
-
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text font-semibold">CVV</span>
-                                </label>
-                                <input type="text" name="cvv" class="input input-bordered" placeholder="123" maxlength="4">
-                            </div>
-                        </div>
-
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text font-semibold">Cardholder Name</span>
-                            </label>
-                            <input type="text" name="cardholder_name" class="input input-bordered" placeholder="John Doe">
-                        </div>
-                    </div>
-
-                    <!-- Terms -->
-                    <div class="form-control mb-6">
-                        <label class="label cursor-pointer justify-start gap-3">
-                            <input type="checkbox" name="terms" class="checkbox checkbox-primary" required>
-                            <span class="label-text">
-                                I agree to the <a href="#" class="link link-primary">Terms of Service</a> 
-                                and <a href="#" class="link link-primary">Privacy Policy</a>
-                            </span>
-                        </label>
-                    </div>
+                    
+                    <div id="error-message" class="alert alert-error mt-4 hidden"></div>
 
                     <!-- Action Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4 mt-6">
                         <a href="{{ route('tenant.subscription.cancel', $tenant) }}" class="btn btn-outline flex-1">
                             Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary btn-lg flex-1">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                            Pay ₱{{ number_format($plan->price, 0) }}
+                        <button type="submit" id="submit" class="btn btn-primary btn-lg flex-1">
+                            <span id="button-text">Pay ₱{{ number_format($plan->price, 0) }}</span>
+                            <span id="spinner" class="loading loading-spinner hidden"></span>
                         </button>
                     </div>
                 </form>
@@ -178,36 +122,82 @@
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" class="stroke-current shrink-0 w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <span class="text-sm">Your payment information is secure and encrypted. In production, this will integrate with Stripe or other secure payment gateways.</span>
+                    <span class="text-sm">Payments are securely processed by Stripe. We do not store your card details.</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://js.stripe.com/v3/"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const paymentMethod = document.querySelector('select[name="payment_method"]');
-    const cardDetails = document.getElementById('card-details');
-    
-    if (paymentMethod && cardDetails) {
-        paymentMethod.addEventListener('change', function() {
-            if (this.value === 'credit_card' || this.value === 'debit_card') {
-                cardDetails.style.display = 'block';
-                cardDetails.querySelectorAll('input').forEach(input => {
-                    input.setAttribute('required', 'required');
-                });
-            } else {
-                cardDetails.style.display = 'none';
-                cardDetails.querySelectorAll('input').forEach(input => {
-                    input.removeAttribute('required');
-                });
-            }
+    const stripe = Stripe('{{ $stripeKey }}');
+    const options = {
+        clientSecret: '{{ $clientSecret }}',
+        appearance: {
+            theme: 'stripe',
+            variables: {
+                colorPrimary: '#0ea5e9',
+            },
+        },
+    };
+
+    // Set up Stripe.js and Elements to use in checkout form
+    const elements = stripe.elements(options);
+    const paymentElement = elements.create('payment');
+    paymentElement.mount('#payment-element');
+
+    const form = document.getElementById('payment-form');
+    const submitBtn = document.getElementById('submit');
+    const spinner = document.getElementById('spinner');
+    const buttonText = document.getElementById('button-text');
+    const errorMessage = document.getElementById('error-message');
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        setLoading(true);
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // Return URL where the customer should be redirected after the PaymentIntent is confirmed.
+                return_url: "{{ route('tenant.subscription.confirm-payment', ['tenant' => $tenant, 'plan' => $plan->id]) }}",
+            },
         });
-        
-        // Trigger on load
-        paymentMethod.dispatchEvent(new Event('change'));
+
+        if (error) {
+            // This point will only be reached if there is an immediate error when
+            // confirming the payment. Show error to your customer (for example, payment
+            // details incomplete)
+            showMessage(error.message);
+            setLoading(false);
+        } else {
+            // Your customer will be redirected to your `return_url`. For some payment
+            // methods like iDEAL, your customer will be redirected to an intermediate
+            // site first to authorize the payment, then redirected to the `return_url`.
+        }
+    });
+
+    function showMessage(messageText) {
+        errorMessage.classList.remove('hidden');
+        errorMessage.textContent = messageText;
+        setTimeout(function () {
+            errorMessage.classList.add('hidden');
+            errorMessage.textContent = "";
+        }, 10000);
     }
-});
+
+    function setLoading(isLoading) {
+        if (isLoading) {
+            submitBtn.disabled = true;
+            spinner.classList.remove('hidden');
+            buttonText.classList.add('hidden');
+        } else {
+            submitBtn.disabled = false;
+            spinner.classList.add('hidden');
+            buttonText.classList.remove('hidden');
+        }
+    }
 </script>
 @endsection

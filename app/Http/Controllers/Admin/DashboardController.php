@@ -19,6 +19,7 @@ class DashboardController extends Controller
             'active_tenants' => Tenant::where('is_active', true)->count(),
             'total_users' => User::where('role', '!=', User::ROLE_SYSTEM_ADMIN)->count(),
             'system_admins' => User::where('role', User::ROLE_SYSTEM_ADMIN)->count(),
+            'total_income' => \App\Models\Payment::where('status', 'succeeded')->sum('amount'),
         ];
 
         $recentTenants = Tenant::with('pricingPlan')
@@ -31,6 +32,12 @@ class DashboardController extends Controller
             ->groupBy('pricing_plan_id')
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentTenants', 'tenantsByPlan'));
+        $recentPayments = \App\Models\Payment::with(['tenant', 'pricingPlan'])
+            ->where('status', 'succeeded')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact('stats', 'recentTenants', 'tenantsByPlan', 'recentPayments'));
     }
 }

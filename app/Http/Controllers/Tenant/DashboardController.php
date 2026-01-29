@@ -43,13 +43,13 @@ class DashboardController extends Controller
 
         // Check if tenant needs to select a plan
         $needsPlan = ! $tenant->pricing_plan_id;
-        $pricingPlans = null;
-
-        if ($needsPlan) {
-            $pricingPlans = \App\Models\PricingPlan::where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
-        }
+        
+        $availablePlans = \App\Models\PricingPlan::where('is_active', true)
+            ->orderBy('sort_order')
+            ->get();
+        
+        // Backward compatibility if view uses $pricingPlans for initial selection
+        $pricingPlans = $availablePlans;
 
         // Get dashboard statistics
         $stats = [

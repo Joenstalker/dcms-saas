@@ -13,35 +13,60 @@
             <div class="text-sm">Please choose a subscription plan to unlock all features and activate your clinic portal.</div>
         </div>
         <div>
-            <a href="{{ route('tenant.subscription.select-plan', $tenant) }}" class="btn btn-sm btn-warning">
-                Select Plan
-            </a>
+            <a href="{{ route('tenant.subscription.payment', ['tenant' => $tenant->slug, 'plan' => $plan->id]) }}" class="btn btn-primary btn-outline w-full hover:!text-white">Select {{ $plan->name }}</a>
         </div>
     </div>
     @endif
 
-    <!-- Welcome Banner -->
-    <div class="bg-gradient-to-r from-primary to-secondary rounded-lg p-6 mb-6 text-white">
-        <h1 class="text-3xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}!</h1>
-        <p class="text-white/90 text-lg mb-1">{{ $tenant->name }}</p>
-        <div class="flex items-center gap-2 text-white/80">
-            <span class="text-sm">DCMS Portal</span>
-            @if($tenant->pricingPlan)
-                <span class="text-white/60">•</span>
-                <div class="flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-                    </svg>
-                    <span class="font-semibold">{{ $tenant->pricingPlan->name }} Plan</span>
-                    @if($tenant->subscription_status === 'trial')
-                        <span class="badge badge-warning badge-sm">Trial</span>
-                    @elseif($tenant->subscription_status === 'active')
-                        <span class="badge badge-success badge-sm">Active</span>
-                    @endif
+    <div class="bg-gradient-to-r from-primary to-secondary rounded-lg p-6 mb-6 text-white relative overflow-hidden">
+        <div class="relative z-10">
+            <h1 class="text-3xl font-bold mb-2">Welcome back, {{ auth()->user()->name }}!</h1>
+            <p class="text-white/90 text-lg mb-1">{{ $tenant->name }}</p>
+            <div class="flex flex-wrap items-center gap-2 text-white/80">
+                <span class="text-sm">DCMS Portal</span>
+                @if($tenant->pricingPlan)
+                    <span class="text-white/60">•</span>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-semibold">{{ $tenant->pricingPlan->name }} Plan</span>
+                        @if($tenant->subscription_status === 'trial')
+                            <span class="badge badge-warning badge-sm">Trial</span>
+                        @elseif($tenant->subscription_status === 'active')
+                            <span class="badge badge-success badge-sm">Active</span>
+                        @endif
+                    </div>
+                @else
+                    <span class="text-white/60">•</span>
+                    <span class="badge badge-warning">No Plan Selected</span>
+                @endif
+            </div>
+
+            @if($tenant->subscription_status === 'trial' && $tenant->trial_ends_at)
+                <div class="mt-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20 inline-flex flex-wrap items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-medium">Trial Ends In:</span>
+                        <span id="trial-countdown" class="font-mono font-bold text-xl text-warning" data-end="{{ $tenant->trial_ends_at }}">Calculating...</span>
+                    </div>
+                    <button onclick="document.getElementById('subscription_modal').showModal()" class="btn btn-sm btn-warning border-none text-warning-content hover:bg-warning/90">
+                        Upgrade Now
+                    </button>
+                    <div class="text-xs text-white/70 block w-full mt-1">
+                        @if($tenant->pricingPlan && $tenant->pricingPlan->auto_delete_after_trial)
+                            <span class="text-error font-bold bg-white/10 px-1 rounded">Caution: Account will be deleted if not subscribed by end of trial.</span>
+                        @endif
+                    </div>
                 </div>
             @else
-                <span class="text-white/60">•</span>
-                <span class="badge badge-warning">No Plan Selected</span>
+                <div class="mt-4">
+                     <button onclick="document.getElementById('subscription_modal').showModal()" class="btn btn-sm btn-white text-primary hover:bg-white/90 border-none">
+                        View Plans / Upgrade
+                    </button>
+                </div>
             @endif
         </div>
     </div>
@@ -201,6 +226,35 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Countdown Timer
+        const countdownEl = document.getElementById('trial-countdown');
+        if (countdownEl && countdownEl.dataset.end) {
+            const endDate = new Date(countdownEl.dataset.end).getTime();
+
+            const updateTimer = () => {
+                const now = new Date().getTime();
+                const distance = endDate - now;
+
+                if (distance < 0) {
+                    countdownEl.innerHTML = "EXPIRED";
+                    countdownEl.classList.add('text-error');
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            };
+
+            updateTimer(); // Run immediately
+            setInterval(updateTimer, 1000);
+        }
+    });
+</script>
 @endsection

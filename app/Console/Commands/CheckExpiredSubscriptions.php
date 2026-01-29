@@ -47,20 +47,42 @@ class CheckExpiredSubscriptions extends Command
             return self::SUCCESS;
         }
 
-        $count = 0;
+        $countSuspended = 0;
+        $countDeleted = 0;
+
         foreach ($expiredTenants as $tenant) {
+            $plan = $tenant->pricingPlan;
+
+            // Check if plan is configured to auto-delete expired trials
+            if ($tenant->subscription_status === 'trial' && 
+                $plan && 
+                $plan->auto_delete_after_trial) {
+                
+                $this->error("Deleting expired trial tenant: {$tenant->name} (ID: {$tenant->id})");
+                
+                // Permanent deletion
+                $tenant->delete();
+                $countDeleted++;
+                continue;
+            }
+
             $tenant->update([
                 'subscription_status' => 'suspended',
                 'suspended_at' => now(),
             ]);
 
             $this->warn("Suspended: {$tenant->name} (ID: {$tenant->id})");
-            $count++;
+            $countSuspended++;
 
             // TODO: Send notification email to tenant owner about suspension
         }
 
-        $this->info("✓ Suspended {$count} tenant(s) with expired subscriptions.");
+        if ($countSuspended > 0) {
+            $this->info("✓ Suspended {$countSuspended} tenant(s).");
+        }
+        if ($countDeleted > 0) {
+            $this->info("✓ Deleted {$countDeleted} expired trial tenant(s).");
+        }
 
         return self::SUCCESS;
     }

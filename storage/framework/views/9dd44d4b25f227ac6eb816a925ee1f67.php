@@ -1,4 +1,4 @@
-<?php if(session('tenant_access_error')): ?>
+<?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('tenant_access_error')): ?>
 <dialog id="security_alert_modal" class="modal modal-bottom sm:modal-middle">
     <div class="modal-box border-2 border-error/20 shadow-2xl">
         <div class="flex flex-col items-center text-center p-2">
@@ -40,5 +40,5 @@
         }
     });
 </script>
-<?php endif; ?>
+<?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 <?php /**PATH D:\dentistmng\dcms-saas\resources\views/tenant/components/security-modal.blade.php ENDPATH**/ ?>

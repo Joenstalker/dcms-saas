@@ -18,6 +18,38 @@
         </button>
     </div>
 
+    <!-- Online Booking Section -->
+    <div class="card bg-base-100 shadow-sm mb-6">
+        <div class="card-body">
+            <h2 class="card-title">Online Booking</h2>
+            
+            @if($tenant->pricingPlan && $tenant->pricingPlan->hasFeature('Online Booking (QR Code)'))
+                <div class="flex flex-col md:flex-row items-center gap-6">
+                    <div class="bg-white p-2 rounded-lg border border-base-200">
+                        <!-- QR Code using API for demo -->
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ urlencode(route('tenant.login', ['tenant' => $tenant->slug])) }}" alt="Booking QR Code" class="w-32 h-32">
+                    </div>
+                    <div>
+                        <p class="mb-2">Share this QR code or link with your patients to book appointments online.</p>
+                        <div class="join w-full max-w-md">
+                            <input type="text" value="{{ route('tenant.login', ['tenant' => $tenant->slug]) }}" class="input input-bordered join-item w-full" readonly>
+                            <button class="btn btn-primary join-item" onclick="navigator.clipboard.writeText('{{ route('tenant.login', ['tenant' => $tenant->slug]) }}'); alert('Link copied!')">Copy</button>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="alert alert-warning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    <div class="flex-1">
+                        <h3 class="font-bold">Enable Online Booking</h3>
+                        <div class="text-xs">Upgrade to Pro or Ultimate plan to enable Online Appointment Booking via QR Code.</div>
+                    </div>
+                    <button onclick="document.getElementById('subscription_modal').showModal()" class="btn btn-sm">Upgrade Now</button>
+                </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="stats shadow bg-base-100">

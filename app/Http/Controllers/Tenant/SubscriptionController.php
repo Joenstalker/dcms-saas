@@ -10,6 +10,7 @@ use App\Models\PricingPlan;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -64,39 +65,74 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    public function showPayment(Request $request, Tenant $tenant, int $plan): View
+    /**
+     * Initiate payment intent for modal (JSON response)
+     */
+    public function initiatePayment(Request $request, $tenant, int $plan): JsonResponse
     {
-        $plan = PricingPlan::findOrFail($plan);
+        try {
+            // Ensure $tenant is a model
+            if (!($tenant instanceof Tenant)) {
+                $tenant = app('tenant');
+            }
 
-        // Ensure tenant is verified and plan matches session
-        if (! $tenant->isEmailVerified() || session('selected_plan_id') != $plan->id) {
-            return redirect()->route('tenant.subscription.select-plan', $tenant)
-                ->with('error', 'Invalid payment session. Please select a plan again.');
+            if (!$tenant || !$tenant->exists) {
+                throw new \Exception('Tenant not resolved from subdomain.');
+            }
+
+            $plan = PricingPlan::findOrFail($plan);
+            
+            // Initialize Stripe
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+            // Create PaymentIntent
+            $intent = \Stripe\PaymentIntent::create([
+                'amount' => (int) ($plan->price * 100),
+                'currency' => 'php',
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => [
+                    'tenant_id' => $tenant->id,
+                    'plan_id' => $plan->id,
+                    'tenant_name' => $tenant->name,
+                ],
+            ]);
+
+            return response()->json([
+                'clientSecret' => $intent->client_secret,
+                'stripeKey' => config('services.stripe.key'),
+                'amount' => number_format($plan->price, 2),
+                'planName' => $plan->name
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Stripe Init Failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $message = config('app.debug') ? $e->getMessage() : 'Could not initialize payment';
+            return response()->json(['error' => $message], 500);
         }
-
-        return view('tenant.subscription.payment', compact('tenant', 'plan'));
     }
 
-    public function confirmPayment(Request $request, Tenant $tenant, int $plan): RedirectResponse
+    public function confirmPayment(Request $request, $tenant, int $plan): JsonResponse
     {
-        // Ensure user is authenticated and belongs to this tenant
+        // Ensure $tenant is a model
+        if (!($tenant instanceof Tenant)) {
+            $tenant = app('tenant');
+        }
+
+        if (!$tenant || !$tenant->exists) {
+            return response()->json(['error' => 'Tenant not found'], 404);
+        }
+
+        // Simple auth check
         if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
-                ->with('error', 'Please login to complete payment.');
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $plan = PricingPlan::findOrFail($plan);
-
-        // Ensure tenant is verified and plan matches session
-        if (! $tenant->isEmailVerified() || session('selected_plan_id') != $plan->id) {
-            return redirect()->route('tenant.subscription.select-plan', $tenant)
-                ->with('error', 'Invalid payment session.');
-        }
+        $paymentIntentId = $request->input('payment_intent_id'); // Passed from frontend if available
 
         try {
             DB::beginTransaction();
 
-            // Calculate subscription end date based on billing cycle
             $subscriptionEndsAt = match ($plan->billing_cycle) {
                 'monthly' => now()->addMonth(),
                 'quarterly' => now()->addMonths(3),
@@ -104,40 +140,40 @@ class SubscriptionController extends Controller
                 default => now()->addMonth(),
             };
 
-            // Set trial if plan has trial days
-            $trialEndsAt = $plan->hasTrial() ? now()->addDays($plan->trial_days) : null;
-            $subscriptionStatus = $plan->hasTrial() ? 'trial' : 'active';
-
-            // Update tenant with pricing plan and activate
+            // Update Tenant Subscription
             $tenant->update([
                 'pricing_plan_id' => $plan->id,
                 'is_active' => true,
-                'subscription_status' => $subscriptionStatus,
-                'trial_ends_at' => $trialEndsAt,
+                'subscription_status' => 'active',
+                'trial_ends_at' => null,
                 'subscription_ends_at' => $subscriptionEndsAt,
                 'last_payment_date' => now(),
                 'suspended_at' => null,
             ]);
 
-            // Clear session
-            session()->forget(['selected_plan_id', 'tenant_id']);
+            // Record Payment
+            \App\Models\Payment::create([
+                'tenant_id' => $tenant->id,
+                'pricing_plan_id' => $plan->id,
+                'amount' => $plan->price,
+                'currency' => 'php',
+                'transaction_id' => $paymentIntentId,
+                'status' => 'succeeded',
+                'payment_method' => 'card', // Assumed for now
+                'paid_at' => now(),
+            ]);
+
+            // Clear session if any
+            session()->forget(['selected_plan_id']);
 
             DB::commit();
 
-            // Redirect to dashboard (setup can be done later from dashboard)
-            return redirect()->route('tenant.dashboard', $tenant)
-                ->with('success', 'Payment successful! Your subscription has been activated.');
+            return response()->json(['success' => true]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Payment processing failed', [
-                'tenant_id' => $tenant->id,
-                'plan_id' => $plan->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return redirect()->route('tenant.subscription.payment', ['tenant' => $tenant, 'plan' => $plan->id])
-                ->with('error', 'Payment processing failed. Please try again.');
+            Log::error('Payment Confirmation Failed', ['error' => $e->getMessage()]);
+            return response()->json(['error' => 'Payment processing failed on server'], 500);
         }
     }
 
