@@ -22,7 +22,17 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family={{ str_replace(' ', '+', $fontFamilyLabel) }}:wght@400;500;600;700&display=swap" rel="stylesheet">
     @endif
+
+    <script>
+        // Apply theme immediately to prevent FOUC
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dcms';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('components.custom-theme-styles')
 </head>
 <body class="bg-base-200" style="font-family: {{ $fontFamily }}; @if($primaryColor) --p: {{ $primaryColor }}; @endif @if($secondaryColor) --s: {{ $secondaryColor }}; @endif">
     @php

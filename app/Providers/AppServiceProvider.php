@@ -21,6 +21,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
+            return $user->isSystemAdmin() ? true : null;
+        });
+
         view()->composer('layouts.tenant', function ($view) {
             $view->with('pricingPlans', \App\Models\PricingPlan::where('is_active', true)->orderBy('sort_order')->get());
         });

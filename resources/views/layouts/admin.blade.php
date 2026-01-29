@@ -10,10 +10,19 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+    <script>
+        // Apply theme immediately to prevent FOUC
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'dcms';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @include('components.custom-theme-styles')
 </head>
-<body class="font-sans antialiased">
-    <div class="bg-base-200">
+<body class="font-sans antialiased text-base-content">
+    <div class="min-h-screen bg-base-200 transition-colors duration-300">
         <!-- Mobile Sidebar Overlay -->
         <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="document.getElementById('mobile-sidebar').classList.add('hidden'); document.getElementById('mobile-overlay').classList.add('hidden');"></div>
 

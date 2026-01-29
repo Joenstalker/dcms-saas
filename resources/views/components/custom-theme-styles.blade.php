@@ -1,0 +1,87 @@
+@php
+    $customThemes = \App\Models\CustomTheme::where('is_active', true)->get();
+@endphp
+
+<style id="custom-theme-styles">
+    @foreach($customThemes as $theme)
+        [data-theme="custom-{{ $theme->slug }}"] {
+            @foreach($theme->colors as $name => $hex)
+                @php
+                    // Helper to convert hex to HSL for DaisyUI
+                    $hsl = hexToHsl($hex);
+                    $varName = match($name) {
+                        'primary' => 'p',
+                        'secondary' => 's',
+                        'accent' => 'a',
+                        'neutral' => 'n',
+                        'base-100' => 'b1',
+                        'base-200' => 'b2',
+                        'base-300' => 'b3',
+                        default => $name
+                    };
+                    
+                    // Content color contrast
+                    $varContent = match($name) {
+                        'primary' => 'pc',
+                        'secondary' => 'sc',
+                        'accent' => 'ac',
+                        'neutral' => 'nc',
+                        'info' => 'infoc',
+                        'success' => 'successc',
+                        'warning' => 'warningc',
+                        'error' => 'errorc',
+                        default => null
+                    };
+                @endphp
+                --{{ $varName }}: {{ $hsl['h'] }} {{ $hsl['s'] }}% {{ $hsl['l'] }}%;
+                @if($varContent)
+                    --{{ $varContent }}: {{ getLuminance($hex) > 0.5 ? '0 0% 0%' : '0 0% 100%' }};
+                @endif
+            @endforeach
+            --bc: {{ getLuminance($theme->colors['base-100']) > 0.5 ? '215 28% 17%' : '0 0% 100%' }};
+        }
+    @endforeach
+</style>
+
+@php
+function hexToHsl($hex) {
+    $hex = str_replace('#', '', $hex);
+    if (strlen($hex) == 3) {
+        $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1)) / 255;
+        $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1)) / 255;
+        $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1)) / 255;
+    } else {
+        $r = hexdec(substr($hex, 0, 2)) / 255;
+        $g = hexdec(substr($hex, 2, 2)) / 255;
+        $b = hexdec(substr($hex, 4, 2)) / 255;
+    }
+    $max = max($r, $g, $b); $min = min($r, $g, $b);
+    $l = ($max + $min) / 2;
+    if ($max == $min) { $h = $s = 0; }
+    else {
+        $d = $max - $min;
+        $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
+        switch ($max) {
+            case $r: $h = ($g - $b) / $d + ($g < $b ? 6 : 0); break;
+            case $g: $h = ($b - $r) / $d + 2; break;
+            case $b: $h = ($r - $g) / $d + 4; break;
+        }
+        $h /= 6;
+    }
+    return ['h' => round($h * 360), 's' => round($s * 100, 1), 'l' => round($l * 100, 1)];
+}
+
+function getLuminance($hex) {
+    $hex = str_replace('#', '', $hex);
+    if (strlen($hex) == 3) {
+        $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1)) / 255;
+        $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1)) / 255;
+        $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1)) / 255;
+    } else {
+        $r = hexdec(substr($hex, 0, 2)) / 255;
+        $g = hexdec(substr($hex, 2, 2)) / 255;
+        $b = hexdec(substr($hex, 4, 2)) / 255;
+    }
+    return (0.2126 * $r + 0.7152 * $g + 0.0722 * $b);
+}
+@endphp

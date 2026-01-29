@@ -131,7 +131,15 @@
             <div class="card-body space-y-6">
                 <div class="flex items-center justify-between">
                     <h2 class="text-xl font-bold">Customization</h2>
-                    <button type="submit" class="btn btn-primary" {{ $canCustomize ? '' : 'disabled' }}>Save Changes</button>
+                    <div class="flex gap-2">
+                        @if($tenant->pricingPlan && $tenant->pricingPlan->hasFeature('Customizable Themes'))
+                            <a href="{{ route('tenant.settings.theme-builder', ['tenant' => $tenant->slug]) }}" class="btn btn-outline btn-primary gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                                Build Custom Theme
+                            </a>
+                        @endif
+                        <button type="submit" class="btn btn-primary" {{ $canCustomize ? '' : 'disabled' }}>Save Changes</button>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">

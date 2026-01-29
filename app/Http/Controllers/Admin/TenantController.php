@@ -59,7 +59,7 @@ class TenantController extends Controller
         $tenant = $provisioningService->createTenant($validated);
 
         return redirect()->route('admin.tenants.show', $tenant)
-            ->with('success', 'Tenant created successfully. Credentials have been emailed to the administrator.');
+            ->with('success', 'Clinic created successfully. Credentials have been emailed to the administrator.');
     }
 
     public function show(Tenant $tenant): View
@@ -95,7 +95,7 @@ class TenantController extends Controller
         $tenant->update($validated);
 
         return redirect()->route('admin.tenants.show', $tenant)
-            ->with('success', 'Tenant updated successfully.');
+            ->with('success', 'Clinic updated successfully.');
     }
 
     public function destroy(Tenant $tenant): RedirectResponse
@@ -105,7 +105,7 @@ class TenantController extends Controller
         $tenant->forceDelete();
 
         return redirect()->route('admin.tenants.index')
-            ->with('success', 'Tenant permanently deleted.');
+            ->with('success', 'Clinic permanently deleted.');
     }
 
     public function toggleActive(Tenant $tenant): RedirectResponse
@@ -113,7 +113,7 @@ class TenantController extends Controller
         $tenant->update(['is_active' => ! $tenant->is_active]);
 
         return redirect()->back()
-            ->with('success', 'Tenant status updated.');
+            ->with('success', 'Clinic status updated.');
     }
 
     public function markEmailVerified(Tenant $tenant): RedirectResponse
@@ -137,7 +137,7 @@ class TenantController extends Controller
             \Illuminate\Support\Facades\DB::commit();
 
             return redirect()->back()
-                ->with('success', 'Email marked as verified. Tenant can now login.');
+                ->with('success', 'Email marked as verified. Clinic can now login.');
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
 

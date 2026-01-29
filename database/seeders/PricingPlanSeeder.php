@@ -100,6 +100,7 @@ class PricingPlanSeeder extends Seeder
                     'Advanced Analytics',
                     'Full Customization',
                     'Multi-branch Readiness',
+                    'Customizable Themes',
                 ],
                 'max_users' => 10,
                 'max_patients' => 1000,

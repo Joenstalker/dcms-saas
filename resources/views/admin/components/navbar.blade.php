@@ -32,13 +32,16 @@
             </div>
             <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box shadow-xl w-80 p-2 border border-base-300 mt-2">
                 <li class="menu-title"><span>Notifications</span></li>      
-                <li><a class="hover:bg-base-200">New tenant registered</a></li>
+                <li><a class="hover:bg-base-200">New clinic registered</a></li>
                 <li><a class="hover:bg-base-200">System update available</a></li>
                 <li><a class="hover:bg-base-200">Payment received</a></li>  
                 <li><hr class="my-2"></li>
                 <li><a class="text-center text-primary">View all notifications</a></li>
             </ul>
         </div>
+
+        <!-- Theme Switcher -->
+        @include('admin.components.theme-switcher')
 
         <!-- User Menu -->
         <div class="dropdown dropdown-end">

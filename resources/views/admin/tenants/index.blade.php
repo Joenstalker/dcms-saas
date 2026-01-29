@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Tenants')
+@section('page-title', 'Clinics')
 
 @section('content')
 <style>
@@ -43,42 +43,16 @@
     <!-- Header with Search and Add Button -->
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold">Tenants</h1>
-            <p class="text-sm text-base-content/70 mt-1">Manage all registered clinics</p>
+            <h1 class="text-4xl font-extrabold tracking-tight">Clinics</h1>
+            <p class="text-sm text-base-content/60 mt-2 font-medium">Platform-wide clinic management and oversight</p>
         </div>
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-            <!-- Search Bar -->
-            <form method="GET" action="{{ route('admin.tenants.index') }}" class="flex-1 lg:flex-initial">
-                <div class="form-control">
-                    <div class="input-group">
-                        <input 
-                            type="text" 
-                            name="search" 
-                            value="{{ request('search') }}" 
-                            placeholder="Search tenants..." 
-                            class="input input-bordered w-full lg:w-64 focus:outline-none focus:ring-2 focus:ring-primary"
-                        >
-                        <button type="submit" class="btn btn-square btn-primary">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
-                        @if(request('search'))
-                            <a href="{{ route('admin.tenants.index') }}" class="btn btn-square btn-ghost" title="Clear search">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </form>
-            <!-- Add New Tenant Button -->
-            <button type="button" onclick="createTenantModal.showModal()" class="btn btn-primary gap-2 whitespace-nowrap">
+        <div class="flex items-center gap-3">
+            <!-- Add New Clinic Button -->
+            <button type="button" onclick="createTenantModal.showModal()" class="btn btn-primary btn-md shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all gap-2 px-6">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Add New Tenant
+                <span class="font-bold">Add New Clinic</span>
             </button>
         </div>
     </div>
@@ -101,7 +75,7 @@
                 </thead>
                 <tbody>
                     @forelse($tenants as $tenant)
-                    <tr class="border-b border-base-200 hover:bg-base-50 transition-colors duration-150">
+                    <tr class="border-b border-base-200 hover:bg-base-200/50 transition-colors duration-150">
                         <td class="py-2 px-3">
                             <div class="flex items-center gap-2">
                                 <div class="avatar placeholder">
@@ -246,13 +220,13 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="text-xl font-bold text-base-content mb-2">No tenants found</p>
-                                    <p class="text-sm text-base-content/60 mb-6">Get started by creating your first tenant clinic</p>
+                                    <p class="text-xl font-bold text-base-content mb-2">No clinics found</p>
+                                    <p class="text-sm text-base-content/60 mb-6">Get started by creating your first dental clinic</p>
                                     <button type="button" onclick="createTenantModal.showModal()" class="btn btn-primary gap-2">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                         </svg>
-                                        Create First Tenant
+                                        Create First Clinic
                                     </button>
                                 </div>
                             </div>
@@ -286,7 +260,7 @@
         @elseif($tenants->total() > 0)
         <div class="p-4 border-t border-base-300 bg-base-50">
             <div class="text-sm text-base-content/70 text-center">
-                Showing all {{ $tenants->total() }} {{ $tenants->total() === 1 ? 'tenant' : 'tenants' }}
+                Showing all {{ $tenants->total() }} {{ $tenants->total() === 1 ? 'clinic' : 'clinics' }}
             </div>
         </div>
         @endif
@@ -296,179 +270,172 @@
 @foreach($tenants as $tenant)
 <!-- View Details Modal for {{ $tenant->id }} -->
 <dialog id="viewModal{{ $tenant->id }}" class="modal">
-    <div class="modal-box max-w-4xl">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        <h3 class="font-bold text-2xl mb-6">{{ $tenant->name }}</h3>
+    <div class="modal-box max-w-4xl bg-base-100 p-0 overflow-hidden">
+        <div class="bg-gradient-to-r from-primary to-secondary p-6 text-white relative">
+            <h3 class="font-bold text-3xl">{{ $tenant->name }}</h3>
+            <p class="text-white/80 mt-1 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                Clinic Details
+            </p>
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 hover:bg-white/20 text-white">✕</button>
+            </form>
+        </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Info -->
-            <div class="lg:col-span-2 space-y-6">
-                <div class="card bg-base-50 border border-base-300">
-                    <div class="card-body">
-                        <h4 class="font-bold text-lg mb-4">Clinic Information</h4>
-                        <div class="grid grid-cols-2 gap-4">
+        <div class="p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Main Info -->
+                <div class="lg:col-span-2 space-y-8">
+                    <section>
+                        <h4 class="text-lg font-bold flex items-center gap-2 mb-4 text-primary">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            General Information
+                        </h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-base-200/50 p-6 rounded-2xl">
                             <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Clinic Name</label>
-                                <p class="font-medium mt-1">{{ $tenant->name }}</p>
+                                <label class="text-[10px] uppercase font-bold text-base-content/40 tracking-wider">Clinic Name</label>
+                                <p class="font-semibold text-base-content mt-1">{{ $tenant->name }}</p>
                             </div>
                             <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Subdomain</label>
-                                <p class="font-medium mt-1"><span class="badge badge-outline">{{ $tenant->slug }}</span></p>
+                                <label class="text-[10px] uppercase font-bold text-base-content/40 tracking-wider">Subdomain</label>
+                                <p class="mt-1"><span class="badge badge-primary badge-outline font-mono">{{ $tenant->slug }}</span></p>
                             </div>
                             <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Email</label>
-                                <p class="font-medium mt-1">{{ $tenant->email }}</p>
+                                <label class="text-[10px] uppercase font-bold text-base-content/40 tracking-wider">Email Address</label>
+                                <p class="font-semibold text-base-content mt-1">{{ $tenant->email }}</p>
                             </div>
                             <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Phone</label>
-                                <p class="font-medium mt-1">{{ $tenant->phone ?? 'N/A' }}</p>
-                            </div>
-                            <div class="col-span-2">
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Address</label>
-                                <p class="font-medium mt-1">{{ $tenant->address ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">City</label>
-                                <p class="font-medium mt-1">{{ $tenant->city ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">State</label>
-                                <p class="font-medium mt-1">{{ $tenant->state ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Zip Code</label>
-                                <p class="font-medium mt-1">{{ $tenant->zip_code ?? 'N/A' }}</p>
-                            </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Country</label>
-                                <p class="font-medium mt-1">{{ $tenant->country }}</p>
+                                <label class="text-[10px] uppercase font-bold text-base-content/40 tracking-wider">Phone Number</label>
+                                <p class="font-semibold text-base-content mt-1">{{ $tenant->phone ?? 'Not provided' }}</p>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
+                    </section>
 
-            <!-- Sidebar -->
-            <div class="space-y-4">
-                <!-- Status -->
-                <div class="card bg-base-50 border border-base-300">
-                    <div class="card-body">
-                        <h4 class="font-bold text-sm mb-3">Status</h4>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Active Status</label>
-                                <div class="mt-1">
+                    <section>
+                        <h4 class="text-lg font-bold flex items-center gap-2 mb-4 text-primary">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.922A2 2 0 0110.586 20.922L6.343 16.657M17.657 16.657A8 8 0 106.343 16.657M17.657 16.657L21 21M17.657 16.657L14.5 13.5M6.343 16.657L3 21M6.343 16.657L9.5 13.5z"></path></svg>
+                            Location Summary
+                        </h4>
+                        <div class="bg-base-200/50 p-6 rounded-2xl">
+                             <div class="flex items-start gap-4">
+                                <div class="bg-base-100 p-3 rounded-xl shadow-sm">
+                                    <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-base-content leading-relaxed">
+                                        {{ $tenant->address ?? 'No address provided' }}<br>
+                                        {{ $tenant->city }}{{ $tenant->state ? ', ' . $tenant->state : '' }} {{ $tenant->zip_code }}<br>
+                                        <span class="text-base-content/60">{{ $tenant->country }}</span>
+                                    </p>
+                                </div>
+                             </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Status Sidebar -->
+                <div class="space-y-6">
+                    <div class="card bg-primary/5 border border-primary/10 shadow-sm">
+                        <div class="card-body p-6">
+                            <h4 class="text-xs uppercase font-extrabold text-primary tracking-widest mb-4">Account Status</h4>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-base-content/60">System Access</span>
                                     @if($tenant->is_active)
-                                        <span class="badge badge-success">Active</span>
+                                        <span class="badge badge-success font-bold">ACTIVE</span>
                                     @else
-                                        <span class="badge badge-error">Inactive</span>
+                                        <span class="badge badge-error font-bold">INACTIVE</span>
                                     @endif
                                 </div>
-                            </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Email Verified</label>
-                                <div class="mt-1">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-base-content/60">Subscription</span>
+                                    @if($tenant->pricingPlan)
+                                        <span class="badge badge-primary font-bold">{{ $tenant->pricingPlan->name }}</span>
+                                    @else
+                                        <span class="badge badge-ghost">NONE</span>
+                                    @endif
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-base-content/60">Email</span>
                                     @if($tenant->isEmailVerified())
-                                        <span class="badge badge-success gap-1">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                                            </svg>
-                                            Verified
+                                        <span class="text-success text-xs font-bold flex items-center gap-1">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                            VERIFIED
                                         </span>
                                     @else
-                                        <span class="badge badge-warning">Not Verified</span>
+                                        <span class="text-warning text-xs font-bold">PENDING</span>
                                     @endif
                                 </div>
                             </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Plan</label>
-                                <div class="mt-1">
-                                    @if($tenant->pricingPlan)
-                                        <span class="badge badge-primary">{{ $tenant->pricingPlan->name }}</span>
-                                    @else
-                                        <span class="badge badge-warning">No Plan</span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div>
-                                <label class="text-xs text-base-content/60 uppercase tracking-wide">Created</label>
-                                <p class="text-sm mt-1">{{ $tenant->created_at->format('M d, Y') }}</p>
+                            <div class="divider my-2 opacity-10"></div>
+                            <div class="flex flex-col gap-1">
+                                <span class="text-[10px] uppercase font-bold text-base-content/40 tracking-wider">Member Since</span>
+                                <span class="font-bold text-base-content">{{ $tenant->created_at->format('F d, Y') }}</span>
                             </div>
                         </div>
                     </div>
+                    
+                    <button onclick="document.getElementById('editModal{{ $tenant->id }}').showModal(); document.getElementById('viewModal{{ $tenant->id }}').close();" class="btn btn-primary btn-block shadow-lg shadow-primary/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Edit Clinic Info
+                    </button>
                 </div>
             </div>
         </div>
-
-        <div class="modal-action">
-            <form method="dialog">
-                <button class="btn btn-ghost">Close</button>
-            </form>
-            <button onclick="document.getElementById('editModal{{ $tenant->id }}').showModal(); document.getElementById('viewModal{{ $tenant->id }}').close();" class="btn btn-primary gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                Edit Tenant
-            </button>
-        </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
+    <form method="dialog" class="modal-backdrop bg-base-200/40 backdrop-blur-sm">
         <button>close</button>
     </form>
 </dialog>
 
 <!-- Edit Modal for {{ $tenant->id }} -->
 <dialog id="editModal{{ $tenant->id }}" class="modal">
-    <div class="modal-box max-w-3xl">
+    <div class="modal-box max-w-3xl border-t-8 border-primary">
         <form method="dialog">
             <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
         </form>
-        <h3 class="font-bold text-2xl mb-6">Edit Tenant: {{ $tenant->name }}</h3>
+        <h3 class="font-extrabold text-2xl mb-8 flex items-center gap-3">
+            <div class="bg-primary/10 p-2 rounded-lg text-primary">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            </div>
+            Edit Clinic: {{ $tenant->name }}
+        </h3>
 
         <form action="{{ route('admin.tenants.update', $tenant) }}" method="POST" id="editForm{{ $tenant->id }}">
             @csrf
             @method('PUT')
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Basic Info -->
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Clinic Name *</span>
-                    </label>
-                    <input type="text" name="name" value="{{ $tenant->name }}" class="input input-bordered" required>
+                    <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Clinic Name *</span></label>
+                    <input type="text" name="name" value="{{ $tenant->name }}" class="input input-bordered focus:ring-2 focus:ring-primary/20" required>
                 </div>
 
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Slug (Subdomain) *</span>
-                    </label>
-                    <input type="text" name="slug" value="{{ $tenant->slug }}" class="input input-bordered" required>
+                    <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Subdomain *</span></label>
+                    <div class="input-group">
+                        <input type="text" name="slug" value="{{ $tenant->slug }}" class="input input-bordered w-full focus:ring-2 focus:ring-primary/20" required>
+                    </div>
                 </div>
 
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Email *</span>
-                    </label>
-                    <input type="email" name="email" value="{{ $tenant->email }}" class="input input-bordered" required>
+                    <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Primary Email *</span></label>
+                    <input type="email" name="email" value="{{ $tenant->email }}" class="input input-bordered focus:ring-2 focus:ring-primary/20" required>
                 </div>
 
                 <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Phone</span>
-                    </label>
-                    <input type="text" name="phone" value="{{ $tenant->phone }}" class="input input-bordered">
+                    <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Contact Phone</span></label>
+                    <input type="text" name="phone" value="{{ $tenant->phone }}" class="input input-bordered focus:ring-2 focus:ring-primary/20">
                 </div>
 
                 <div class="form-control md:col-span-2">
-                    <label class="label">
-                        <span class="label-text font-semibold">Pricing Plan *</span>
-                    </label>
-                    <select name="pricing_plan_id" class="select select-bordered" required>
+                    <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Subscription Plan *</span></label>
+                    <select name="pricing_plan_id" class="select select-bordered focus:ring-2 focus:ring-primary/20 font-medium" required>
                         @if(isset($pricingPlans))
                             @foreach($pricingPlans as $plan)
                                 <option value="{{ $plan->id }}" {{ $tenant->pricing_plan_id == $plan->id ? 'selected' : '' }}>
-                                    {{ $plan->name }} - ₱{{ number_format($plan->price, 2) }}/{{ $plan->billing_cycle }}
+                                    {{ $plan->name }} (₱{{ number_format($plan->price, 2) }}/{{ $plan->billing_cycle }})
                                 </option>
                             @endforeach
                         @endif
@@ -476,141 +443,89 @@
                 </div>
 
                 <div class="form-control md:col-span-2">
-                    <label class="label">
-                        <span class="label-text font-semibold">Address</span>
-                    </label>
-                    <textarea name="address" class="textarea textarea-bordered" rows="2">{{ $tenant->address }}</textarea>
+                    <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Street Address</span></label>
+                    <textarea name="address" class="textarea textarea-bordered focus:ring-2 focus:ring-primary/20" rows="2">{{ $tenant->address }}</textarea>
                 </div>
 
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">City</span>
-                    </label>
-                    <input type="text" name="city" value="{{ $tenant->city }}" class="input input-bordered">
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">State/Province</span>
-                    </label>
-                    <input type="text" name="state" value="{{ $tenant->state }}" class="input input-bordered">
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Zip Code</span>
-                    </label>
-                    <input type="text" name="zip_code" value="{{ $tenant->zip_code }}" class="input input-bordered">
-                </div>
-
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-semibold">Country</span>
-                    </label>
-                    <input type="text" name="country" value="{{ $tenant->country }}" class="input input-bordered">
+                <div class="grid grid-cols-2 gap-4 md:col-span-2">
+                    <div class="form-control">
+                        <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">City</span></label>
+                        <input type="text" name="city" value="{{ $tenant->city }}" class="input input-bordered focus:ring-2 focus:ring-primary/20">
+                    </div>
+                    <div class="form-control">
+                        <label class="label"><span class="label-text-alt font-bold uppercase text-base-content/50">Zip Code</span></label>
+                        <input type="text" name="zip_code" value="{{ $tenant->zip_code }}" class="input input-bordered focus:ring-2 focus:ring-primary/20">
+                    </div>
                 </div>
 
                 <div class="form-control md:col-span-2">
-                    <label class="label cursor-pointer justify-start gap-3">
-                        <input type="checkbox" name="is_active" value="1" class="toggle toggle-primary" {{ $tenant->is_active ? 'checked' : '' }}>
-                        <span class="label-text font-semibold">Active</span>
-                    </label>
+                     <div class="bg-base-200/50 p-4 rounded-xl border border-base-300">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" name="is_active" value="1" class="toggle toggle-success" {{ $tenant->is_active ? 'checked' : '' }}>
+                            <div>
+                                <span class="label-text font-bold block">Active Access</span>
+                                <span class="text-[10px] text-base-content/50 uppercase tracking-tight">Toggle system access for this clinic</span>
+                            </div>
+                        </label>
+                     </div>
                 </div>
             </div>
 
-            <div class="modal-action">
+            <div class="modal-action mt-10">
                 <form method="dialog">
-                    <button type="button" class="btn btn-ghost">Cancel</button>
+                    <button type="button" class="btn btn-ghost font-bold">Cancel</button>
                 </form>
-                <button type="submit" class="btn btn-primary gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Update Tenant
+                <button type="submit" class="btn btn-primary px-8 shadow-lg shadow-primary/20 font-bold">
+                    Save Changes
                 </button>
             </div>
         </form>
     </div>
-    <form method="dialog" class="modal-backdrop">
+    <form method="dialog" class="modal-backdrop bg-base-200/40 backdrop-blur-sm">
         <button>close</button>
     </form>
 </dialog>
 
 <!-- Delete Confirmation Modal for {{ $tenant->id }} -->
 <dialog id="deleteModal{{ $tenant->id }}" class="modal">
-    <div class="modal-box">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        <div class="flex items-center gap-4 mb-6">
-            <div class="flex-shrink-0">
-                <div class="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
+    <div class="modal-box max-w-md border-b-8 border-error">
+        <div class="flex flex-col items-center text-center p-4">
+            <div class="w-20 h-20 rounded-full bg-error/10 flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-error animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            
+            <h3 class="font-extrabold text-2xl mb-2">Delete Clinic?</h3>
+            <p class="text-base-content/60 text-sm mb-8 leading-relaxed">
+                You are about to permanently delete <span class="font-bold text-error break-all">"{{ $tenant->name }}"</span> and all its associated data.
+            </p>
+            
+            <div class="alert alert-error bg-error/5 border-error/20 p-4 mb-8 text-left">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-error mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-tight text-error">Critical Action</p>
+                        <p class="text-xs mt-0.5 text-error/80">This will erase all patients, staff, and transaction records. This action cannot be reversed.</p>
+                    </div>
                 </div>
             </div>
-            <div class="flex-1">
-                <h3 class="font-bold text-2xl mb-1">Delete Tenant Permanently?</h3>
-                <p class="text-base-content/70">This action cannot be undone.</p>
-            </div>
-        </div>
-        
-        <div class="bg-base-200 rounded-lg p-4 mb-6">
-            <p class="font-semibold mb-2 text-sm">Tenant: <span class="text-primary">{{ $tenant->name }}</span></p>
-            <p class="font-semibold mb-2 text-sm">The following will be permanently deleted:</p>
-            <ul class="space-y-1 text-sm text-base-content/70">
-                <li class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                    All users associated with this tenant
-                </li>
-                <li class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                    All patient records
-                </li>
-                <li class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                    All appointments
-                </li>
-                <li class="flex items-center gap-2">
-                    <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                    </svg>
-                    All other tenant data
-                </li>
-            </ul>
-        </div>
 
-        <div class="bg-error/5 border border-error/20 rounded-lg p-3 mb-6">
-            <p class="text-sm text-error font-medium flex items-center gap-2">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                </svg>
-                This action is permanent and cannot be reversed.
-            </p>
-        </div>
-
-        <form action="{{ route('admin.tenants.destroy', $tenant) }}" method="POST" id="deleteForm{{ $tenant->id }}">
-            @csrf
-            @method('DELETE')
-        </form>
-
-        <div class="modal-action">
-            <form method="dialog">
-                <button class="btn btn-ghost">Cancel</button>
+            <form action="{{ route('admin.tenants.destroy', $tenant) }}" method="POST" id="deleteForm{{ $tenant->id }}" class="w-full">
+                @csrf
+                @method('DELETE')
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="btn btn-error btn-block font-bold shadow-lg shadow-error/20 hover:scale-[1.02] transition-transform">
+                        Yes, Delete Permanently
+                    </button>
+                    <form method="dialog">
+                        <button type="button" onclick="document.getElementById('deleteModal{{ $tenant->id }}').close()" class="btn btn-ghost btn-block font-bold">
+                            No, Keep it
+                        </button>
+                    </form>
+                </div>
             </form>
-            <button onclick="document.getElementById('deleteForm{{ $tenant->id }}').submit();" class="btn btn-error">
-                Delete Permanently
-            </button>
         </div>
     </div>
-    <form method="dialog" class="modal-backdrop">
+    <form method="dialog" class="modal-backdrop bg-error/10 backdrop-blur-sm">
         <button>close</button>
     </form>
 </dialog>

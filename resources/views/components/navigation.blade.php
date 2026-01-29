@@ -40,7 +40,10 @@
             <li><a href="#">About</a></li>
         </ul>
     </div>
-    <div class="navbar-end">
+    <div class="navbar-end gap-2">
+        <!-- Theme Switcher -->
+        @include('admin.components.theme-switcher')
+
          @auth
             @if(!auth()->user()->is_system_admin)
                 <a href="{{ route('logout') }}" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>

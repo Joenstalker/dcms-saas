@@ -166,30 +166,33 @@ class TenantProvisioningService
             case 'owner':
                 // Owner has all permissions
                 $permissions = [
-                    'manage-patients', 'view-patients', 'create-patients', 'edit-patients', 'delete-patients',
-                    'manage-appointments', 'view-appointments', 'create-appointments', 'edit-appointments', 'delete-appointments',
-                    'manage-users', 'view-users', 'create-users', 'edit-users', 'delete-users',
-                    'manage-services', 'manage-medicines', 'manage-templates',
-                    'view-reports', 'manage-settings', 'manage-billing',
+                    'patients.view', 'patients.create', 'patients.edit', 'patients.delete', 'patients.dental-chart',
+                    'appointments.view', 'appointments.create', 'appointments.edit', 'appointments.delete', 'appointments.status',
+                    'users.view', 'users.create', 'users.edit', 'users.delete',
+                    'services.view', 'services.create', 'services.edit', 'services.delete',
+                    'finance.view', 'finance.expenses', 'finance.income', 'finance.billing',
+                    'settings.view', 'settings.update', 'settings.branding', 'settings.themes',
+                    'dashboard.view', 'dashboard.stats'
                 ];
                 break;
 
             case 'dentist':
                 // Dentist can manage patients and appointments
                 $permissions = [
-                    'manage-patients', 'view-patients', 'create-patients', 'edit-patients',
-                    'manage-appointments', 'view-appointments', 'create-appointments', 'edit-appointments',
-                    'view-services', 'view-medicines', 'view-templates',
-                    'view-reports',
+                    'patients.view', 'patients.create', 'patients.edit', 'patients.dental-chart',
+                    'appointments.view', 'appointments.create', 'appointments.edit', 'appointments.status',
+                    'services.view',
+                    'finance.view',
+                    'dashboard.view', 'dashboard.stats'
                 ];
                 break;
 
             case 'assistant':
                 // Assistant has limited access
                 $permissions = [
-                    'view-patients', 'create-patients', 'edit-patients',
-                    'view-appointments', 'create-appointments', 'edit-appointments',
-                    'view-services', 'view-medicines',
+                    'patients.view', 'patients.create',
+                    'appointments.view', 'appointments.create',
+                    'services.view',
                 ];
                 break;
         }

@@ -22,13 +22,16 @@ export default {
         themes: [
             {
                 dcms: {
-                    "primary": "#0ea5e9",
+                    "primary": "#3b82f6",
                     "secondary": "#10b981",
-                    "accent": "#f97316",
-                    "neutral": "#1f2937",
+                    "accent": "#6366f1",
+                    "neutral": "#1e293b",
                     "base-100": "#ffffff",
-                    "info": "#3b82f6",
-                    "success": "#10b981",
+                    "base-200": "#f8fafc",
+                    "base-300": "#f1f5f9",
+                    "base-content": "#1e293b",
+                    "info": "#0ea5e9",
+                    "success": "#22c55e",
                     "warning": "#f59e0b",
                     "error": "#ef4444",
                 },

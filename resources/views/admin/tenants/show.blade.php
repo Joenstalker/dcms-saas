@@ -6,8 +6,8 @@
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">{{ $tenant->name }}</h1>
     <div class="flex gap-2">
-        <a href="{{ route('admin.tenants.edit', $tenant) }}" class="btn btn-primary">Edit</a>
-        <form action="{{ route('admin.tenants.toggle-active', $tenant) }}" method="POST" class="inline">
+        <a href="{{ route('admin.clinics.edit', $tenant) }}" class="btn btn-primary">Edit</a>
+        <form action="{{ route('admin.clinics.toggle-active', $tenant) }}" method="POST" class="inline">
             @csrf
             <button type="submit" class="btn {{ $tenant->is_active ? 'btn-warning' : 'btn-success' }}">
                 {{ $tenant->is_active ? 'Deactivate' : 'Activate' }}
@@ -103,7 +103,7 @@
                                     </td>
                                     <td class="text-right">
                                         @if(!$user->is_system_admin)
-                                            <a href="{{ route('admin.tenants.impersonate', ['tenant' => $tenant->id, 'user' => $user->id]) }}" target="_blank" class="btn btn-xs btn-ghost gap-1" title="View Portal">
+                                            <a href="{{ route('admin.clinics.impersonate', ['clinic' => $tenant->id, 'user' => $user->id]) }}" target="_blank" class="btn btn-xs btn-ghost gap-1" title="View Portal">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -162,13 +162,13 @@
                         </div>
                         @if(!$tenant->isEmailVerified())
                             <div class="mt-2 space-y-1">
-                                <form action="{{ route('admin.tenants.mark-email-verified', $tenant) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.clinics.mark-email-verified', $tenant) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="btn btn-xs btn-success">
                                         Mark as Verified
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.tenants.resend-verification', $tenant) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.clinics.resend-verification', $tenant) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="btn btn-xs btn-outline">
                                         Resend Email
@@ -184,7 +184,7 @@
                             <p class="text-sm text-base-content/70">₱{{ number_format($tenant->pricingPlan->price, 2) }}/{{ $tenant->pricingPlan->billing_cycle }}</p>
                         @else
                             <p class="font-medium mt-1"><span class="badge badge-warning">No plan</span></p>
-                            <p class="text-sm text-base-content/70">Tenant has not selected a plan yet.</p>
+                            <p class="text-sm text-base-content/70">Clinic has not selected a plan yet.</p>
                         @endif
                     </div>
                     <div>
@@ -200,30 +200,31 @@
             <div class="card-body">
                 <h2 class="card-title">Quick Actions</h2>
                 <div class="mt-4 space-y-2">
-                    <a href="{{ route('admin.tenants.edit', $tenant) }}" class="btn btn-block btn-sm btn-ghost">Edit Tenant</a>
+                    <a href="{{ route('admin.clinics.edit', $tenant) }}" class="btn btn-block btn-sm btn-ghost">Edit Clinic</a>
                     
                     {{-- Find the owner user to impersonate --}}
                     @php
-                        $owner = $tenant->users->where('role', 'tenant')->first();
+                        $owner = $tenant->users->where('role', 'clinic')->first();
                     @endphp
                     @if($owner)
-                        <a href="{{ route('admin.tenants.impersonate', ['tenant' => $tenant->id, 'user' => $owner->id]) }}" target="_blank" class="btn btn-block btn-sm btn-primary">
+                        <a href="{{ route('admin.clinics.impersonate', ['clinic' => $tenant->id, 'user' => $owner->id]) }}" target="_blank" class="btn btn-block btn-sm btn-primary">
                             Login as Owner
                         </a>
                     @else
                         <button class="btn btn-block btn-sm btn-disabled">Owner Not Found</button>
                     @endif
 
+                    <a href="{{ route('admin.role-permission.index', ['tenant_id' => $tenant->id]) }}" class="btn btn-block btn-sm btn-ghost">Manage Roles & Permissions</a>
                     <button class="btn btn-block btn-sm btn-ghost">Manage Users</button>
                     @if(!$tenant->isEmailVerified())
                         <hr class="my-2">
-                        <form action="{{ route('admin.tenants.mark-email-verified', $tenant) }}" method="POST" class="inline w-full">
+                        <form action="{{ route('admin.clinics.mark-email-verified', $tenant) }}" method="POST" class="inline w-full">
                             @csrf
                             <button type="submit" class="btn btn-block btn-sm btn-success">
                                 Mark Email Verified
                             </button>
                         </form>
-                        <form action="{{ route('admin.tenants.resend-verification', $tenant) }}" method="POST" class="inline w-full">
+                        <form action="{{ route('admin.clinics.resend-verification', $tenant) }}" method="POST" class="inline w-full">
                             @csrf
                             <button type="submit" class="btn btn-block btn-sm btn-outline">
                                 Resend Verification Email
@@ -255,7 +256,7 @@
                 </div>
             </div>
             <div class="flex-1">
-                <h3 class="font-bold text-2xl mb-1">Delete Tenant Permanently?</h3>
+                <h3 class="font-bold text-2xl mb-1">Delete Clinic Permanently?</h3>
                 <p class="text-base-content/70">This action cannot be undone.</p>
             </div>
         </div>
@@ -267,7 +268,7 @@
                     <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                     </svg>
-                    All users associated with this tenant
+                    All users associated with this clinic
                 </li>
                 <li class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
@@ -285,7 +286,7 @@
                     <svg class="w-4 h-4 text-error" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                     </svg>
-                    All other tenant data
+                    All other clinic data
                 </li>
             </ul>
         </div>

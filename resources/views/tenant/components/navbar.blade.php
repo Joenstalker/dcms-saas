@@ -27,6 +27,9 @@
             </ul>
         </div>
 
+        <!-- Theme Switcher -->
+        @include('admin.components.theme-switcher', ['tenant' => $tenant])
+
         <!-- User Menu -->
         <div class="dropdown dropdown-end">
             <label tabindex="0" class="btn btn-ghost btn-circle avatar">

@@ -73,7 +73,8 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
         Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
         Route::post('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'update'])->name('settings.update');
         Route::put('/settings/profile-photo', [\App\Http\Controllers\Tenant\SettingsController::class, 'updateProfilePhoto'])->name('settings.profile-photo.update');
-        Route::put('/settings/password', [\App\Http\Controllers\Tenant\SettingsController::class, 'updatePassword'])->name('settings.password.update');
+        Route::get('/settings/theme-builder', [\App\Http\Controllers\Admin\ThemeController::class, 'builder'])->name('settings.theme-builder');
+        Route::post('/settings/theme', [\App\Http\Controllers\Admin\ThemeController::class, 'storeTenantTheme'])->name('settings.theme.store');
     });
 });
 
@@ -134,6 +135,18 @@ Route::group($centralGroupOptions, function () {
             Route::patch('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'update'])->name('profile.update');
             Route::patch('/profile/photo', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
             Route::put('/password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('password.update');
+
+            // Themes
+            Route::get('themes/builder', [\App\Http\Controllers\Admin\ThemeController::class, 'builder'])->name('themes.builder');
+            Route::resource('themes', \App\Http\Controllers\Admin\ThemeController::class);
+
+            // Roles & Permissions
+            Route::get('role-permission', [\App\Http\Controllers\Admin\RolePermissionController::class, 'index'])->name('role-permission.index');
+            Route::get('role-permission/create', [\App\Http\Controllers\Admin\RolePermissionController::class, 'create'])->name('role-permission.create');
+            Route::post('role-permission', [\App\Http\Controllers\Admin\RolePermissionController::class, 'store'])->name('role-permission.store');
+            Route::get('role-permission/{role}/edit', [\App\Http\Controllers\Admin\RolePermissionController::class, 'edit'])->name('role-permission.edit');
+            Route::put('role-permission/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'update'])->name('role-permission.update');
+            Route::delete('role-permission/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'destroy'])->name('role-permission.destroy');
         });
     });
 

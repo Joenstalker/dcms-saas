@@ -44,7 +44,7 @@
             </div>
 
             @if($tenant->subscription_status === 'trial' && $tenant->trial_ends_at)
-                <div class="mt-4 p-3 bg-white/10 rounded-lg backdrop-blur-sm border border-white/20 inline-flex flex-wrap items-center gap-4">
+                <div class="mt-4 p-3 bg-base-content/10 rounded-lg backdrop-blur-sm border border-base-content/20 inline-flex flex-wrap items-center gap-4">
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

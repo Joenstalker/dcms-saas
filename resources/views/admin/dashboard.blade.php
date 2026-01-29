@@ -25,9 +25,9 @@
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-base-content/70 mb-1">Total Tenants</p>
+                        <p class="text-sm font-medium text-base-content/70 mb-1">Total Clinics</p>
                         <p class="text-4xl font-bold text-primary">{{ $stats['total_tenants'] }}</p>
-                        <p class="text-xs text-base-content/60 mt-2">All registered clinics</p>
+                        <p class="text-xs text-base-content/60 mt-2">All registered dental clinics</p>
                     </div>
                     <div class="avatar placeholder">
                         <div class="bg-primary/20 text-primary rounded-full w-16">
@@ -45,9 +45,9 @@
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-base-content/70 mb-1">Active Tenants</p>
+                        <p class="text-sm font-medium text-base-content/70 mb-1">Active Clinics</p>
                         <p class="text-4xl font-bold text-success">{{ $stats['active_tenants'] }}</p>
-                        <p class="text-xs text-base-content/60 mt-2">Currently active</p>
+                        <p class="text-xs text-base-content/60 mt-2">Clinics with active subscription</p>
                     </div>
                     <div class="avatar placeholder">
                         <div class="bg-success/20 text-success rounded-full w-16">
@@ -67,7 +67,7 @@
                     <div>
                         <p class="text-sm font-medium text-base-content/70 mb-1">Total Users</p>
                         <p class="text-4xl font-bold text-info">{{ $stats['total_users'] }}</p>
-                        <p class="text-xs text-base-content/60 mt-2">Across all tenants</p>
+                        <p class="text-xs text-base-content/60 mt-2">Total dentists & assistants</p>
                     </div>
                     <div class="avatar placeholder">
                         <div class="bg-info/20 text-info rounded-full w-16">
@@ -123,13 +123,13 @@
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Recent Tenants - Takes 2 columns -->
-        <div class="lg:col-span-2 card bg-base-100 shadow-lg">
+        <!-- Recent Clinics - Takes 2 columns -->
+        <div class="lg:col-span-full card bg-base-100 shadow-lg">
             <div class="card-body">
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h2 class="card-title text-2xl">Recent Tenants</h2>
-                        <p class="text-sm text-base-content/70 mt-1">Latest registered clinics</p>
+                        <h2 class="card-title text-2xl">Recent Clinics</h2>
+                        <p class="text-sm text-base-content/70 mt-1">Latest registered dental clinics</p>
                     </div>
                     <a href="{{ route('admin.tenants.index') }}" class="btn btn-primary btn-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,14 +270,14 @@
 
         <!-- Sidebar Stats -->
         <div class="space-y-6">
-            <!-- Tenants by Plan -->
+            <!-- Clinics by Plan -->
             <div class="card bg-base-100 shadow-lg">
                 <div class="card-body">
                     <h2 class="card-title mb-4">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        Tenants by Plan
+                        Clinics by Plan
                     </h2>
                     <div class="space-y-3">
                         @forelse($tenantsByPlan as $item)
@@ -320,13 +320,13 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                             </svg>
-                            Create New Tenant
+                            Create New Clinic
                         </a>
                         <a href="{{ route('admin.tenants.index') }}" class="btn btn-outline btn-block justify-start gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
-                            Manage Tenants
+                            Manage Clinics
                         </a>
                         <button class="btn btn-ghost btn-block justify-start gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

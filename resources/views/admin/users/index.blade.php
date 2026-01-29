@@ -69,7 +69,7 @@
                     </thead>
                     <tbody>
                         @forelse($users as $user)
-                        <tr class="border-b border-base-200 hover:bg-base-50 transition-colors duration-150">
+                        <tr class="border-b border-base-200 hover:bg-base-200/50 transition-colors duration-150">
                             <td class="py-2 px-3">
                                 <div class="flex items-center gap-3">
                                     <div class="avatar placeholder">
