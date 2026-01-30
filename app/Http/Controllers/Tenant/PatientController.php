@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\Tenant;
-|use Illuminate\Http\Request;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PatientController extends Controller

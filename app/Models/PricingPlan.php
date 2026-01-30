@@ -26,6 +26,7 @@ class PricingPlan extends Model
         'is_popular',
         'badge_text',
         'badge_color',
+        'storage_limit_mb',
         'sort_order',
     ];
 
@@ -39,6 +40,7 @@ class PricingPlan extends Model
         'auto_delete_after_trial' => 'boolean',
         'max_users' => 'integer',
         'max_patients' => 'integer',
+        'storage_limit_mb' => 'integer',
         'sort_order' => 'integer',
     ];
 
@@ -95,5 +97,21 @@ class PricingPlan extends Model
             'yearly' => 'year',
             default => $this->billing_cycle,
         };
+    }
+
+    public function getFormattedStorage(): string
+    {
+        if (!$this->storage_limit_mb) {
+            return 'Unlimited Storage';
+        }
+
+        if ($this->storage_limit_mb >= 1024) {
+            $gb = $this->storage_limit_mb / 1024;
+            // Round to 1 decimal place unless it's a whole number
+            $formatted = $gb == (int)$gb ? (string)$gb : number_format($gb, 1);
+            return $formatted . ' GB Storage';
+        }
+
+        return $this->storage_limit_mb . ' MB Storage';
     }
 }

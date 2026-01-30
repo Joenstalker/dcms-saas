@@ -71,17 +71,25 @@ class SettingsController extends Controller
         $settings->dashboard_widgets = $validated['dashboard_widgets'] ?? [];
 
         if ($request->hasFile('logo')) {
+            $logoFile = $request->file('logo');
+            if (!$tenant->hasEnoughStorage($logoFile->getSize())) {
+                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan to upload more files.');
+            }
             if ($settings->logo_path) {
                 Storage::disk('public')->delete($settings->logo_path);
             }
-            $settings->logo_path = $request->file('logo')->store('tenant-branding', 'public');
+            $settings->logo_path = $logoFile->store('tenant-branding', 'public');
         }
 
         if ($request->hasFile('favicon')) {
+            $faviconFile = $request->file('favicon');
+            if (!$tenant->hasEnoughStorage($faviconFile->getSize())) {
+                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan to upload more files.');
+            }
             if ($settings->favicon_path) {
                 Storage::disk('public')->delete($settings->favicon_path);
             }
-            $settings->favicon_path = $request->file('favicon')->store('tenant-branding', 'public');
+            $settings->favicon_path = $faviconFile->store('tenant-branding', 'public');
         }
 
         $settings->save();
@@ -131,11 +139,16 @@ class SettingsController extends Controller
         ]);
 
         if ($request->hasFile('photo')) {
+            $photoFile = $request->file('photo');
+            if (!$tenant->hasEnoughStorage($photoFile->getSize())) {
+                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan to upload more files.');
+            }
+            
             if ($user->profile_photo_path) {
                 Storage::disk('public')->delete($user->profile_photo_path);
             }
 
-            $path = $request->file('photo')->store('profile-photos', 'public');
+            $path = $photoFile->store('profile-photos', 'public');
             $user->profile_photo_path = $path;
             $user->save();
         }

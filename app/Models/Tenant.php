@@ -149,6 +149,49 @@ class Tenant extends Model
 
         return null;
     }
+
+    /**
+     * Calculate current storage usage in bytes.
+     */
+    public function getStorageUsageBytes(): int
+    {
+        $total = 0;
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        // Check logo and favicon in settings
+        if ($this->customization) {
+            if ($this->customization->logo_path && $disk->exists($this->customization->logo_path)) {
+                $total += $disk->size($this->customization->logo_path);
+            }
+            if ($this->customization->favicon_path && $disk->exists($this->customization->favicon_path)) {
+                $total += $disk->size($this->customization->favicon_path);
+            }
+        }
+
+        // Check user icons/profile photos
+        foreach ($this->users as $user) {
+            if ($user->profile_photo_path && $disk->exists($user->profile_photo_path)) {
+                $total += $disk->size($user->profile_photo_path);
+            }
+        }
+
+        return $total;
+    }
+
+    /**
+     * Check if tenant has enough storage for an additional file.
+     */
+    public function hasEnoughStorage(int $incomingBytes): bool
+    {
+        $plan = $this->pricingPlan;
+        if (!$plan || !$plan->storage_limit_mb) {
+            return true; // Unlimited if no plan or no limit set
+        }
+
+        $limitBytes = $plan->storage_limit_mb * 1024 * 1024;
+        return ($this->getStorageUsageBytes() + $incomingBytes) <= $limitBytes;
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';

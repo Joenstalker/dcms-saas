@@ -158,6 +158,18 @@
                                 </label>
                             @enderror
                         </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text font-semibold">Storage Limit (MB)</span>
+                            </label>
+                            <input type="number" name="storage_limit_mb" value="{{ old('storage_limit_mb', $pricingPlan->storage_limit_mb ?? '') }}" class="input input-bordered @error('storage_limit_mb') input-error @enderror" min="1" placeholder="e.g., 1024 for 1GB (Leave empty for unlimited)">
+                            @error('storage_limit_mb')
+                                <label class="label">
+                                    <span class="label-text-alt text-error">{{ $message }}</span>
+                                </label>
+                            @enderror
+                        </div>
                     </div>
                 </div>
 
