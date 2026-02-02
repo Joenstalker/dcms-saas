@@ -83,18 +83,11 @@
 </style>
 
 <!-- Expanded Features Section -->
-<div id="features" class="py-24 bg-base-200/50 relative overflow-hidden">
-    <!-- Background Decor -->
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full opacity-5 pointer-events-none">
-        <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <defs>
-                <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" stroke-width="0.5"/>
-                </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-        </svg>
-    </div>
+<div id="features" class="py-24 bg-base-100 relative overflow-hidden">
+    <!-- Premium Gradient Blobs -->
+    <div class="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 -left-20 w-80 h-80 bg-secondary/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[40rem] h-[40rem] bg-accent/5 rounded-full blur-[150px] pointer-events-none"></div>
 
     <div class="container mx-auto px-4 relative z-10">
         <div class="text-center max-w-4xl mx-auto mb-20 space-y-6">
@@ -221,67 +214,81 @@
     </div>
 </div>
 
-<div id="pricing" class="py-24 relative overflow-hidden bg-cover bg-fixed bg-center" style="background-image: url('<?php echo e(asset('images/landingpage-background.png')); ?>')">
-    <div class="absolute inset-0 bg-base-100/90 backdrop-blur-sm"></div>
-    <div class="container mx-auto px-4 relative z-10">
-        <div class="text-center mb-20 overflow-visible">
-            <h2 class="text-5xl font-black mb-6 tracking-tight">Simple, Transparent Pricing</h2>
-            <p class="text-xl text-base-content/70 italic">"No hidden costs. Choose the perfect plan for your clinic."</p>
+<div id="pricing" class="min-h-screen py-32 relative flex flex-col justify-center bg-white overflow-hidden">
+    <!-- Subtle Gradient Backgrounds -->
+    <div class="absolute top-0 left-0 w-[60rem] h-[60rem] bg-indigo-50/50 rounded-full blur-[140px] -ml-96 -mt-96 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-[50rem] h-[50rem] bg-emerald-50/50 rounded-full blur-[120px] -mr-64 -mb-64 pointer-events-none"></div>
+
+    <div class="container mx-auto px-6 relative z-10">
+        <div class="text-center mb-24">
+            <h2 class="text-3xl lg:text-5xl font-extrabold mb-4 tracking-tight text-gray-900">Choose the plan that's right for you</h2>
+            <p class="text-lg text-gray-500 max-w-xl mx-auto">Get the best experience for your practice with our flexible plans.</p>
         </div>
 
-        <div class="flex flex-wrap justify-center gap-6 max-w-[95rem] mx-auto items-stretch px-4">
+        <div class="flex flex-wrap justify-center gap-6 lg:gap-8 max-w-[95rem] mx-auto items-stretch">
             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $pricingPlans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
             <?php
                 $colors = ['primary', 'secondary', 'accent', 'info'];
                 $color = $colors[$index % count($colors)];
+                // Mapping colors to Tailwind specific for better control if needed, but keeping dynamic
             ?>
-            <div class="group relative flex flex-col pt-8 w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[220px] max-w-[320px]">
-                <!-- Floating Effect Background -->
-                <div class="absolute inset-0 bg-base-100 rounded-[2rem] shadow-lg group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 border-b-4 border-<?php echo e($color); ?> group-hover:-translate-y-2"></div>
-                
-                <div class="relative flex flex-col flex-1 p-6">
+            <div class="flex flex-col w-full sm:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] xl:w-[calc(25%-1.5rem)] max-w-[360px] min-w-[280px]">
+                <div class="group relative h-full bg-white rounded-[2rem] p-10 flex flex-col transition-all duration-500 border border-gray-100 hover:border-<?php echo e($color); ?>/40 shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] <?php echo e($plan->is_popular ? 'ring-2 ring-primary ring-opacity-10' : ''); ?>">
+                    
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->is_popular): ?>
-                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-full flex justify-center">
-                            <span class="badge badge-primary shadow-xl font-black italic tracking-widest px-4 py-3 h-auto scale-105">POPULAR</span>
+                        <div class="absolute -top-3 right-8 z-20">
+                            <span class="bg-primary text-white text-[10px] font-black tracking-widest px-4 py-1.5 rounded-full shadow-md uppercase">MOST POPULAR</span>
                         </div>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     
-                    <div class="mb-4">
-                        <h3 class="text-xl font-black italic <?php echo e($plan->is_popular ? 'text-primary' : 'text-'.$color); ?>"><?php echo e($plan->name); ?></h3>
-                        <div class="flex items-baseline gap-1 mt-2">
-                            <span class="text-3xl font-black tracking-tighter"><?php echo e($plan->getFormattedPrice()); ?></span>
-                            <span class="text-base-content/40 font-bold uppercase text-[10px]">/ <?php echo e($plan->getFormattedBillingCycle()); ?></span>
+                    <div class="mb-10">
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-6"><?php echo e($plan->name); ?></h3>
+                        
+                        <div class="flex items-baseline gap-1 mb-4">
+                            <span class="text-4xl lg:text-5xl font-black text-gray-900 tracking-tight"><?php echo e($plan->getFormattedPrice()); ?></span>
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->price > 0): ?>
+                                <span class="text-gray-400 font-semibold text-sm">/ <?php echo e($plan->getFormattedBillingCycle()); ?></span>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
+                        
+                        <p class="text-[15px] text-gray-500 font-medium leading-relaxed min-h-[45px]">
+                            <?php echo e($plan->description); ?>
+
+                        </p>
                     </div>
-                    
-                    <p class="text-sm text-base-content/60 mb-6 min-h-[40px] leading-relaxed italic line-clamp-2"><?php echo e($plan->description); ?></p>
 
-                    <div class="h-px w-full bg-base-content/5 mb-6"></div>
-
-                    <ul class="space-y-3 mb-8 flex-1">
+                    <div class="space-y-4 mb-12 flex-1">
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->storage_limit_mb): ?>
-                        <li class="flex items-start gap-3 group/item">
-                            <div class="w-5 h-5 shrink-0 rounded-full bg-<?php echo e($color); ?>/10 flex items-center justify-center text-<?php echo e($color); ?> group-hover/item:bg-<?php echo e($color); ?> group-hover/item:text-white transition-colors duration-300">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 flex-shrink-0">
+                                <svg class="w-5 h-5 text-<?php echo e($color); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                             </div>
-                            <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors"><?php echo e($plan->getFormattedStorage()); ?></span>
-                        </li>
+                            <span class="text-[15px] text-gray-600 font-medium"><?php echo e($plan->getFormattedStorage()); ?> storage</span>
+                        </div>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $plan->features; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <li class="flex items-start gap-3 group/item">
-                                <div class="w-5 h-5 shrink-0 rounded-full bg-<?php echo e($color); ?>/10 flex items-center justify-center text-<?php echo e($color); ?> group-hover/item:bg-<?php echo e($color); ?> group-hover/item:text-white transition-colors duration-300">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            <div class="flex items-start gap-4">
+                                <div class="mt-1 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-<?php echo e($color); ?>" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
                                 </div>
-                                <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors line-clamp-1"><?php echo e($feature); ?></span>
-                            </li>
+                                <span class="text-[15px] text-gray-600 font-medium leading-snug"><?php echo e($feature); ?></span>
+                            </div>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                    </ul>
+                    </div>
 
-                    <div class="mt-auto">
-                        <a href="<?php echo e(route('tenant.registration.index', ['plan' => $plan->id])); ?>" 
-                           class="btn btn-sm btn-block h-12 rounded-xl font-black italic shadow-md hover:shadow-<?php echo e($color); ?>/30 active:scale-95 transition-all <?php echo e($plan->is_popular ? 'btn-primary' : 'btn-outline border-2 hover:bg-'.$color.' hover:text-white hover:border-'.$color); ?>">
-                            Choose Plan
-                        </a>
+                    <div class="mt-auto pt-8">
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->price == 0): ?>
+                            <a href="<?php echo e(route('tenant.registration.index', ['plan' => $plan->id])); ?>" 
+                               class="btn btn-ghost btn-block h-14 rounded-2xl border-2 border-gray-100 font-bold hover:bg-gray-50 hover:border-gray-200 text-gray-700 transition-all active:scale-95">
+                                Get Started
+                            </a>
+                        <?php else: ?>
+                            <a href="<?php echo e(route('tenant.registration.index', ['plan' => $plan->id])); ?>" 
+                               class="btn btn-neutral btn-block h-14 rounded-2xl font-black italic shadow-lg hover:gradient-<?php echo e($color); ?> transition-all active:scale-95 hover:shadow-<?php echo e($color); ?>/20">
+                                Upgrade to <?php echo e($plan->name); ?>
+
+                            </a>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                 </div>
             </div>

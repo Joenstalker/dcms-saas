@@ -11,17 +11,16 @@ $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
  * 🏢 TENANT ROUTES (subdomain.dcmsapp.local)
  */
 Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function () {
-    // Tenant root - redirect to login
     Route::get('/', function (\App\Models\Tenant $tenant) {
-        return redirect()->route('tenant.login', ['tenant' => $tenant->slug]);
+        return redirect()->route('login');
     });
 
-    // Tenant login
-    Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
-    Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
+    // Tenant login (Handled by Fortify)
+    // Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
+    // Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
 
     // Tenant Authentication routes
-    Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+    // Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout'); (Handled by Fortify)
     Route::get('/impersonate/{user}', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'impersonate'])->name('impersonate')->middleware('signed');
 
     // Tenant Subscription & Payment (Authenticated)

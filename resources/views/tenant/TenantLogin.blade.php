@@ -67,7 +67,7 @@
             </div>
 
             <!-- Login Form -->
-            <form method="POST" action="{{ route('tenant.login.submit', ['tenant' => $tenant->slug]) }}" 
+            <form method="POST" action="{{ route('login') }}" 
                   class="space-y-4" 
                   onsubmit="const btn=document.getElementById('submit-btn'); const spinner=document.getElementById('spinner'); const text=document.getElementById('btn-text'); if(btn){btn.disabled=true;} if(spinner){spinner.classList.remove('hidden');} if(text){text.classList.add('hidden');}">
                 @csrf
@@ -133,7 +133,7 @@
 
             <!-- Recover Password Link -->
             <div class="mt-6 text-center">
-                <a href="#" class="text-[10px] text-gray-400 hover:text-sky-500 font-black transition-colors uppercase tracking-[0.2em] group">
+                <a href="{{ route('password.request') }}" class="text-[10px] text-gray-400 hover:text-sky-500 font-black transition-colors uppercase tracking-[0.2em] group">
                     Forgot Password? <span class="group-hover:translate-x-1 inline-block transition-transform ml-1">→</span>
                 </a>
             </div>
