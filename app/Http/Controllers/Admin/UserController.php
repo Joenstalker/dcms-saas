@@ -14,7 +14,8 @@ class UserController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = User::with(['tenant', 'roles']);
+        $isMongo = User::query()->getConnection()->getDriverName() === 'mongodb';
+        $query = User::with($isMongo ? ['tenant'] : ['tenant', 'roles']);
 
         // Search functionality
         if ($request->filled('search')) {
@@ -53,7 +54,8 @@ class UserController extends Controller
 
     public function show(User $user): View
     {
-        $user->load('tenant', 'roles');
+        $isMongo = $user->getConnection()->getDriverName() === 'mongodb';
+        $user->load($isMongo ? ['tenant'] : ['tenant', 'roles']);
         return view('admin.users.show', compact('user'));
     }
 

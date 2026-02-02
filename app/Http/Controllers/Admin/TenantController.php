@@ -43,6 +43,10 @@ class TenantController extends Controller
 
     public function store(Request $request, TenantProvisioningService $provisioningService): RedirectResponse
     {
+        if ($request->has('pricing_plan_id')) {
+            $request->merge(['pricing_plan_id' => (int) $request->pricing_plan_id]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:tenants,slug',
@@ -78,6 +82,10 @@ class TenantController extends Controller
 
     public function update(Request $request, Tenant $tenant): RedirectResponse
     {
+        if ($request->has('pricing_plan_id')) {
+            $request->merge(['pricing_plan_id' => (int) $request->pricing_plan_id]);
+        }
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:tenants,slug,'.$tenant->id,

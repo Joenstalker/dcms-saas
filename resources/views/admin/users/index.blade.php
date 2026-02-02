@@ -88,15 +88,18 @@
                                     <span class="badge badge-primary badge-sm">Super Admin</span>
                                 @else
                                     @php
-                                        // Try to get the role name safely
-                                        $roles = $user->roles; 
-                                        // If using Spatie roles, this collection should be available due to 'with' loading
+                                        // Try to get the role name safely for MongoDB compatibility
+                                        try {
+                                            $roles = DB::connection()->getDriverName() === 'mongodb' ? collect() : $user->roles;
+                                        } catch (\Throwable $e) {
+                                            $roles = collect();
+                                        }
                                     @endphp
                                     @foreach($roles as $role)
                                         <span class="badge badge-ghost badge-sm border-base-300">{{ ucfirst($role->name) }}</span>
                                     @endforeach
                                     @if($roles->isEmpty())
-                                        <span class="badge badge-ghost badge-sm">Tenant</span>
+                                        <span class="badge badge-ghost badge-sm">User</span>
                                     @endif
                                 @endif
                             </td>

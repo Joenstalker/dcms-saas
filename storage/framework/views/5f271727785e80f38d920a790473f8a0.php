@@ -7,13 +7,30 @@
     <!-- Header -->
     <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-bold">Roles & Permissions</h1>
-            <p class="text-sm text-base-content/70 mt-1">Manage system roles and their global permissions</p>
+            <h1 class="text-3xl font-bold">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($tenant)): ?>
+                    Roles: <span class="text-primary"><?php echo e($tenant->name); ?></span>
+                <?php else: ?>
+                    System Roles
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </h1>
+            <p class="text-sm text-base-content/70 mt-1">
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($tenant)): ?>
+                    Manage roles specifically for this clinic clinic
+                <?php else: ?>
+                    Manage global system roles and their permissions
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            </p>
         </div>
-        <a href="<?php echo e(route('admin.role-permission.create')); ?>" class="btn btn-primary gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Create Role
-        </a>
+        <div class="flex gap-2">
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(isset($tenant)): ?>
+                <a href="<?php echo e(route('admin.tenants.show', $tenant)); ?>" class="btn btn-ghost">Back to Clinic</a>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <a href="<?php echo e(route('admin.role-permission.create', isset($tenant) ? ['tenant_id' => $tenant->id] : [])); ?>" class="btn btn-primary gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Create Role
+            </a>
+        </div>
     </div>
 
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(session('success')): ?>

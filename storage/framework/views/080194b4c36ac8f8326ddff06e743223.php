@@ -1,15 +1,13 @@
 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if((auth()->check() && auth()->user()->is_system_admin) || (isset($tenant) && $tenant->pricingPlan && $tenant->pricingPlan->hasFeature('Customizable Themes'))): ?>
 <div class="dropdown dropdown-end">
-    <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+    <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
         </svg>
     </div>
-    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box shadow-2xl w-56 p-2 border border-base-300 mt-2 max-h-[70vh] overflow-y-auto block z-[100]">
-        <li class="menu-title px-4 py-2 text-xs font-bold uppercase tracking-widest text-base-content/50">Select Theme</li>
+    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box shadow-2xl w-56 p-2 border border-base-300 mt-2 max-h-[70vh] overflow-y-auto overflow-x-hidden z-50">
         <?php
             $standardThemes = [
-                'dcms' => 'Default (DCMS)',
                 'light' => 'Light',
                 'dark' => 'Dark',
                 'cupcake' => 'Cupcake',
@@ -52,41 +50,39 @@
                 })->get();
         ?>
 
-        <div class="grid grid-cols-1 gap-1">
-            <!-- Custom Themes -->
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($customThemes->count() > 0): ?>
-                <li class="menu-title px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">Custom Themes</li>
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $customThemes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ct): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <li>
-                        <button type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-base-200 transition-colors group" data-set-theme="custom-<?php echo e($ct->slug); ?>">
-                            <span class="text-sm font-semibold"><?php echo e($ct->name); ?></span>
-                            <div class="flex shrink-0 gap-0.5 bg-base-100 p-1 rounded-md border border-base-content/10 group-hover:border-base-content/20 bg-opacity-100 shadow-sm">
-                                <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['primary']); ?>"></div>
-                                <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['secondary']); ?>"></div>
-                                <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['accent']); ?>"></div>
-                                <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['neutral']); ?>"></div>
-                            </div>
-                        </button>
-                    </li>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-                <div class="divider my-1 opacity-20"></div>
-            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-
-            <!-- Standard Themes -->
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $standardThemes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+        <!-- Custom Themes -->
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($customThemes->count() > 0): ?>
+            <li class="menu-title px-4 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">Custom Themes</li>
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $customThemes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ct): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <li>
-                    <button type="button" class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-base-200 transition-colors group" data-set-theme="<?php echo e($value); ?>">
-                        <span class="text-sm font-semibold"><?php echo e($label); ?></span>
-                        <div class="flex shrink-0 gap-0.5 bg-base-100 p-1 rounded-md border border-base-content/10 group-hover:border-base-content/20 bg-opacity-100 shadow-sm" data-theme="<?php echo e($value); ?>">
-                            <div class="w-2 h-2 rounded-full bg-primary"></div>
-                            <div class="w-2 h-2 rounded-full bg-secondary"></div>
-                            <div class="w-2 h-2 rounded-full bg-accent"></div>
-                            <div class="w-2 h-2 rounded-full bg-neutral"></div>
+                    <button type="button" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-base-200 transition-colors group" data-set-theme="custom-<?php echo e($ct->slug); ?>">
+                        <span class="text-sm font-semibold"><?php echo e($ct->name); ?></span>
+                        <div class="flex shrink-0 gap-0.5 bg-base-100 p-1 rounded-md border border-base-content/10 group-hover:border-base-content/20 bg-opacity-100 shadow-sm">
+                            <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['primary']); ?>"></div>
+                            <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['secondary']); ?>"></div>
+                            <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['accent']); ?>"></div>
+                            <div class="w-2 h-2 rounded-full" style="background-color: <?php echo e($ct->colors['neutral']); ?>"></div>
                         </div>
                     </button>
                 </li>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
-        </div>
+            <div class="divider my-1 opacity-20"></div>
+        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+        <!-- Standard Themes -->
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $standardThemes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <li>
+                <button type="button" class="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-base-200 transition-colors group" data-set-theme="<?php echo e($value); ?>">
+                    <span class="text-sm font-semibold"><?php echo e($label); ?></span>
+                    <div class="flex shrink-0 gap-0.5 bg-base-100 p-1 rounded-md border border-base-content/10 group-hover:border-base-content/20 bg-opacity-100 shadow-sm" data-theme="<?php echo e($value); ?>">
+                        <div class="w-2 h-2 rounded-full bg-primary"></div>
+                        <div class="w-2 h-2 rounded-full bg-secondary"></div>
+                        <div class="w-2 h-2 rounded-full bg-accent"></div>
+                        <div class="w-2 h-2 rounded-full bg-neutral"></div>
+                    </div>
+                </button>
+            </li>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </ul>
 </div>
 

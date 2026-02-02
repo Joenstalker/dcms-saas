@@ -27,10 +27,17 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $tenantsByPlan = Tenant::select('pricing_plan_id', DB::raw('count(*) as count'))
-            ->with('pricingPlan')
+        $tenantsByPlan = Tenant::select('pricing_plan_id')
+            ->get()
             ->groupBy('pricing_plan_id')
-            ->get();
+            ->map(function ($items, $planId) {
+                return (object) [
+                    'pricing_plan_id' => $planId,
+                    'count' => $items->count(),
+                    'pricingPlan' => \App\Models\PricingPlan::find($planId),
+                ];
+            })
+            ->values();
 
         $recentPayments = \App\Models\Payment::with(['tenant', 'pricingPlan'])
             ->where('status', 'succeeded')

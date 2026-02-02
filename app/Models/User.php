@@ -10,10 +10,14 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\BelongsToTenant;
+use App\Traits\HybridCompatibility;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, BelongsToTenant;
+    use HasFactory, Notifiable, HasRoles, BelongsToTenant, HybridCompatibility;
+ 
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.

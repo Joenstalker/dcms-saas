@@ -89,15 +89,18 @@
                                     <span class="badge badge-primary badge-sm">Super Admin</span>
                                 <?php else: ?>
                                     <?php
-                                        // Try to get the role name safely
-                                        $roles = $user->roles; 
-                                        // If using Spatie roles, this collection should be available due to 'with' loading
+                                        // Try to get the role name safely for MongoDB compatibility
+                                        try {
+                                            $roles = DB::connection()->getDriverName() === 'mongodb' ? collect() : $user->roles;
+                                        } catch (\Throwable $e) {
+                                            $roles = collect();
+                                        }
                                     ?>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $roles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $role): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <span class="badge badge-ghost badge-sm border-base-300"><?php echo e(ucfirst($role->name)); ?></span>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($roles->isEmpty()): ?>
-                                        <span class="badge badge-ghost badge-sm">Tenant</span>
+                                        <span class="badge badge-ghost badge-sm">User</span>
                                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </td>

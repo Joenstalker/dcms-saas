@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('content'); ?>
 <div class="min-h-screen bg-gradient-to-br from-primary/5 via-base-100 to-secondary/5 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-2xl mx-auto">
@@ -295,8 +297,19 @@ document.getElementById('registration-form').addEventListener('submit', async (e
             formData.tenant_id = result.tenant_id;
             formData.email = result.email;
             
-            // Show submitted modal
-            document.getElementById('submitted-modal').showModal();
+            // Redirect immediately to the new clinic login
+            if (result.redirect_url) {
+                // Show a quick loading state
+                const btn = document.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading loading-spinner"></span> Creating your clinic...';
+                
+                setTimeout(() => {
+                    window.location.href = result.redirect_url;
+                }, 1500);
+            } else {
+                document.getElementById('submitted-modal').showModal();
+            }
         }
     } catch (error) {
         console.error('Registration error:', error);

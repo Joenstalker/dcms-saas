@@ -43,6 +43,7 @@ class PricingPlanController extends Controller
             'badge_text' => 'nullable|string|max:50',
             'badge_color' => 'nullable|string|max:50',
             'sort_order' => 'required|integer|min:0',
+            'storage_limit_mb' => 'nullable|integer|min:1',
         ]);
 
         // Auto-generate slug if not provided
@@ -58,7 +59,15 @@ class PricingPlanController extends Controller
         $validated['is_active'] = $request->has('is_active');
         $validated['is_popular'] = $request->has('is_popular');
 
-        PricingPlan::create($validated);
+        $plan = PricingPlan::create($validated);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pricing plan created successfully!',
+                'plan' => $plan,
+            ]);
+        }
 
         return redirect()->route('admin.pricing-plans.index')
             ->with('success', 'Pricing plan created successfully!');
@@ -94,6 +103,7 @@ class PricingPlanController extends Controller
             'badge_text' => 'nullable|string|max:50',
             'badge_color' => 'nullable|string|max:50',
             'sort_order' => 'required|integer|min:0',
+            'storage_limit_mb' => 'nullable|integer|min:1',
         ]);
 
         // Auto-generate slug if not provided
@@ -111,19 +121,34 @@ class PricingPlanController extends Controller
 
         $pricingPlan->update($validated);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pricing plan updated successfully!',
+                'plan' => $pricingPlan,
+            ]);
+        }
+
         return redirect()->route('admin.pricing-plans.index')
             ->with('success', 'Pricing plan updated successfully!');
     }
 
     public function destroy(PricingPlan $pricingPlan): RedirectResponse
     {
-        // Check if any tenants are using this plan
         if ($pricingPlan->tenants()->count() > 0) {
+            $msg = 'Cannot delete this plan. It is currently being used by '.$pricingPlan->tenants()->count().' tenant(s).';
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => $msg], 422);
+            }
             return redirect()->route('admin.pricing-plans.index')
-                ->with('error', 'Cannot delete this plan. It is currently being used by '.$pricingPlan->tenants()->count().' tenant(s).');
+                ->with('error', $msg);
         }
 
         $pricingPlan->delete();
+
+        if (request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'Pricing plan deleted successfully!']);
+        }
 
         return redirect()->route('admin.pricing-plans.index')
             ->with('success', 'Pricing plan deleted successfully!');
@@ -134,8 +159,18 @@ class PricingPlanController extends Controller
         $pricingPlan->update(['is_active' => ! $pricingPlan->is_active]);
 
         $status = $pricingPlan->is_active ? 'activated' : 'deactivated';
+        $msg = "Pricing plan {$status} successfully!";
+
+        if (request()->wantsJson()) {
+            return response()->json([
+                'success' => true, 
+                'message' => $msg,
+                'is_active' => $pricingPlan->is_active,
+                'status_label' => $pricingPlan->is_active ? 'Active' : 'Inactive'
+            ]);
+        }
 
         return redirect()->route('admin.pricing-plans.index')
-            ->with('success', "Pricing plan {$status} successfully!");
+            ->with('success', $msg);
     }
 }

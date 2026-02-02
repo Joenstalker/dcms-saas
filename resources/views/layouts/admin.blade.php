@@ -18,7 +18,7 @@
         })();
     </script>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/admin.css', 'resources/js/app.js'])
     @include('components.custom-theme-styles')
 </head>
 <body class="font-sans antialiased text-base-content">

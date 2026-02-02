@@ -27,7 +27,7 @@ class StoreRegistrationRequest extends FormRequest
                     $normalizedName = strtolower(trim($value));
 
                     // Check tenants table (case-insensitive, trimmed)
-                    $exists = \App\Models\Tenant::whereRaw('LOWER(TRIM(name)) = ?', [$normalizedName])->exists();
+                    $exists = \App\Models\Tenant::where('name', $normalizedName)->exists();
 
                     if ($exists) {
                         $fail('A clinic with this name already exists. Please choose a different name.');
@@ -45,7 +45,7 @@ class StoreRegistrationRequest extends FormRequest
                     $normalizedSubdomain = strtolower(trim($value));
 
                     // Check tenants table (case-insensitive)
-                    $exists = \App\Models\Tenant::whereRaw('LOWER(TRIM(slug)) = ?', [$normalizedSubdomain])->exists();
+                    $exists = \App\Models\Tenant::where('slug', $normalizedSubdomain)->exists();
 
                     if ($exists) {
                         $fail('This subdomain is already taken. Please choose another one.');
@@ -70,7 +70,7 @@ class StoreRegistrationRequest extends FormRequest
                     $normalizedName = strtolower(trim($value));
 
                     // Check users table (case-insensitive, trimmed)
-                    $exists = \App\Models\User::whereRaw('LOWER(TRIM(name)) = ?', [$normalizedName])->exists();
+                    $exists = \App\Models\User::where('name', $normalizedName)->exists();
 
                     if ($exists) {
                         $fail('This owner name is already registered. Please use a different name.');
@@ -85,10 +85,10 @@ class StoreRegistrationRequest extends FormRequest
                     $normalizedEmail = strtolower(trim($value));
 
                     // Check users table (case-insensitive)
-                    $existsInUsers = \App\Models\User::whereRaw('LOWER(TRIM(email)) = ?', [$normalizedEmail])->exists();
+                    $existsInUsers = \App\Models\User::where('email', $normalizedEmail)->exists();
 
                     // Check tenants table (case-insensitive)
-                    $existsInTenants = \App\Models\Tenant::whereRaw('LOWER(TRIM(email)) = ?', [$normalizedEmail])->exists();
+                    $existsInTenants = \App\Models\Tenant::where('email', $normalizedEmail)->exists();
 
                     if ($existsInUsers || $existsInTenants) {
                         $fail('This email address is already registered. Please use a different email or try logging in.');

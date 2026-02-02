@@ -297,8 +297,19 @@ document.getElementById('registration-form').addEventListener('submit', async (e
             formData.tenant_id = result.tenant_id;
             formData.email = result.email;
             
-            // Show submitted modal
-            document.getElementById('submitted-modal').showModal();
+            // Redirect immediately to the new clinic login
+            if (result.redirect_url) {
+                // Show a quick loading state
+                const btn = document.querySelector('button[type="submit"]');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="loading loading-spinner"></span> Creating your clinic...';
+                
+                setTimeout(() => {
+                    window.location.href = result.redirect_url;
+                }, 1500);
+            } else {
+                document.getElementById('submitted-modal').showModal();
+            }
         }
     } catch (error) {
         console.error('Registration error:', error);

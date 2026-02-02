@@ -1,3 +1,5 @@
+
+
 <?php $__env->startSection('page-title', 'Clinics'); ?>
 
 <?php $__env->startSection('content'); ?>

@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HybridCompatibility;
 
 class PlatformSetting extends Model
 {
+    use HybridCompatibility;
     protected $fillable = [
         'default_theme_primary',
         'default_theme_secondary',

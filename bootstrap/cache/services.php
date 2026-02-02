@@ -32,11 +32,13 @@
     28 => 'Laravel\\Sanctum\\SanctumServiceProvider',
     29 => 'Laravel\\Tinker\\TinkerServiceProvider',
     30 => 'Livewire\\LivewireServiceProvider',
-    31 => 'Carbon\\Laravel\\ServiceProvider',
-    32 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    33 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    34 => 'Spatie\\Permission\\PermissionServiceProvider',
-    35 => 'App\\Providers\\FortifyServiceProvider',
+    31 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
+    32 => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
+    33 => 'Carbon\\Laravel\\ServiceProvider',
+    34 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+    35 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    36 => 'Spatie\\Permission\\PermissionServiceProvider',
+    37 => 'App\\Providers\\FortifyServiceProvider',
   ),
   'eager' => 
   array (
@@ -56,11 +58,12 @@
     13 => 'Laravel\\Roster\\RosterServiceProvider',
     14 => 'Laravel\\Sanctum\\SanctumServiceProvider',
     15 => 'Livewire\\LivewireServiceProvider',
-    16 => 'Carbon\\Laravel\\ServiceProvider',
-    17 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    18 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    19 => 'Spatie\\Permission\\PermissionServiceProvider',
-    20 => 'App\\Providers\\FortifyServiceProvider',
+    16 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
+    17 => 'Carbon\\Laravel\\ServiceProvider',
+    18 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+    19 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    20 => 'Spatie\\Permission\\PermissionServiceProvider',
+    21 => 'App\\Providers\\FortifyServiceProvider',
   ),
   'deferred' => 
   array (
@@ -70,7 +73,7 @@
     'Illuminate\\Bus\\Dispatcher' => 'Illuminate\\Bus\\BusServiceProvider',
     'Illuminate\\Contracts\\Bus\\Dispatcher' => 'Illuminate\\Bus\\BusServiceProvider',
     'Illuminate\\Contracts\\Bus\\QueueingDispatcher' => 'Illuminate\\Bus\\BusServiceProvider',
-    'Illuminate\\Bus\\BatchRepository' => 'Illuminate\\Bus\\BusServiceProvider',
+    'Illuminate\\Bus\\BatchRepository' => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
     'Illuminate\\Bus\\DatabaseBatchRepository' => 'Illuminate\\Bus\\BusServiceProvider',
     'cache' => 'Illuminate\\Cache\\CacheServiceProvider',
     'cache.store' => 'Illuminate\\Cache\\CacheServiceProvider',
@@ -221,6 +224,7 @@
     'Laravel\\Sail\\Console\\InstallCommand' => 'Laravel\\Sail\\SailServiceProvider',
     'Laravel\\Sail\\Console\\PublishCommand' => 'Laravel\\Sail\\SailServiceProvider',
     'command.tinker' => 'Laravel\\Tinker\\TinkerServiceProvider',
+    'MongoDB\\Laravel\\Bus\\MongoBatchRepository' => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
   ),
   'when' => 
   array (
@@ -267,6 +271,9 @@
     array (
     ),
     'Laravel\\Tinker\\TinkerServiceProvider' => 
+    array (
+    ),
+    'MongoDB\\Laravel\\MongoDBBusServiceProvider' => 
     array (
     ),
   ),

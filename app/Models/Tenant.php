@@ -9,10 +9,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\HybridCompatibility;
 
 class Tenant extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HybridCompatibility;
+
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'name',

@@ -107,8 +107,7 @@ class RegistrationController extends Controller
             }
 
             // Check for similar clinic names (case-insensitive, trimmed)
-            $clinicNameExists = Tenant::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($request->clinic_name))])
-                ->exists();
+            $clinicNameExists = Tenant::where('name', trim($request->clinic_name))->exists();
 
             if ($clinicNameExists) {
                 $error = ['clinic_name' => 'A clinic with this name already exists. Please choose a different name.'];
@@ -119,8 +118,7 @@ class RegistrationController extends Controller
             }
 
             // Check for duplicate owner names (case-insensitive, trimmed)
-            $ownerNameExists = User::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($request->owner_name))])
-                ->exists();
+            $ownerNameExists = User::where('name', trim($request->owner_name))->exists();
 
             if ($ownerNameExists) {
                 $error = ['owner_name' => 'This owner name is already registered. Please use a different name.'];
@@ -149,7 +147,7 @@ class RegistrationController extends Controller
                 'address' => $request->address ? trim($request->address) : null,
                 'pricing_plan_id' => $request->pricing_plan_id,
                 'email_verification_token' => $verificationToken,
-                'is_active' => false, // Will be activated after email verification
+                'is_active' => true, // Activated immediately
             ]);
 
             // Create owner/admin user for the tenant
@@ -191,16 +189,24 @@ class RegistrationController extends Controller
 
             // If AJAX request, return JSON
             if ($request->wantsJson()) {
+                // Determine port if on local dev
+                $port = $request->getPort();
+                $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+                $loginUrl = "http://{$generatedDomain}{$portSuffix}/login";
+
                 return response()->json([
                     'success' => true,
-                    'message' => 'Registration submitted! Please verify your email.',
+                    'message' => 'Registration successful! Redirecting to your clinic...',
                     'email' => $normalizedEmail,
                     'tenant_id' => $tenant->id,
+                    'redirect_url' => $loginUrl,
                 ]);
             }
 
-            return redirect()->route('tenant.registration.success', $tenant)
-                ->with('success', 'Registration successful! Please check your email to verify your account.');
+            $port = $request->getPort();
+            $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+            return redirect()->away("http://{$generatedDomain}{$portSuffix}/login")
+                ->with('success', 'Registration successful! Welcome to your new clinic.');
 
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();

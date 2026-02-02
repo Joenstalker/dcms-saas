@@ -1,0 +1,5 @@
+@import 'croppie/croppie.css';
+@import "daisyui/themes";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

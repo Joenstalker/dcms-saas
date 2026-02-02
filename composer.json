@@ -17,6 +17,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10",
         "livewire/livewire": "^3.0",
+        "mongodb/laravel-mongodb": "*",
         "nesbot/carbon": "^3.0",
         "spatie/laravel-permission": "^6.0",
         "stripe/stripe-php": "^19.3"

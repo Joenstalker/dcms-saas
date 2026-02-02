@@ -24,7 +24,7 @@
 
         <!-- Notifications -->
         <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-circle relative">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm relative">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
@@ -50,7 +50,7 @@
                     <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover" id="admin-avatar-image">
                 </div>
             </div>
-            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow-xl bg-base-100 rounded-box w-56 border border-base-300">        
+            <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-50 p-2 shadow-xl bg-base-100 rounded-box w-56 border border-base-300">        
                 <li class="menu-title"><span>Admin User</span></li>
                 <li><button type="button" class="hover:bg-base-200 flex items-center gap-2 px-3 py-2 rounded-lg" id="admin-profile-photo-trigger">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,15 +67,15 @@
                 </a></li>
                 <li><hr class="my-2"></li>
                 <li>
-                    <form action="{{ route('admin.logout') }}" method="POST">
+                    <form id="admin-logout-form" action="{{ route('admin.logout') }}" method="POST" class="hidden">
                         @csrf
-                        <button type="submit" class="text-error hover:bg-error/10 w-full text-left flex items-center gap-2 px-4 py-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            Logout
-                        </button>
                     </form>
+                    <a href="javascript:void(0)" onclick="event.preventDefault(); document.getElementById('admin-logout-form').submit();" class="text-error hover:bg-error/10 w-full text-left flex items-center gap-2 px-4 py-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Logout
+                    </a>
                 </li>
             </ul>
         </div>

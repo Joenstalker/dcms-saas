@@ -8,24 +8,23 @@
         <h1 class="text-3xl font-bold">Pricing Plans</h1>
         <p class="text-sm text-base-content/70 mt-1">Manage subscription plans and pricing</p>
     </div>
-    <a href="{{ route('admin.pricing-plans.create') }}" class="btn btn-primary gap-2">
+    <button onclick="createModal.showModal()" class="btn btn-primary gap-2">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         Add New Plan
-    </a>
+    </button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 @if(session('success') || session('error'))
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const message = @json(session('success') ?? session('error'));
-            const icon = @json(session('success') ? 'success' : 'error');
             Swal.fire({
-                icon: icon,
-                title: icon === 'success' ? 'Success' : 'Error',
-                text: message,
+                icon: '{{ session('success') ? 'success' : 'error' }}',
+                title: '{{ session('success') ? 'Success' : 'Error' }}',
+                text: '{{ session('success') ?? session('error') }}',
                 confirmButtonText: 'OK',
                 customClass: {
                     popup: 'bg-base-100 text-base-content rounded-2xl shadow-2xl',
@@ -41,7 +40,7 @@
 
 <!-- Pricing Plans Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-    @forelse($pricingPlans as $plan)
+    @foreach($pricingPlans as $plan)
     <div class="card bg-base-100 shadow-xl {{ $plan->is_popular ? 'ring-2 ring-primary' : 'border border-base-300' }} relative overflow-hidden">
         @if($plan->is_popular)
             <div class="absolute top-3 right-3">
@@ -138,22 +137,22 @@
                     </svg>
                     Edit
                 </button>
-                <form action="{{ route('admin.pricing-plans.toggle-active', $plan) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="btn btn-sm {{ $plan->is_active ? 'btn-warning' : 'btn-success' }} btn-outline gap-1">
-                        @if($plan->is_active)
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                            </svg>
-                            Deactivate
-                        @else
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Activate
-                        @endif
-                    </button>
-                </form>
+                <button type="button" 
+                        onclick="togglePlanStatus('{{ $plan->id }}', '{{ route('admin.pricing-plans.toggle-active', $plan) }}')" 
+                        class="btn btn-sm {{ $plan->is_active ? 'btn-warning' : 'btn-success' }} btn-outline gap-1"
+                        id="toggle-btn-{{ $plan->id }}">
+                    @if($plan->is_active)
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        </svg>
+                        <span class="btn-text">Deactivate</span>
+                    @else
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="btn-text">Activate</span>
+                    @endif
+                </button>
                 @if($plan->tenants->count() == 0)
                     <button onclick="deleteModal{{ $plan->id }}.showModal()" class="btn btn-sm btn-error btn-outline gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,23 +168,19 @@
     <!-- Delete Modal -->
     <dialog id="deleteModal{{ $plan->id }}" class="modal">
         <div class="modal-box">
-            <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-            </form>
             <h3 class="font-bold text-lg mb-4">Delete Pricing Plan?</h3>
             <p class="mb-4">Are you sure you want to delete <strong>{{ $plan->name }}</strong> plan?</p>
             <p class="text-sm text-base-content/70 mb-6">This action cannot be undone.</p>
             
-            <form action="{{ route('admin.pricing-plans.destroy', $plan) }}" method="POST">
-                @csrf
-                @method('DELETE')
-                <div class="modal-action">
-                    <form method="dialog">
-                        <button type="button" class="btn btn-ghost">Cancel</button>
-                    </form>
-                    <button type="submit" class="btn btn-error">Delete</button>
-                </div>
-            </form>
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="deleteModal{{ $plan->id }}.close()">Cancel</button>
+                <button type="button" 
+                        onclick="deletePlan('{{ $plan->id }}', '{{ route('admin.pricing-plans.destroy', $plan) }}')" 
+                        class="btn btn-error"
+                        id="delete-confirm-btn-{{ $plan->id }}">
+                    Delete
+                </button>
+            </div>
         </div>
         <form method="dialog" class="modal-backdrop">
             <button>close</button>
@@ -286,6 +281,13 @@
                             </label>
                             <input type="number" name="max_patients" value="{{ $plan->max_patients }}" class="input input-bordered" min="1" placeholder="Unlimited">
                         </div>
+
+                        <div class="form-control md:col-span-2">
+                            <label class="label">
+                                <span class="label-text font-semibold">Storage Limit (MB)</span>
+                            </label>
+                            <input type="number" name="storage_limit_mb" value="{{ $plan->storage_limit_mb }}" class="input input-bordered" min="1" placeholder="e.g., 1024 for 1GB (Leave empty for unlimited)">
+                        </div>
                     </div>
                 </div>
 
@@ -364,10 +366,11 @@
                 </div>
 
                 <div class="modal-action">
-                    <form method="dialog">
-                        <button type="button" class="btn btn-ghost">Cancel</button>
-                    </form>
-                    <button type="submit" class="btn btn-primary gap-2">
+                    <button type="button" class="btn btn-ghost" onclick="editModal{{ $plan->id }}.close()">Cancel</button>
+                    <button type="button" 
+                            onclick="updatePlan('{{ $plan->id }}', '{{ route('admin.pricing-plans.update', $plan) }}')" 
+                            class="btn btn-primary gap-2"
+                            id="edit-submit-btn-{{ $plan->id }}">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
@@ -380,25 +383,452 @@
             <button>close</button>
         </form>
     </dialog>
-    @empty
-    <div class="col-span-full">
-        <div class="card bg-base-100 shadow">
-            <div class="card-body text-center py-12">
-                <svg class="w-16 h-16 mx-auto text-base-content/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <h3 class="text-xl font-bold mb-2">No pricing plans yet</h3>
-                <p class="text-base-content/70 mb-4">Get started by creating your first pricing plan.</p>
-                <a href="{{ route('admin.pricing-plans.create') }}" class="btn btn-primary">
-                    Create Pricing Plan
-                </a>
-            </div>
-        </div>
-    </div>
-    @endforelse
+    @endforeach
 </div>
 
+<!-- Create Modal -->
+<dialog id="createModal" class="modal">
+    <div class="modal-box max-w-4xl max-h-[90vh] overflow-y-auto">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10">✕</button>
+        </form>
+        <h3 class="font-bold text-2xl mb-6">Create New Pricing Plan</h3>
+
+        <form action="{{ route('admin.pricing-plans.store') }}" method="POST" id="createForm">
+            @csrf
+
+            <!-- Basic Information -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold mb-3">Basic Information</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control md:col-span-2">
+                        <label class="label">
+                            <span class="label-text font-semibold">Plan Name *</span>
+                        </label>
+                        <input type="text" name="name" class="input input-bordered" placeholder="e.g., Basic, Pro, Ultimate" required>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Slug</span>
+                        </label>
+                        <input type="text" name="slug" class="input input-bordered" placeholder="Auto-generated if empty">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Sort Order *</span>
+                        </label>
+                        <input type="number" name="sort_order" value="0" class="input input-bordered" min="0" required>
+                    </div>
+
+                    <div class="form-control md:col-span-2">
+                        <label class="label">
+                            <span class="label-text font-semibold">Description</span>
+                        </label>
+                        <textarea name="description" class="textarea textarea-bordered" rows="2" placeholder="Brief description of this plan"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold mb-3">Pricing & Billing</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Price (₱) *</span>
+                        </label>
+                        <input type="number" name="price" value="0" class="input input-bordered" min="0" step="0.01" required>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Billing Cycle *</span>
+                        </label>
+                        <select name="billing_cycle" class="select select-bordered" required>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="yearly">Yearly</option>
+                        </select>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Trial Days *</span>
+                        </label>
+                        <input type="number" name="trial_days" value="0" class="input input-bordered" min="0" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Limits -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold mb-3">Usage Limits</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Max Users</span>
+                        </label>
+                        <input type="number" name="max_users" class="input input-bordered" min="1" placeholder="Unlimited">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Max Patients</span>
+                        </label>
+                        <input type="number" name="max_patients" class="input input-bordered" min="1" placeholder="Unlimited">
+                    </div>
+
+                    <div class="form-control md:col-span-2">
+                        <label class="label">
+                            <span class="label-text font-semibold">Storage Limit (MB)</span>
+                        </label>
+                        <input type="number" name="storage_limit_mb" class="input input-bordered" min="1" placeholder="e.g., 1024 for 1GB (Leave empty for unlimited)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold mb-3">Features</h4>
+                <div id="create-features-container" class="space-y-2">
+                    <div class="feature-input flex gap-2">
+                        <input type="text" name="features[]" class="input input-bordered input-sm flex-1" placeholder="e.g., Patient Management">
+                        <button type="button" onclick="removeFeature(this)" class="btn btn-error btn-outline btn-sm btn-square">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="button" onclick="addFeatureToCreate()" class="btn btn-xs btn-ghost gap-1 mt-2">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Feature
+                </button>
+            </div>
+
+            <!-- Badge Settings -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold mb-3">Badge Settings</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Badge Text</span>
+                        </label>
+                        <input type="text" name="badge_text" class="input input-bordered input-sm">
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-semibold">Badge Color</span>
+                        </label>
+                        <select name="badge_color" class="select select-bordered select-sm">
+                            <option value="">Default</option>
+                            <option value="badge-secondary">Secondary</option>
+                            <option value="badge-accent">Accent</option>
+                            <option value="badge-success">Success</option>
+                            <option value="badge-warning">Warning</option>
+                            <option value="badge-error">Error</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="mb-6">
+                <h4 class="text-lg font-bold mb-3">Status</h4>
+                <div class="space-y-2">
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="checkbox" name="is_active" value="1" class="toggle toggle-primary toggle-sm" checked>
+                            <span class="label-text font-semibold">Active</span>
+                        </label>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label cursor-pointer justify-start gap-3">
+                            <input type="checkbox" name="is_popular" value="1" class="toggle toggle-primary toggle-sm">
+                            <span class="label-text font-semibold">Mark as Popular</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-action">
+                <button type="button" class="btn btn-ghost" onclick="createModal.close()">Cancel</button>
+                <button type="button" 
+                        onclick="createPlan()" 
+                        class="btn btn-primary gap-2"
+                        id="create-submit-btn">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create Plan
+                </button>
+            </div>
+        </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+    </form>
+</dialog>
+
 <script>
+async function togglePlanStatus(planId, url) {
+    const btn = document.getElementById('toggle-btn-' + planId);
+    const btnText = btn.querySelector('.btn-text');
+    const originalContent = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Updating...';
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // Update button UI
+            if (result.is_active) {
+                btn.className = 'btn btn-sm btn-warning btn-outline gap-1';
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg> <span class="btn-text">Deactivate</span>`;
+            } else {
+                btn.className = 'btn btn-sm btn-success btn-outline gap-1';
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> <span class="btn-text">Activate</span>`;
+            }
+
+            // Update status badge (need to find it in the DOM)
+            const card = btn.closest('.card');
+            const badge = card.querySelector('.stat-value .badge');
+            if (badge) {
+                badge.className = result.is_active ? 'badge badge-success badge-sm' : 'badge badge-ghost badge-sm';
+                badge.textContent = result.status_label;
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: result.message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        btn.innerHTML = originalContent;
+        Swal.fire({
+            icon: 'error',
+            title: 'Action Failed',
+            text: error.message || 'Something went wrong. Please try again.'
+        });
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function deletePlan(planId, url) {
+    const btn = document.getElementById('delete-confirm-btn-' + planId);
+    const originalContent = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Deleting...';
+
+    try {
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('deleteModal' + planId).close();
+            // Remove the card from UI
+            const card = btn.closest('.card');
+            if (card) {
+                card.classList.add('scale-75', 'opacity-0', 'transition-all', 'duration-500');
+                setTimeout(() => card.remove(), 500);
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: result.message,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+
+            // If no cards left, reload or show empty state
+            setTimeout(() => {
+                if (document.querySelectorAll('.card.bg-base-100').length === 0) {
+                    window.location.reload();
+                }
+            }, 600);
+        } else {
+            throw new Error(result.message);
+        }
+    } catch (error) {
+        btn.innerHTML = originalContent;
+        Swal.fire({
+            icon: 'error',
+            title: 'Delete Failed',
+            text: error.message || 'Something went wrong.'
+        });
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function updatePlan(planId, url) {
+    const form = document.getElementById('editForm' + planId);
+    const btn = document.getElementById('edit-submit-btn-' + planId);
+    const originalContent = btn.innerHTML;
+    const formData = new FormData(form);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Saving...';
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST', // Spoofed as PUT via _method in FormData
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('editModal' + planId).close();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Updated!',
+                text: result.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.reload(); // Reload to reflect complex changes (price, features, etc.)
+            });
+        } else {
+            if (result.errors) {
+                const errors = Object.values(result.errors).flat().join('<br>');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: errors
+                });
+            } else {
+                throw new Error(result.message);
+            }
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: error.message || 'Something went wrong.'
+        });
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    }
+}
+
+async function createPlan() {
+    const form = document.getElementById('createForm');
+    const btn = document.getElementById('create-submit-btn');
+    const originalContent = btn.innerHTML;
+    const formData = new FormData(form);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Creating...';
+
+    try {
+        const response = await fetch("{{ route('admin.pricing-plans.store') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('createModal').close();
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Created!',
+                text: result.message,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            if (result.errors) {
+                const errors = Object.values(result.errors).flat().join('<br>');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Validation Error',
+                    html: errors
+                });
+            } else {
+                throw new Error(result.message);
+            }
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Creation Failed',
+            text: error.message || 'Something went wrong.'
+        });
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    }
+}
+
+function addFeatureToCreate() {
+    const container = document.getElementById('create-features-container');
+    const div = document.createElement('div');
+    div.className = 'feature-input flex gap-2';
+    div.innerHTML = `
+        <input type="text" name="features[]" class="input input-bordered input-sm flex-1" placeholder="e.g., Patient Management">
+        <button type="button" onclick="removeFeature(this)" class="btn btn-error btn-outline btn-sm btn-square">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
 function addFeature(planId) {
     const container = document.getElementById('features-container-' + planId);
     const div = document.createElement('div');
