@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HybridCompatibility;
+use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 class Tenant extends Model
 {
-    use SoftDeletes, HybridCompatibility;
+    use SoftDeletes;
 
     public $incrementing = false;
     protected $keyType = 'string';

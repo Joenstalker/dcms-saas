@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Traits\HybridCompatibility;
 
 class PricingPlan extends Model
 {
-    use HybridCompatibility;
+    use HasFactory;
 
     public $incrementing = false;
     protected $keyType = 'string';
@@ -32,12 +32,13 @@ class PricingPlan extends Model
         'badge_text',
         'badge_color',
         'storage_limit_mb',
+        'stripe_price_id',
         'sort_order',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'features' => 'array',
+        // 'features' => 'array', // Removed for MongoDB compatibility
         'is_active' => 'boolean',
         'is_popular' => 'boolean',
         'trial_days' => 'integer',

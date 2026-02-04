@@ -59,222 +59,192 @@ class RegistrationController extends Controller
     public function store(StoreRegistrationRequest $request)
     {
         try {
-            // Normalize and validate all unique fields before proceeding (race condition protection)
-            $normalizedEmail = strtolower(trim($request->email));
-            $normalizedSubdomain = strtolower(trim($request->subdomain));
-            $normalizedPhone = $this->normalizePhone($request->phone);
-
-            // Double-check email uniqueness
-            $emailExists = User::where('email', $normalizedEmail)->exists()
-                || Tenant::where('email', $normalizedEmail)->exists();
-
-            if ($emailExists) {
-                $error = ['email' => 'This email address is already registered. Please use a different email or try logging in.'];
-                if ($request->wantsJson()) {
-                    return response()->json(['success' => false, 'errors' => $error], 422);
-                }
-                return redirect()->back()->withInput()->withErrors($error);
+            // Normalize inputs defensively
+            $normalizedSubdomain = strtolower(trim((string) $request->input('desired_subdomain')));
+            $normalizedEmail = strtolower(trim((string) $request->input('email')));
+            $phoneNumber = (string) $request->input('phone_number');
+            $normalizedPhone = $phoneNumber ? preg_replace('/[\s\-\(\)]/', '', $phoneNumber) : null;
+            
+            $pricingPlanId = $request->input('pricing_plan_id');
+            $selectedPlan = null;
+            
+            if ($pricingPlanId) {
+                $selectedPlan = \App\Models\PricingPlan::find($pricingPlanId);
             }
 
-            // Double-check subdomain uniqueness
-            $subdomainExists = Tenant::where('slug', $normalizedSubdomain)->exists();
+            // Database Transaction
+            // DB::beginTransaction();
 
-            if ($subdomainExists) {
-                $error = ['subdomain' => 'This subdomain is already taken. Please choose another one.'];
-                if ($request->wantsJson()) {
-                    return response()->json(['success' => false, 'errors' => $error], 422);
-                }
-                return redirect()->back()->withInput()->withErrors($error);
-            }
-
-            // Double-check phone uniqueness (if provided)
-            if ($normalizedPhone) {
-                // Check for normalized phone in existing records
-                $phoneExists = Tenant::whereNotNull('phone')
-                    ->get()
-                    ->filter(function ($tenant) use ($normalizedPhone) {
-                        return $this->normalizePhone($tenant->phone) === $normalizedPhone;
-                    })
-                    ->isNotEmpty();
-
-                if ($phoneExists) {
-                    $error = ['phone' => 'This phone number is already registered. Please use a different phone number.'];
-                    if ($request->wantsJson()) {
-                        return response()->json(['success' => false, 'errors' => $error], 422);
-                    }
-                    return redirect()->back()->withInput()->withErrors($error);
-                }
-            }
-
-            // Check for similar clinic names (case-insensitive, trimmed)
-            $clinicNameExists = Tenant::where('name', trim($request->clinic_name))->exists();
-
-            if ($clinicNameExists) {
-                $error = ['clinic_name' => 'A clinic with this name already exists. Please choose a different name.'];
-                if ($request->wantsJson()) {
-                    return response()->json(['success' => false, 'errors' => $error], 422);
-                }
-                return redirect()->back()->withInput()->withErrors($error);
-            }
-
-            // Check for duplicate owner names (case-insensitive, trimmed)
-            $ownerNameExists = User::where('name', trim($request->owner_name))->exists();
-
-            if ($ownerNameExists) {
-                $error = ['owner_name' => 'This owner name is already registered. Please use a different name.'];
-                if ($request->wantsJson()) {
-                    return response()->json(['success' => false, 'errors' => $error], 422);
-                }
-                return redirect()->back()->withInput()->withErrors($error);
-            }
-
-            DB::beginTransaction();
-
-            // Generate verification token
-            $verificationToken = Str::random(64);
-
-            // Create tenant (not active until email verified)
-            // Auto-generate domain from subdomain for local development
             $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
             $generatedDomain = "{$normalizedSubdomain}.{$baseDomain}";
             
+            // Determine initial status based on plan selection
+            $isActive = $selectedPlan ? false : true; // Inactive if paid plan selected (until payment)
+            $planStatus = $selectedPlan ? 'pending_payment' : 'trial';
+
             $tenant = Tenant::create([
-                'name' => trim($request->clinic_name),
+                'name' => trim((string) $request->input('clinic_name')),
                 'slug' => $normalizedSubdomain,
-                'domain' => $generatedDomain, // Auto-generated domain
+                'domain' => $generatedDomain,
                 'email' => $normalizedEmail,
-                'phone' => $normalizedPhone,
-                'address' => $request->address ? trim($request->address) : null,
-                'pricing_plan_id' => $request->pricing_plan_id,
-                'email_verification_token' => $verificationToken,
-                'is_active' => true, // Activated immediately
+                'phone' => trim((string) $request->input('phone_number', '')),
+                'address' => $request->input('address') ? trim((string) $request->input('address')) : null,
+                'city' => trim((string) $request->input('city')),
+                'state' => trim((string) $request->input('state_province')),
+                'pricing_plan_id' => $pricingPlanId ?: ($this->getDefaultPricingPlanId()),
+                'email_verification_token' => Str::random(64),
+                'email_verified_at' => $isActive ? now() : null, // Auto-verify only for free trials
+                'is_active' => $isActive,
+                'subscription_status' => $planStatus,
             ]);
 
-            // Create owner/admin user for the tenant
             $user = User::create([
-                'name' => trim($request->owner_name),
+                'name' => trim((string) $request->input('full_name')),
                 'email' => $normalizedEmail,
-                'password' => Hash::make($request->password),
+                'password' => $request->input('password'), // Model cast handles hashing
                 'tenant_id' => $tenant->id,
                 'role' => User::ROLE_TENANT,
                 'is_system_admin' => false,
-                'must_reset_password' => true,
-                'email_verified_at' => now(), // Auto-verify email - no verification required
+                'must_reset_password' => false,
+                'email_verified_at' => $isActive ? now() : null,
             ]);
 
-            DB::commit();
+            $user->assignRole('owner');
 
-            // Auto-add to hosts file for local development (non-blocking)
+            // DB::commit();
+
+            // Auto-add to hosts file (always try)
             try {
                 $this->addTenantToHostsFile($normalizedSubdomain);
-            } catch (\Exception $hostException) {
-                Log::warning('Failed to auto-add tenant to hosts file', [
-                    'tenant_id' => $tenant->id,
-                    'subdomain' => $normalizedSubdomain,
-                    'error' => $hostException->getMessage(),
-                ]);
+            } catch (\Exception $e) {
+                Log::warning('Failed to add to hosts file: ' . $e->getMessage());
             }
 
-            // Send verification email (non-blocking - don't fail registration if email fails)
-            try {
-                $user->notify(new TenantVerificationNotification($tenant, $verificationToken));
-            } catch (\Exception $emailException) {
-                Log::warning('Failed to send verification email', [
-                    'tenant_id' => $tenant->id,
-                    'user_id' => $user->id,
-                    'error' => $emailException->getMessage(),
-                ]);
-                // Continue even if email fails - user can request resend later
+            // Handle Stripe Payment for Paid Plans
+            if ($selectedPlan && $selectedPlan->price > 0 && $selectedPlan->stripe_price_id) {
+                try {
+                    \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+                    $checkoutSession = \Stripe\Checkout\Session::create([
+                        'payment_method_types' => ['card'],
+                        'line_items' => [[
+                            'price' => $selectedPlan->stripe_price_id,
+                            'quantity' => 1,
+                        ]],
+                        'mode' => 'subscription',
+                        'success_url' => route('tenant.registration.payment-success') . '?session_id={CHECKOUT_SESSION_ID}&tenant_id=' . $tenant->id,
+                        'cancel_url' => route('home'), // Or back to registration
+                        'customer_email' => $normalizedEmail,
+                        'metadata' => [
+                            'tenant_id' => $tenant->id,
+                            'plan_id' => $selectedPlan->id,
+                        ],
+                    ]);
+
+                    return response()->json([
+                        'success' => true,
+                        'payment_required' => true,
+                        'message' => 'Processing your payment...',
+                        'redirect_url' => $checkoutSession->url,
+                        'stripe_session_id' => $checkoutSession->id
+                    ], 200);
+
+                } catch (\Exception $e) {
+                    Log::error('Stripe Checkout Error: ' . $e->getMessage());
+                    // Fallback or specific error handling
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Payment initialization failed. Please try again.'
+                    ], 500);
+                }
             }
 
-            // If AJAX request, return JSON
-            if ($request->wantsJson()) {
-                // Determine port if on local dev
+            // Direct Registration (Free/Trial)
+            auth()->login($user);
+
+            if ($request->ajax() || $request->wantsJson()) {
                 $port = $request->getPort();
                 $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-                $loginUrl = "http://{$generatedDomain}{$portSuffix}/login";
-
+                
                 return response()->json([
                     'success' => true,
-                    'message' => 'Registration successful! Redirecting to your clinic...',
-                    'email' => $normalizedEmail,
-                    'tenant_id' => $tenant->id,
-                    'redirect_url' => $loginUrl,
-                ]);
+                    'message' => 'Welcome to DCMS 🎉 Your clinic has been created successfully! Redirecting you now...',
+                    'subdomain' => $normalizedSubdomain,
+                    'redirect_url' => "http://{$generatedDomain}{$portSuffix}"
+                ], 201);
             }
 
             $port = $request->getPort();
             $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-            return redirect()->away("http://{$generatedDomain}{$portSuffix}/login")
-                ->with('success', 'Registration successful! Welcome to your new clinic.');
-
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
-
-            // Handle database constraint violations
-            if ($e->getCode() === '23000') {
-                $errorMessage = 'A record with this information already exists.';
-                $fieldError = null;
-
-                if (str_contains($e->getMessage(), 'email')) {
-                    $fieldError = ['email' => 'This email address is already registered. Please use a different email or try logging in.'];
-                } elseif (str_contains($e->getMessage(), 'slug')) {
-                    $fieldError = ['subdomain' => 'This subdomain is already taken. Please choose another one.'];
-                } elseif (str_contains($e->getMessage(), 'phone')) {
-                    $fieldError = ['phone' => 'This phone number is already registered. Please use a different phone number.'];
-                } elseif (str_contains($e->getMessage(), 'name')) {
-                    $fieldError = ['clinic_name' => 'A clinic with this name already exists. Please choose a different name.'];
-                } else {
-                    $fieldError = ['error' => $errorMessage];
-                }
-
-                // If AJAX, return JSON error
-                if ($request->wantsJson()) {
-                    return response()->json(['success' => false, 'errors' => $fieldError], 422);
-                }
-
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors($fieldError);
-            }
-
-            // Log the error for debugging
-            Log::error('Tenant registration failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['password', 'password_confirmation']),
-            ]);
-
-            $errorMsg = ['error' => 'Registration failed. Please try again or contact support if the problem persists.'];
-            
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'errors' => $errorMsg], 422);
-            }
-
-            return redirect()->back()
-                ->withInput()
-                ->withErrors($errorMsg);
+            return redirect()->away("http://{$generatedDomain}{$portSuffix}");
 
         } catch (\Exception $e) {
-            DB::rollBack();
+            // DB::rollBack();
+            Log::error('Registration failed: ' . $e->getMessage());
 
-            // Log the error for debugging
-            Log::error('Tenant registration failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->except(['password', 'password_confirmation']),
-            ]);
-
-            $errorMsg = ['error' => 'Registration failed. Please try again or contact support if the problem persists.'];
-            
-            if ($request->wantsJson()) {
-                return response()->json(['success' => false, 'errors' => $errorMsg], 422);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Oops! Something went wrong. We couldn’t create your clinic right now. Please try again in a moment.'
+                ], 500);
             }
 
-            return redirect()->back()
-                ->withInput()
-                ->withErrors($errorMsg);
+            return back()->with('error', 'Registration failed. Please try again.')->withInput();
         }
+    }
+
+    public function handlePaymentSuccess(Request $request)
+    {
+        $tenantId = $request->query('tenant_id');
+        $sessionId = $request->query('session_id');
+
+        if (!$tenantId || !$sessionId) {
+            abort(404);
+        }
+
+        $tenant = Tenant::findOrFail($tenantId);
+        
+        // Verify session with Stripe (good practice)
+        try {
+            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+            $session = \Stripe\Checkout\Session::retrieve($sessionId);
+
+            if ($session->payment_status !== 'paid') {
+                return redirect()->route('home')->with('error', 'Payment not completed.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Stripe Verification Error: ' . $e->getMessage());
+            return redirect()->route('home')->with('error', 'Payment verification failed.');
+        }
+
+        // Activate Tenant
+        $tenant->update([
+            'is_active' => true,
+            'subscription_status' => 'active',
+            'email_verified_at' => now(), // Assume verification via payment email
+        ]);
+
+        // Activate User
+        $user = User::where('tenant_id', $tenant->id)->first();
+        if ($user) {
+            $user->update(['email_verified_at' => now()]);
+            auth()->login($user);
+        }
+
+        // Redirect to subdomain
+        $port = $request->getPort();
+        $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+        return redirect()->away("http://{$tenant->domain}{$portSuffix}");
+    }
+
+
+    /**
+     * Get default pricing plan ID
+     */
+    private function getDefaultPricingPlanId()
+    {
+        return \App\Models\PricingPlan::where('price', 0)->first()?->id 
+            ?: \App\Models\PricingPlan::where('is_active', true)->orderBy('sort_order')->first()?->id;
     }
 
     /**

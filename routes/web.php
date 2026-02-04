@@ -156,6 +156,7 @@ Route::group($centralGroupOptions, function () {
         Route::get('/check-subdomain', [\App\Http\Controllers\Tenant\RegistrationController::class, 'checkSubdomain'])->name('check-subdomain');
         Route::post('/verify-email', [\App\Http\Controllers\Tenant\RegistrationController::class, 'verifyEmail'])->name('verify-email');
         Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\RegistrationController::class, 'success'])->name('success');
+        Route::get('/payment-success', [\App\Http\Controllers\Tenant\RegistrationController::class, 'handlePaymentSuccess'])->name('payment-success');
     });
 
     // Tenant Email Verification (accessible from central domain for activation)

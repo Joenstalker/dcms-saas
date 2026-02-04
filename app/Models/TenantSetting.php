@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\HybridCompatibility;
 
 class TenantSetting extends Model
 {
-    use HybridCompatibility;
+    use HasFactory;
     protected $fillable = [
         'tenant_id',
         'theme_color_primary',

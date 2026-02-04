@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use MongoDB\Laravel\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\BelongsToTenant;
-use App\Traits\HybridCompatibility;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, BelongsToTenant, HybridCompatibility;
+    use HasFactory, Notifiable, HasRoles, BelongsToTenant;
  
     public $incrementing = false;
     protected $keyType = 'string';

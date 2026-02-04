@@ -22,33 +22,27 @@ class StoreRegistrationRequest extends FormRequest
                 'string',
                 'max:255',
                 'min:3',
-                'regex:/^[a-zA-Z0-9\s\-\'\.&]+$/u', // Allow letters, numbers, spaces, hyphens, apostrophes, periods, and ampersands
+                'regex:/^[a-zA-Z0-9\s\-\'\.&]+$/u',
                 function ($attribute, $value, $fail) {
                     $normalizedName = strtolower(trim($value));
-
-                    // Check tenants table (case-insensitive, trimmed)
                     $exists = \App\Models\Tenant::where('name', $normalizedName)->exists();
-
                     if ($exists) {
                         $fail('A clinic with this name already exists. Please choose a different name.');
                     }
                 },
             ],
-            'subdomain' => [
+            'desired_subdomain' => [
                 'required',
                 'string',
                 'max:255',
                 'min:3',
                 'alpha_dash',
-                'regex:/^[a-z0-9\-_]+$/', // Only lowercase, numbers, hyphens, underscores
+                'regex:/^[a-z0-9\-]+$/', // Only lowercase, numbers, hyphens per requirement
                 function ($attribute, $value, $fail) {
                     $normalizedSubdomain = strtolower(trim($value));
-
-                    // Check tenants table (case-insensitive)
                     $exists = \App\Models\Tenant::where('slug', $normalizedSubdomain)->exists();
-
                     if ($exists) {
-                        $fail('This subdomain is already taken. Please choose another one.');
+                        $fail('That clinic URL is already taken. Try a different one 💡');
                     }
                 },
             ],
@@ -58,20 +52,27 @@ class StoreRegistrationRequest extends FormRequest
                 'max:500',
                 'min:5',
             ],
+            'city' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+            'state_province' => [
+                'required',
+                'string',
+                'max:100',
+            ],
 
             // Owner Information
-            'owner_name' => [
+            'full_name' => [
                 'required',
                 'string',
                 'max:255',
                 'min:2',
-                'regex:/^[a-zA-Z\s\-\'\.]+$/u', // Allow letters, spaces, hyphens, apostrophes, periods
+                'regex:/^[a-zA-Z\s\-\'\.]+$/u',
                 function ($attribute, $value, $fail) {
                     $normalizedName = strtolower(trim($value));
-
-                    // Check users table (case-insensitive, trimmed)
                     $exists = \App\Models\User::where('name', $normalizedName)->exists();
-
                     if ($exists) {
                         $fail('This owner name is already registered. Please use a different name.');
                     }
@@ -79,42 +80,30 @@ class StoreRegistrationRequest extends FormRequest
             ],
             'email' => [
                 'required',
-                config('app.env') === 'local' ? 'email' : 'email:rfc,dns', // DNS check only in production
+                config('app.env') === 'local' ? 'email' : 'email:rfc,dns',
                 'max:255',
                 function ($attribute, $value, $fail) {
                     $normalizedEmail = strtolower(trim($value));
-
-                    // Check users table (case-insensitive)
                     $existsInUsers = \App\Models\User::where('email', $normalizedEmail)->exists();
-
-                    // Check tenants table (case-insensitive)
                     $existsInTenants = \App\Models\Tenant::where('email', $normalizedEmail)->exists();
-
                     if ($existsInUsers || $existsInTenants) {
-                        $fail('This email address is already registered. Please use a different email or try logging in.');
+                        $fail('This email is already registered. Try logging in instead.');
                     }
                 },
             ],
-            'phone' => [
+            'phone_number' => [
                 'nullable',
                 'string',
                 'max:20',
                 'min:10',
-                'regex:/^[\+]?[0-9\s\-\(\)]+$/', // Allow numbers, spaces, hyphens, parentheses, and optional +
+                'regex:/^[\+]?[0-9\s\-\(\)]+$/',
                 function ($attribute, $value, $fail) {
-                    if (empty($value)) {
-                        return; // Skip validation if phone is empty
-                    }
-
-                    // Normalize phone number
+                    if (empty($value)) return;
                     $normalizedPhone = preg_replace('/[\s\-\(\)]/', '', $value);
-
-                    // Check tenants table with normalized phone numbers
                     $exists = \App\Models\Tenant::whereNotNull('phone')
                         ->get()
                         ->filter(function ($tenant) use ($normalizedPhone) {
                             $tenantPhone = preg_replace('/[\s\-\(\)]/', '', $tenant->phone ?? '');
-
                             return $tenantPhone === $normalizedPhone;
                         })
                         ->isNotEmpty();
@@ -132,66 +121,35 @@ class StoreRegistrationRequest extends FormRequest
                 'min:8',
                 'max:255',
                 'confirmed',
-                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/', // At least one lowercase, one uppercase, one number
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/',
             ],
 
             // Terms
-            'terms' => 'required|accepted',
+            'terms_accepted' => 'required|accepted',
             
             // Pricing Plan
-            'pricing_plan_id' => 'required|exists:pricing_plans,id',
+            // Pricing Plan
+            'pricing_plan_id' => [
+                'nullable',
+                \Illuminate\Validation\Rule::requiredIf($this->has('pricing_plan_id')),
+                'exists:pricing_plans,id'
+            ],
         ];
     }
 
     public function messages(): array
     {
         return [
-            // Clinic Name
             'clinic_name.required' => 'Clinic name is required.',
             'clinic_name.min' => 'Clinic name must be at least 3 characters.',
-            'clinic_name.max' => 'Clinic name cannot exceed 255 characters.',
-            'clinic_name.regex' => 'Clinic name contains invalid characters. Only letters, numbers, spaces, hyphens, apostrophes, periods, and ampersands are allowed.',
-
-            // Subdomain
-            'subdomain.required' => 'Subdomain is required.',
-            'subdomain.min' => 'Subdomain must be at least 3 characters.',
-            'subdomain.max' => 'Subdomain cannot exceed 255 characters.',
-            'subdomain.alpha_dash' => 'Subdomain can only contain letters, numbers, dashes, and underscores.',
-            'subdomain.unique' => 'This subdomain is already taken. Please choose another one.',
-            'subdomain.regex' => 'Subdomain must be lowercase and can only contain letters, numbers, hyphens, and underscores.',
-
-            // Address
-            'address.min' => 'Address must be at least 5 characters if provided.',
-            'address.max' => 'Address cannot exceed 500 characters.',
-
-            // Owner Name
-            'owner_name.required' => 'Owner name is required.',
-            'owner_name.min' => 'Owner name must be at least 2 characters.',
-            'owner_name.max' => 'Owner name cannot exceed 255 characters.',
-            'owner_name.regex' => 'Owner name contains invalid characters. Only letters, spaces, hyphens, apostrophes, and periods are allowed.',
-
-            // Email
+            'clinic_name.regex' => 'Clinic name contains invalid characters.',
+            'desired_subdomain.required' => 'Clinic URL is required.',
+            'desired_subdomain.regex' => 'Clinic URL must be lowercase and can only contain letters, numbers, and hyphens.',
+            'full_name.required' => 'Owner name is required.',
             'email.required' => 'Email address is required.',
-            'email.email' => 'Please provide a valid email address.',
-            'email.max' => 'Email address cannot exceed 255 characters.',
-            'email.unique' => 'This email address is already registered. Please use a different email or try logging in.',
-
-            // Phone
-            'phone.min' => 'Phone number must be at least 10 characters.',
-            'phone.max' => 'Phone number cannot exceed 20 characters.',
-            'phone.regex' => 'Phone number contains invalid characters. Only numbers, spaces, hyphens, parentheses, and optional + are allowed.',
-            'phone.unique' => 'This phone number is already registered. Please use a different phone number.',
-
-            // Password
-            'password.required' => 'Password is required.',
-            'password.min' => 'Password must be at least 8 characters.',
-            'password.max' => 'Password cannot exceed 255 characters.',
-            'password.confirmed' => 'Password confirmation does not match.',
+            'password.confirmed' => 'Your passwords don’t match. Let’s fix that 😊',
             'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
-
-            // Terms
-            'terms.required' => 'You must accept the terms and conditions.',
-            'terms.accepted' => 'You must accept the terms and conditions.',
+            'terms_accepted.accepted' => 'You must accept the terms and conditions.',
         ];
     }
 
@@ -199,14 +157,15 @@ class StoreRegistrationRequest extends FormRequest
     {
         return [
             'clinic_name' => 'clinic name',
-            'subdomain' => 'subdomain',
+            'desired_subdomain' => 'clinic URL',
             'address' => 'address',
-            'owner_name' => 'owner name',
+            'full_name' => 'full name',
             'email' => 'email address',
-            'phone' => 'phone number',
+            'phone_number' => 'phone number',
             'password' => 'password',
             'password_confirmation' => 'password confirmation',
-            'terms' => 'terms and conditions',
+            'terms_accepted' => 'terms and conditions',
+            'state_province' => 'state/province',
         ];
     }
 }

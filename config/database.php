@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('MONGODB_URL') ? 'mongodb' : env('DB_CONNECTION', 'mysql'),
+    'default' => 'mongodb',
 
     /*
     |--------------------------------------------------------------------------

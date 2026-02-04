@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use App\Traits\HybridCompatibility;
+use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PlatformSetting extends Model
 {
-    use HybridCompatibility;
+    use HasFactory;
     protected $fillable = [
         'default_theme_primary',
         'default_theme_secondary',

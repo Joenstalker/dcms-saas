@@ -12,6 +12,13 @@
         <!-- Registration Form -->
         <div class="card bg-base-100 shadow-2xl">
             <div class="card-body p-6 sm:p-8">
+                <div id="global-error" class="alert alert-error mb-6 hidden">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="global-error-message"></span>
+                </div>
+
                 @if($errors->any() && !$errors->has('error'))
                     <div class="alert alert-error mb-6">
                         <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
@@ -30,7 +37,7 @@
 
                 <form id="registration-form" class="space-y-6">
                     @csrf
-                    <input type="hidden" name="pricing_plan_id" value="{{ request('plan') }}">
+                    <input type="hidden" name="pricing_plan_id" value="{{ request('plan', \App\Models\PricingPlan::where('is_active', true)->orderBy('sort_order')->first()?->id) }}">
 
                     <!-- Clinic Information Section -->
                     <div>
@@ -50,15 +57,14 @@
                             <label class="label">
                                 <span class="label-text font-semibold">Desired Subdomain *</span>
                             </label>
-                            <div class="input-group">
-                                <input type="text" name="subdomain" id="subdomain" value="{{ old('subdomain') }}" 
-                                    class="input input-bordered flex-1" 
+                            <div class="join w-full">
+                                <input type="text" name="desired_subdomain" id="subdomain" value="{{ old('desired_subdomain') }}" 
+                                    class="input input-bordered join-item flex-1" 
                                     placeholder="smiledental" required>
-                                <span class="bg-base-200 px-4 flex items-center">.dcmsapp.local</span>
+                                <span class="join-item bg-base-200 px-4 flex items-center border border-base-300">.dcmsapp.local</span>
                             </div>
-                            <label class="label">
+                            <label class="label pb-0">
                                 <span class="label-text-alt">This will be your clinic's unique URL</span>
-                                <span id="subdomain-status" class="label-text-alt"></span>
                             </label>
                             <span class="error-text text-error text-sm mt-1"></span>
                         </div>
@@ -78,14 +84,14 @@
                                 <label class="label">
                                     <span class="label-text font-semibold">State/Province *</span>
                                 </label>
-                                <input type="text" name="state" value="{{ old('state') }}" 
+                                <input type="text" name="state_province" value="{{ old('state_province') }}" 
                                     class="input input-bordered" 
                                     placeholder="State" required>
                                 <span class="error-text text-error text-sm mt-1"></span>
                             </div>
                         </div>
 
-                        <div class="form-control mb-6">
+                        <div class="form-control mb-4">
                             <label class="label">
                                 <span class="label-text font-semibold">Address</span>
                             </label>
@@ -99,7 +105,7 @@
                             <label class="label">
                                 <span class="label-text font-semibold">Phone Number</span>
                             </label>
-                            <input type="tel" name="phone" value="{{ old('phone') }}" 
+                            <input type="tel" name="phone_number" value="{{ old('phone_number') }}" 
                                 class="input input-bordered" 
                                 placeholder="(123) 456-7890">
                             <span class="error-text text-error text-sm mt-1"></span>
@@ -108,13 +114,13 @@
 
                     <!-- Owner Information Section -->
                     <div>
-                        <h2 class="text-2xl font-bold mb-6 text-primary">Owner Information</h2>
+                        <h2 class="text-2xl font-bold mb-6 text-primary border-t pt-8">Owner Information</h2>
 
                         <div class="form-control mb-4">
                             <label class="label">
                                 <span class="label-text font-semibold">Full Name *</span>
                             </label>
-                            <input type="text" name="owner_name" value="{{ old('owner_name') }}" 
+                            <input type="text" name="full_name" value="{{ old('full_name') }}" 
                                 class="input input-bordered" 
                                 placeholder="Your full name" required>
                             <span class="error-text text-error text-sm mt-1"></span>
@@ -153,9 +159,18 @@
                         </div>
                     </div>
 
+                    <!-- Terms & Conditions -->
+                    <div class="form-control mb-6">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input type="checkbox" name="terms_accepted" value="1" class="checkbox checkbox-primary" required>
+                            <span class="label-text font-semibold">I agree to the <a href="#" class="link link-primary">Terms of Service</a> and <a href="#" class="link link-primary">Privacy Policy</a></span>
+                        </label>
+                        <span class="error-text text-error text-sm mt-1"></span>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="form-control">
-                        <button type="submit" class="btn btn-primary btn-lg w-full">
+                        <button type="submit" id="submit-btn" class="btn btn-primary btn-lg w-full">
                             Register Clinic
                         </button>
                     </div>
@@ -169,99 +184,40 @@
     </div>
 </div>
 
-<!-- Modal: Registration Submitted -->
-<dialog id="submitted-modal" class="modal">
-    <div class="modal-box w-full max-w-md">
-        <div class="flex justify-center mb-4">
-            <div class="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-success" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                </svg>
-            </div>
-        </div>
-        <h3 class="font-bold text-lg text-center mb-2">Your Registration Has Been Submitted</h3>
-        <p class="text-center text-base-content/70 mb-6">
-            We've sent a verification code to your email. Please check your inbox to continue.
-        </p>
-        <div class="modal-action justify-center">
-            <button class="btn btn-primary w-full" onclick="nextToVerify()">Next</button>
-        </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
-</dialog>
-
-<!-- Modal: Email Verification -->
-<dialog id="verify-email-modal" class="modal">
-    <div class="modal-box w-full max-w-md">
-        <h3 class="font-bold text-lg mb-4">Verify Your Email</h3>
-        <div class="space-y-4">
-            <div>
-                <p class="text-sm text-base-content/70 mb-2">We sent a verification code to:</p>
-                <p class="font-semibold text-center bg-base-200 p-3 rounded" id="verification-email"></p>
-            </div>
-            <button type="button" class="btn btn-sm btn-ghost w-full" onclick="showCodeModal()">
-                Enter Verification Code →
-            </button>
-        </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
-</dialog>
-
-<!-- Modal: Enter Code -->
-<dialog id="code-modal" class="modal">
-    <div class="modal-box w-full max-w-md">
-        <h3 class="font-bold text-lg mb-4">Enter Verification Code</h3>
-        <div class="space-y-4">
-            <p class="text-sm text-base-content/70">Check your email for the verification code:</p>
-            <input type="text" id="verification-code" placeholder="Enter 64-character code" 
-                class="input input-bordered w-full text-sm font-mono" maxlength="64">
-            <div id="code-error" class="text-error text-sm hidden"></div>
-            
-            <div id="loading-state" class="hidden items-center justify-center gap-2">
-                <span class="loading loading-spinner loading-sm"></span>
-                <span>Verifying...</span>
-            </div>
-
-            <div class="modal-action justify-center gap-2">
-                <button type="button" class="btn btn-ghost" onclick="document.getElementById('code-modal').close()">Cancel</button>
-                <button type="button" class="btn btn-primary" id="verify-btn" onclick="verifyCode()">Verify</button>
-            </div>
-        </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
-</dialog>
-
-<!-- Modal: Loading -->
-<dialog id="loading-modal" class="modal">
-    <div class="modal-box text-center space-y-4">
-        <span class="loading loading-spinner loading-lg"></span>
-        <p class="font-semibold">Redirecting to your clinic domain...</p>
-    </div>
-</dialog>
-
 <script>
-const formData = {
-    tenant_id: null,
-    email: null,
-};
-
 document.getElementById('registration-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const formElement = e.target;
+    const submitBtn = document.getElementById('submit-btn');
     const data = new FormData(formElement);
     
-    // Clear all errors first
-    document.querySelectorAll('.error-text').forEach(el => {
-        el.textContent = '';
-        el.parentElement.querySelector('input')?.classList.remove('input-error');
+    // Client-side Validation Check
+    const requiredFields = formElement.querySelectorAll('[required]');
+    let isValid = true;
+    requiredFields.forEach(field => {
+        if (!field.value || (field.type === 'checkbox' && !field.checked)) {
+            isValid = false;
+        }
     });
+
+    if (!isValid) {
+        Swal.fire({
+            title: 'Almost there!',
+            text: 'Please complete all required fields correctly.',
+            icon: 'warning',
+            confirmButtonColor: '#0ea5e9'
+        });
+        return;
+    }
+
+    // Loading State
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="loading loading-spinner"></span> Creating your clinic...';
+    
+    // Clear previous errors
+    document.querySelectorAll('.error-text').forEach(el => el.textContent = '');
+    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
     
     try {
         const response = await fetch("{{ route('tenant.registration.store') }}", {
@@ -275,11 +231,18 @@ document.getElementById('registration-form').addEventListener('submit', async (e
 
         const result = await response.json();
 
-        if (!response.ok) {
-            // Show validation errors
+        if (response.status === 422) {
+            // Server-side Validation Errors
+            Swal.fire({
+                title: 'Validation Error',
+                text: result.message || 'Please correct the errors in the form.',
+                icon: 'error',
+                confirmButtonColor: '#0ea5e9'
+            });
+
             if (result.errors) {
                 Object.entries(result.errors).forEach(([field, messages]) => {
-                    const input = document.querySelector(`input[name="${field}"]`);
+                    const input = document.querySelector(`[name="${field}"]`);
                     if (input) {
                         const errorEl = input.closest('.form-control')?.querySelector('.error-text');
                         if (errorEl) {
@@ -288,108 +251,71 @@ document.getElementById('registration-form').addEventListener('submit', async (e
                         }
                     }
                 });
+                
+                // Scroll to first error
+                const firstError = document.querySelector('.input-error, .error-text:not(:empty)');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                }
             }
-            console.error('Validation errors:', result);
+            return;
+        }
+
+        if (response.status === 500) {
+            // Server Error
+            Swal.fire({
+                title: 'Oops! Something went wrong',
+                text: result.message || 'We couldn’t create your clinic right now. Please try again in a moment.',
+                icon: 'error',
+                confirmButtonColor: '#0ea5e9'
+            });
             return;
         }
 
         if (result.success) {
-            formData.tenant_id = result.tenant_id;
-            formData.email = result.email;
-            
-            // Redirect immediately to the new clinic login
-            if (result.redirect_url) {
-                // Show a quick loading state
-                const btn = document.querySelector('button[type="submit"]');
-                btn.disabled = true;
-                btn.innerHTML = '<span class="loading loading-spinner"></span> Creating your clinic...';
-                
-                setTimeout(() => {
-                    window.location.href = result.redirect_url;
-                }, 1500);
-            } else {
-                document.getElementById('submitted-modal').showModal();
+            // Handle Payment Required (Stripe)
+            if (result.payment_required && result.redirect_url) {
+                Swal.fire({
+                    title: 'Processing Payment...',
+                    text: 'Redirecting you to the secure payment page.',
+                    icon: 'info',
+                    timer: 2000,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    didClose: () => {
+                        window.location.href = result.redirect_url;
+                    }
+                });
+                return;
             }
+
+            // Success State (Direct Registration)
+            Swal.fire({
+                title: 'Welcome to DCMS 🎉',
+                text: result.message || 'Your clinic has been created successfully! Redirecting you now...',
+                icon: 'success',
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didClose: () => {
+                    if (result.redirect_url) {
+                        window.location.href = result.redirect_url;
+                    }
+                }
+            });
         }
     } catch (error) {
         console.error('Registration error:', error);
-        alert('An error occurred during registration. Please check the console for details.');
-    }
-});
-
-function nextToVerify() {
-    document.getElementById('submitted-modal').close();
-    document.getElementById('verification-email').textContent = formData.email;
-    document.getElementById('verify-email-modal').showModal();
-}
-
-function showCodeModal() {
-    document.getElementById('verify-email-modal').close();
-    document.getElementById('code-modal').showModal();
-}
-
-async function verifyCode() {
-    const code = document.getElementById('verification-code').value.trim();
-    const errorEl = document.getElementById('code-error');
-    const verifyBtn = document.getElementById('verify-btn');
-    const loadingState = document.getElementById('loading-state');
-
-    if (!code) {
-        errorEl.textContent = 'Please enter the verification code';
-        errorEl.classList.remove('hidden');
-        return;
-    }
-
-    errorEl.classList.add('hidden');
-    verifyBtn.disabled = true;
-    loadingState.classList.remove('hidden');
-
-    try {
-        const response = await fetch("{{ route('tenant.registration.verify-email') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            },
-            body: JSON.stringify({
-                code: code,
-                tenant_id: formData.tenant_id,
-            }),
+        Swal.fire({
+            title: 'Connection Error',
+            text: 'We couldn’t reach the server. Please check your internet connection.',
+            icon: 'error',
+            confirmButtonColor: '#0ea5e9'
         });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            errorEl.textContent = result.message || 'Invalid verification code';
-            errorEl.classList.remove('hidden');
-            verifyBtn.disabled = false;
-            loadingState.classList.add('hidden');
-            return;
-        }
-
-        if (result.success) {
-            document.getElementById('code-modal').close();
-            document.getElementById('loading-modal').showModal();
-            
-            // Redirect after showing modal
-            setTimeout(() => {
-                window.location.href = result.redirect_url + '/login';
-            }, 2000);
-        }
-    } catch (error) {
-        console.error('Verification error:', error);
-        errorEl.textContent = 'An error occurred. Please try again.';
-        errorEl.classList.remove('hidden');
-        verifyBtn.disabled = false;
-        loadingState.classList.add('hidden');
-    }
-}
-
-// Allow Enter key to submit code
-document.getElementById('verification-code').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        verifyCode();
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Register Clinic';
     }
 });
 </script>

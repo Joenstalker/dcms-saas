@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
-use App\Traits\HybridCompatibility;
 
 class CustomTheme extends Model
 {
-    use HybridCompatibility;
+    use HasFactory, BelongsToTenant;
     protected $fillable = [
         'tenant_id',
         'name',

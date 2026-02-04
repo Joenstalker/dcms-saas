@@ -267,7 +267,7 @@
                             <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors">{{ $plan->getFormattedStorage() }}</span>
                         </li>
                         @endif
-                        @foreach($plan->features as $feature)
+                        @foreach($plan->features ?? [] as $feature)
                             <li class="flex items-start gap-3 group/item">
                                 <div class="w-5 h-5 shrink-0 rounded-full bg-{{ $color }}/10 flex items-center justify-center text-{{ $color }} group-hover/item:bg-{{ $color }} group-hover/item:text-white transition-colors duration-300">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>

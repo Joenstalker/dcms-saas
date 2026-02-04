@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
+use MongoDB\Laravel\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use App\Traits\HybridCompatibility;
 
 class Payment extends Model
 {
-    use HasFactory, HybridCompatibility;
+    use HasFactory;
 
     protected $fillable = [
         'tenant_id',

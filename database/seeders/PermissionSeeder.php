@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
+use App\Models\Permission;
+use App\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
@@ -31,7 +31,11 @@ class PermissionSeeder extends Seeder
         }
 
         // Create initial system admin role
-        $adminRole = Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web', 'tenant_id' => null]);
-        // Super admin typically has all permissions via Gate::before in AuthServiceProvider
+        Role::firstOrCreate(['name' => 'super-admin', 'guard_name' => 'web']);
+        
+        // Tenant Roles
+        Role::firstOrCreate(['name' => 'owner', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'dentist', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'assistant', 'guard_name' => 'web']);
     }
 }
