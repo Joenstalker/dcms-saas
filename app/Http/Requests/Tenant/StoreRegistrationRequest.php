@@ -127,12 +127,23 @@ class StoreRegistrationRequest extends FormRequest
             // Terms
             'terms_accepted' => 'required|accepted',
             
-            // Pricing Plan
-            // Pricing Plan
+            // Pricing Plan (MongoDB ObjectId validation)
             'pricing_plan_id' => [
                 'nullable',
-                \Illuminate\Validation\Rule::requiredIf($this->has('pricing_plan_id')),
-                'exists:pricing_plans,id'
+                'string',
+                function ($attribute, $value, $fail) {
+                    if (empty($value)) {
+                        return; // Nullable, so empty is okay
+                    }
+                    
+                    // Check if the plan exists in MongoDB
+                    $plan = \App\Models\PricingPlan::find($value);
+                    if (!$plan) {
+                        $fail('The selected pricing plan is invalid or does not exist.');
+                    } elseif (!$plan->is_active) {
+                        $fail('The selected pricing plan is no longer available.');
+                    }
+                },
             ],
         ];
     }

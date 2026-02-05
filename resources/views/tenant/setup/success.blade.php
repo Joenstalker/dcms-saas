@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('tenant.login', ['tenant' => $tenant->slug]) }}" class="btn btn-primary btn-lg">
+                    <a href="{{ route('login') }}" class="btn btn-primary btn-lg">
                         Go to Login
                     </a>
                     <a href="{{ route('home') }}" class="btn btn-outline">

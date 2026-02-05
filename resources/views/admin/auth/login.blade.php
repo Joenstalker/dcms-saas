@@ -28,7 +28,7 @@
                 </div>
             @endif
 
-            <form class="space-y-6" action="{{ route('admin.login.submit') }}" method="POST">
+            <form id="adminLoginForm" class="space-y-6" action="{{ route('admin.login.submit') }}" method="POST">
                 @csrf
                 
                 <div class="form-control w-full">
@@ -117,3 +117,79 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('adminLoginForm');
+    
+    loginForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading
+        Swal.fire({
+            title: 'Logging in...',
+            html: 'Please wait while we verify your credentials',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        // Submit form via AJAX
+        const formData = new FormData(loginForm);
+        
+        fetch(loginForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.redirected) {
+                // Login successful, show success then redirect
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Welcome!',
+                    text: 'Redirecting to dashboard...',
+                    timer: 1500,
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.href = response.url;
+                });
+            } else {
+                return response.json();
+            }
+        })
+        .then(data => {
+            if (data && data.errors) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: data.errors.email ? data.errors.email[0] : 'Invalid credentials',
+                    confirmButtonColor: '#3085d6'
+                });
+            } else if (data && data.message) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Failed',
+                    text: data.message,
+                    confirmButtonColor: '#3085d6'
+                });
+            }
+        })
+        .catch(error => {
+            // If fetch fails but we have a redirect (form submitted normally)
+            // Just submit the form traditionally
+            loginForm.submit();
+        });
+    });
+});
+</script>
+@endpush

@@ -47,7 +47,7 @@
                                 <p class="text-sm text-base-content/70">
                                     Once verified, you can access your clinic dashboard at:
                                 </p>
-                                <p class="text-sm font-mono text-primary mt-1">{{ $tenant->slug }}.dcmsapp.com</p>
+                                <p class="text-sm font-mono text-primary mt-1">{{ $tenant->slug }}.{{ env('LOCAL_BASE_DOMAIN', 'lvh.me') }}</p>
                             </div>
                         </div>
                     </div>
@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('tenant.login', ['tenant' => $tenant->slug]) }}" class="btn btn-primary">
+                    <a href="{{ route('login') }}" class="btn btn-primary">
                         Go to Login
                     </a>
                     <a href="{{ route('home') }}" class="btn btn-outline">

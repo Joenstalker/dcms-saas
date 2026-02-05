@@ -12,6 +12,7 @@ use App\Notifications\TenantVerificationNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -79,8 +80,20 @@ class RegistrationController extends Controller
             $generatedDomain = "{$normalizedSubdomain}.{$baseDomain}";
             
             // Determine initial status based on plan selection
-            $isActive = $selectedPlan ? false : true; // Inactive if paid plan selected (until payment)
-            $planStatus = $selectedPlan ? 'pending_payment' : 'trial';
+            $isFreePlan = !$selectedPlan || ($selectedPlan->price == 0);
+            $isActive = true; // All tenants are active immediately
+            $planStatus = $isFreePlan ? 'trial' : 'pending_payment';
+
+            // Calculate trial end date for free plans
+            $trialEndsAt = null;
+            if ($isFreePlan && $selectedPlan) {
+                $trialEndsAt = $selectedPlan->calculateTrialEndDate();
+            } elseif ($isFreePlan) {
+                $defaultPlan = \App\Models\PricingPlan::where('is_active', true)
+                    ->where('price', 0)
+                    ->first();
+                $trialEndsAt = $defaultPlan ? $defaultPlan->calculateTrialEndDate() : now()->addDays(7);
+            }
 
             $tenant = Tenant::create([
                 'name' => trim((string) $request->input('clinic_name')),
@@ -93,9 +106,10 @@ class RegistrationController extends Controller
                 'state' => trim((string) $request->input('state_province')),
                 'pricing_plan_id' => $pricingPlanId ?: ($this->getDefaultPricingPlanId()),
                 'email_verification_token' => Str::random(64),
-                'email_verified_at' => $isActive ? now() : null, // Auto-verify only for free trials
+                'email_verified_at' => now(), // Auto-verify all tenants for smoother flow
                 'is_active' => $isActive,
                 'subscription_status' => $planStatus,
+                'trial_ends_at' => $trialEndsAt,
             ]);
 
             $user = User::create([
@@ -120,47 +134,45 @@ class RegistrationController extends Controller
                 Log::warning('Failed to add to hosts file: ' . $e->getMessage());
             }
 
-            // Handle Stripe Payment for Paid Plans
-            if ($selectedPlan && $selectedPlan->price > 0 && $selectedPlan->stripe_price_id) {
-                try {
-                    \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+            // Login the user
+            Auth::login($user);
 
-                    $checkoutSession = \Stripe\Checkout\Session::create([
-                        'payment_method_types' => ['card'],
-                        'line_items' => [[
-                            'price' => $selectedPlan->stripe_price_id,
-                            'quantity' => 1,
-                        ]],
-                        'mode' => 'subscription',
-                        'success_url' => route('tenant.registration.payment-success') . '?session_id={CHECKOUT_SESSION_ID}&tenant_id=' . $tenant->id,
-                        'cancel_url' => route('home'), // Or back to registration
-                        'customer_email' => $normalizedEmail,
-                        'metadata' => [
-                            'tenant_id' => $tenant->id,
-                            'plan_id' => $selectedPlan->id,
-                        ],
-                    ]);
+            // For paid plans, set session flag and redirect to wizard for payment
+            $needsPayment = !$isFreePlan;
 
+            if ($request->ajax() || $request->wantsJson()) {
+                $port = $request->getPort();
+                $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+                $wizardUrl = "http://{$generatedDomain}{$portSuffix}/setup/wizard?step=5&payment_required=" . ($needsPayment ? '1' : '0');
+
+                if ($needsPayment) {
+                    session(['pending_payment_tenant_id' => $tenant->id]);
                     return response()->json([
                         'success' => true,
                         'payment_required' => true,
-                        'message' => 'Processing your payment...',
-                        'redirect_url' => $checkoutSession->url,
-                        'stripe_session_id' => $checkoutSession->id
-                    ], 200);
-
-                } catch (\Exception $e) {
-                    Log::error('Stripe Checkout Error: ' . $e->getMessage());
-                    // Fallback or specific error handling
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Payment initialization failed. Please try again.'
-                    ], 500);
+                        'message' => 'Your clinic is ready! Complete your setup and add payment method.',
+                        'subdomain' => $normalizedSubdomain,
+                        'redirect_url' => $wizardUrl
+                    ], 201);
                 }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Welcome to DCMS! Your clinic has been created successfully! Redirecting you now...',
+                    'subdomain' => $normalizedSubdomain,
+                    'redirect_url' => "http://{$generatedDomain}{$portSuffix}"
+                ], 201);
             }
 
-            // Direct Registration (Free/Trial)
-            auth()->login($user);
+            $port = $request->getPort();
+            $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+
+            if ($needsPayment) {
+                session(['pending_payment_tenant_id' => $tenant->id]);
+                return redirect()->away("http://{$generatedDomain}{$portSuffix}/setup/wizard?step=5&payment_required=1");
+            }
+
+            return redirect()->away("http://{$generatedDomain}{$portSuffix}");
 
             if ($request->ajax() || $request->wantsJson()) {
                 $port = $request->getPort();
@@ -228,7 +240,7 @@ class RegistrationController extends Controller
         $user = User::where('tenant_id', $tenant->id)->first();
         if ($user) {
             $user->update(['email_verified_at' => now()]);
-            auth()->login($user);
+            Auth::login($user);
         }
 
         // Redirect to subdomain

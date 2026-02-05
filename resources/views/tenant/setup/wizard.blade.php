@@ -474,6 +474,20 @@
                     Your clinic portal has been configured successfully.
                 </p>
 
+                @if($tenant->subscription_status === 'pending_payment')
+                <div class="bg-warning/10 border border-warning rounded-lg p-4 mb-6 text-left">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-6 h-6 text-warning shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <div>
+                            <h3 class="font-bold text-warning">Payment Required</h3>
+                            <p class="text-sm mt-1">To activate your {{ $tenant->pricingPlan->name }} subscription, please complete your payment below.</p>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <div class="bg-base-200 rounded-lg p-6 mb-6 text-left">
                     <h3 class="font-semibold mb-4">What's Next?</h3>
                     <ul class="space-y-2 text-sm">
@@ -498,10 +512,27 @@
                     </ul>
                 </div>
 
+                @if($tenant->subscription_status === 'pending_payment')
+                <form action="{{ route('tenant.subscription.initiate-payment', ['tenant' => $tenant]) }}" method="POST" class="mb-4">
+                    @csrf
+                    <input type="hidden" name="plan_id" value="{{ $tenant->pricing_plan_id }}">
+                    <button type="submit" id="pay-btn" class="btn btn-primary btn-lg w-full">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        Complete Payment - ₱{{ number_format($tenant->pricingPlan->price, 2) }}/{{ $tenant->pricingPlan->billing_cycle }}
+                    </button>
+                </form>
+                @endif
+
                 <form action="{{ route('tenant.setup.complete', $tenant) }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        Go to Dashboard
+                    <button type="submit" class="btn btn-outline btn-lg w-full" @if($tenant->subscription_status === 'pending_payment') onclick="return confirm('Are you sure you want to skip payment? Your subscription will remain pending until payment is completed.')" @endif>
+                        @if($tenant->subscription_status === 'pending_payment')
+                            Skip for Now (Payment Pending)
+                        @else
+                            Go to Dashboard
+                        @endif
                         <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
@@ -509,6 +540,28 @@
                 </form>
             </div>
         </div>
+
+        @if($tenant->subscription_status === 'pending_payment')
+        <!-- Payment Modal -->
+        <dialog id="payment_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg mb-4">Complete Your Payment</h3>
+                <div id="payment-element" class="mb-4">
+                    <div class="flex justify-center py-8">
+                        <span class="loading loading-spinner loading-lg text-primary"></span>
+                    </div>
+                </div>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Cancel</button>
+                    </form>
+                </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+                <button>close</button>
+            </form>
+        </dialog>
+        @endif
         @endif
     </div>
 </div>
@@ -595,6 +648,86 @@ document.addEventListener('DOMContentLoaded', function() {
             if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
                 primaryPicker.value = this.value;
             }
+        });
+    }
+
+    if (secondaryPicker && secondaryInput) {
+        secondaryPicker.addEventListener('input', function() {
+            secondaryInput.value = this.value;
+        });
+        secondaryInput.addEventListener('input', function() {
+            if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                secondaryPicker.value = this.value;
+            }
+        });
+    }
+
+    // Handle payment modal
+    const payBtn = document.getElementById('pay-btn');
+    const paymentModal = document.getElementById('payment_modal');
+    const paymentElement = document.getElementById('payment-element');
+
+    if (payBtn && paymentModal) {
+        payBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            paymentModal.showModal();
+
+            try {
+                const response = await fetch("{{ route('tenant.subscription.initiate-payment', $tenant) }}", {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: new FormData(payBtn.form)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    paymentElement.innerHTML = `
+                        <div class="alert alert-error">
+                            <span>${result.error}</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Initialize Stripe Elements
+                if (result.clientSecret && result.stripeKey) {
+                    const stripe = Stripe(result.stripeKey);
+                    const elements = stripe.elements({
+                        clientSecret: result.clientSecret,
+                        appearance: { theme: 'stripe' }
+                    });
+
+                    const paymentElement = elements.create('payment');
+                    paymentElement.mount('#payment-element');
+
+                    // Store for confirmation
+                    window.stripePaymentIntent = result.clientSecret;
+                    window.stripeTenantId = {{ $tenant->id }};
+                } else {
+                    paymentElement.innerHTML = `
+                        <div class="text-center py-4">
+                            <p class="font-bold text-lg">${result.planName}</p>
+                            <p class="text-2xl font-bold text-primary mt-2">₱${result.amount}</p>
+                            <p class="text-sm text-base-content/70 mt-2">Payment integration not configured. Please contact support.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Payment init error:', error);
+                paymentElement.innerHTML = `
+                    <div class="alert alert-error">
+                        <span>Failed to initialize payment. Please try again.</span>
+                    </div>
+                `;
+            }
+        });
+    }
+});
         });
     }
 

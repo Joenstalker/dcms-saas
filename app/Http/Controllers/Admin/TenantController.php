@@ -43,16 +43,23 @@ class TenantController extends Controller
 
     public function store(Request $request, TenantProvisioningService $provisioningService): RedirectResponse
     {
-        if ($request->has('pricing_plan_id')) {
-            $request->merge(['pricing_plan_id' => (int) $request->pricing_plan_id]);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:tenants,slug',
             'email' => 'required|email|max:255|unique:users,email',
             'phone' => 'nullable|string|max:20',
-            'pricing_plan_id' => 'required|exists:pricing_plans,id',
+            'pricing_plan_id' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $plan = PricingPlan::find($value);
+                    if (!$plan) {
+                        $fail('The selected pricing plan is invalid.');
+                    } elseif (!$plan->is_active) {
+                        $fail('The selected pricing plan is no longer available.');
+                    }
+                },
+            ],
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
@@ -82,16 +89,23 @@ class TenantController extends Controller
 
     public function update(Request $request, Tenant $tenant): RedirectResponse
     {
-        if ($request->has('pricing_plan_id')) {
-            $request->merge(['pricing_plan_id' => (int) $request->pricing_plan_id]);
-        }
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:tenants,slug,'.$tenant->id,
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'pricing_plan_id' => 'required|exists:pricing_plans,id',
+            'pricing_plan_id' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $plan = PricingPlan::find($value);
+                    if (!$plan) {
+                        $fail('The selected pricing plan is invalid.');
+                    } elseif (!$plan->is_active) {
+                        $fail('The selected pricing plan is no longer available.');
+                    }
+                },
+            ],
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:255',
             'state' => 'nullable|string|max:255',
@@ -106,23 +120,184 @@ class TenantController extends Controller
             ->with('success', 'Clinic updated successfully.');
     }
 
-    public function destroy(Tenant $tenant): RedirectResponse
+    public function destroy(Tenant $tenant): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        // Permanently delete the tenant and all related data
-        // This will cascade delete users, roles, and other related records via foreign keys
+        // Only allow permanent deletion of terminated tenants
+        if ($tenant->subscription_status !== 'terminated') {
+            $message = 'Clinic must be terminated before permanent deletion. This protects against accidental data loss.';
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 403);
+            }
+            return redirect()->back()->with('error', $message);
+        }
+
+        $tenantName = $tenant->name;
+        
+        // Delete all users belonging to this tenant permanently
+        \App\Models\User::where('tenant_id', $tenant->id)->forceDelete();
+        
+        // Permanently delete the tenant
         $tenant->forceDelete();
 
+        if (request()->ajax()) {
+            return response()->json(['success' => true, 'message' => "Clinic '{$tenantName}' permanently deleted."]);
+        }
+
         return redirect()->route('admin.tenants.index')
-            ->with('success', 'Clinic permanently deleted.');
+            ->with('success', "Clinic '{$tenantName}' permanently deleted.");
     }
 
-    public function toggleActive(Tenant $tenant): RedirectResponse
+    /**
+     * Suspend a clinic - temporary block, can be reactivated
+     */
+    public function suspend(Tenant $tenant): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        $tenant->update(['is_active' => ! $tenant->is_active]);
+        if ($tenant->subscription_status === 'suspended') {
+            $message = 'Clinic is already suspended.';
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('warning', $message);
+        }
 
-        return redirect()->back()
-            ->with('success', 'Clinic status updated.');
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            // Store previous status for potential reactivation
+            $tenant->update([
+                'subscription_status' => 'suspended',
+                'suspended_at' => now(),
+                'is_active' => false,
+                'previous_status' => $tenant->subscription_status,
+            ]);
+
+            // Disable all users in this tenant
+            \App\Models\User::where('tenant_id', $tenant->id)
+                ->update(['status' => 'disabled']);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            $message = "Clinic '{$tenant->name}' has been suspended. Users can no longer login.";
+            if (request()->ajax()) {
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            $message = 'Failed to suspend clinic: ' . $e->getMessage();
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 500);
+            }
+            return redirect()->back()->with('error', $message);
+        }
     }
+
+    /**
+     * Reactivate a suspended or terminated clinic
+     */
+    public function reactivate(Tenant $tenant): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        if (!in_array($tenant->subscription_status, ['suspended', 'terminated'])) {
+            $message = 'Clinic is not suspended or terminated.';
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('warning', $message);
+        }
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            // Restore to previous status or active
+            $previousStatus = $tenant->previous_status ?? 'active';
+            if (in_array($previousStatus, ['suspended', 'terminated', 'cancelled'])) {
+                $previousStatus = 'active';
+            }
+
+            $tenant->update([
+                'subscription_status' => $previousStatus,
+                'suspended_at' => null,
+                'is_active' => true,
+                'previous_status' => null,
+            ]);
+
+            // If tenant was soft deleted (terminated), restore it
+            if ($tenant->trashed()) {
+                $tenant->restore();
+            }
+
+            // Re-enable all users in this tenant
+            \App\Models\User::where('tenant_id', $tenant->id)
+                ->update(['status' => 'active']);
+
+            // Restore soft-deleted users if any
+            \App\Models\User::withTrashed()
+                ->where('tenant_id', $tenant->id)
+                ->restore();
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            $message = "Clinic '{$tenant->name}' has been reactivated. Users can now login.";
+            if (request()->ajax()) {
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            $message = 'Failed to reactivate clinic: ' . $e->getMessage();
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 500);
+            }
+            return redirect()->back()->with('error', $message);
+        }
+    }
+
+    /**
+     * Terminate a clinic - soft delete with grace period
+     */
+    public function terminate(Tenant $tenant): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        if ($tenant->subscription_status === 'terminated') {
+            $message = 'Clinic is already terminated.';
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 400);
+            }
+            return redirect()->back()->with('warning', $message);
+        }
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            $tenant->update([
+                'subscription_status' => 'terminated',
+                'suspended_at' => now(),
+                'is_active' => false,
+                'previous_status' => $tenant->subscription_status,
+            ]);
+
+            // Soft delete the tenant
+            $tenant->delete();
+
+            // Soft delete all users in this tenant
+            \App\Models\User::where('tenant_id', $tenant->id)
+                ->update(['status' => 'terminated']);
+                
+            \App\Models\User::where('tenant_id', $tenant->id)->delete();
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            $message = "Clinic '{$tenant->name}' has been terminated. Data will be preserved for 30 days before permanent deletion is allowed.";
+            if (request()->ajax()) {
+                return response()->json(['success' => true, 'message' => $message]);
+            }
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            $message = 'Failed to terminate clinic: ' . $e->getMessage();
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], 500);
+            }
+            return redirect()->back()->with('error', $message);
+        }
+    }
+
 
     public function markEmailVerified(Tenant $tenant): RedirectResponse
     {

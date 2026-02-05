@@ -75,7 +75,8 @@ class TenantLoginController extends Controller
         ]);
 
         $normalizedEmail = strtolower(trim($credentials['email']));
-        $user = User::whereRaw('LOWER(email) = ?', [$normalizedEmail])
+        // Use MongoDB-compatible case-insensitive regex for email matching
+        $user = User::where('email', 'regex', '/^' . preg_quote($normalizedEmail, '/') . '$/i')
             ->where('tenant_id', $tenant->id)
             ->first();
 

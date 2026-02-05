@@ -48,6 +48,13 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
+            \Illuminate\Support\Facades\Log::debug('Admin login successful', [
+                'user_id' => Auth::id(),
+                'user_email' => Auth::user()->email,
+                'is_system_admin' => Auth::user()->isSystemAdmin(),
+                'session_id' => session()->getId(),
+            ]);
+
             return redirect()->route('admin.dashboard');
         }
 

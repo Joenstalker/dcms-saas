@@ -20,7 +20,7 @@ class SetupController extends Controller
     {
         // Ensure user is authenticated and belongs to this tenant
         if (!auth()->check()) {
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
+            return redirect()->route('login')
                 ->with('error', 'Please login to access setup.');
         }
 

@@ -49,6 +49,7 @@ class Tenant extends Model
         'certificate_templates',
         'default_hmo_providers',
         'default_dental_services',
+        'previous_status',
     ];
 
     protected $casts = [
@@ -128,6 +129,11 @@ class Tenant extends Model
                ($this->subscription_ends_at && $this->subscription_ends_at->isPast());
     }
 
+    public function isTerminated(): bool
+    {
+        return $this->subscription_status === 'terminated' || $this->trashed();
+    }
+
     public function getSubscriptionStatusBadge(): string
     {
         return match ($this->subscription_status) {
@@ -135,6 +141,7 @@ class Tenant extends Model
             'trial' => '<span class="badge badge-info">Trial</span>',
             'expired' => '<span class="badge badge-error">Expired</span>',
             'suspended' => '<span class="badge badge-warning">Suspended</span>',
+            'terminated' => '<span class="badge badge-error">Terminated</span>',
             'cancelled' => '<span class="badge badge-ghost">Cancelled</span>',
             default => '<span class="badge badge-ghost">Unknown</span>',
         };

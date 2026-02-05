@@ -74,4 +74,45 @@ class UserController extends Controller
         
         return redirect()->back()->with('warning', 'User activation toggling not yet implemented.');
     }
+
+    public function destroy(User $user): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        // Prevent self-deletion
+        if ($user->id === auth()->id()) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'You cannot delete your own account.'], 403);
+            }
+            return redirect()->back()->with('error', 'You cannot delete your own account.');
+        }
+
+        // Prevent deleting system admins
+        if ($user->is_system_admin) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'System administrators cannot be deleted.'], 403);
+            }
+            return redirect()->back()->with('error', 'System administrators cannot be deleted.');
+        }
+
+        // Prevent deleting tenant owners unless tenant is terminated
+        if ($user->isOwner()) {
+            $tenant = $user->tenant;
+            if ($tenant && !$tenant->isTerminated()) {
+                $message = 'Cannot delete tenant owner. Please suspend or terminate the clinic first.';
+                if (request()->ajax()) {
+                    return response()->json(['success' => false, 'message' => $message], 403);
+                }
+                return redirect()->back()->with('error', $message);
+            }
+        }
+
+        $userName = $user->name;
+        $user->delete();
+
+        if (request()->ajax()) {
+            return response()->json(['success' => true, 'message' => "User '{$userName}' has been deleted."]);
+        }
+
+        return redirect()->back()->with('success', "User '{$userName}' has been deleted.");
+    }
 }
+

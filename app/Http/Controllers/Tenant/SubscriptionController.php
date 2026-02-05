@@ -11,6 +11,7 @@ use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -21,7 +22,7 @@ class SubscriptionController extends Controller
     {
         // Ensure user is authenticated and belongs to this tenant
         if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
+            return redirect()->route('login')
                 ->with('error', 'Please login to select a plan.');
         }
 
@@ -42,7 +43,7 @@ class SubscriptionController extends Controller
     {
         // Ensure user is authenticated and belongs to this tenant
         if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
+            return redirect()->route('login')
                 ->with('error', 'Please login to select a plan.');
         }
 
@@ -66,7 +67,7 @@ class SubscriptionController extends Controller
     }
 
     /**
-     * Initiate payment intent for modal (JSON response)
+     * Initiate payment intent for modal (JSON response) - original method
      */
     public function initiatePayment(Request $request, $tenant, int $plan): JsonResponse
     {
@@ -81,7 +82,49 @@ class SubscriptionController extends Controller
             }
 
             $plan = PricingPlan::findOrFail($plan);
-            
+            return $this->createPaymentIntent($tenant, $plan);
+        } catch (\Exception $e) {
+            Log::error('Stripe Init Failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $message = config('app.debug') ? $e->getMessage() : 'Could not initialize payment';
+            return response()->json(['error' => $message], 500);
+        }
+    }
+
+    /**
+     * Initiate payment for tenant with pending_payment status (called from wizard)
+     */
+    public function initiatePaymentForTenant(Request $request, Tenant $tenant): JsonResponse
+    {
+        try {
+            // Ensure user is authenticated and belongs to this tenant
+            if (!auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
+            // Ensure tenant has pending payment
+            if ($tenant->subscription_status !== 'pending_payment') {
+                return response()->json(['error' => 'Payment not required for this tenant'], 400);
+            }
+
+            $plan = $tenant->pricingPlan;
+            if (!$plan || $plan->price <= 0) {
+                return response()->json(['error' => 'Invalid plan for payment'], 400);
+            }
+
+            return $this->createPaymentIntent($tenant, $plan);
+        } catch (\Exception $e) {
+            Log::error('Stripe Init Failed for Tenant', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            $message = config('app.debug') ? $e->getMessage() : 'Could not initialize payment';
+            return response()->json(['error' => $message], 500);
+        }
+    }
+
+    /**
+     * Create Stripe PaymentIntent
+     */
+    private function createPaymentIntent(Tenant $tenant, PricingPlan $plan): JsonResponse
+    {
+        try {
             // Initialize Stripe
             \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
@@ -103,11 +146,9 @@ class SubscriptionController extends Controller
                 'amount' => number_format($plan->price, 2),
                 'planName' => $plan->name
             ]);
-
         } catch (\Exception $e) {
-            Log::error('Stripe Init Failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            $message = config('app.debug') ? $e->getMessage() : 'Could not initialize payment';
-            return response()->json(['error' => $message], 500);
+            Log::error('Stripe PaymentIntent Error', ['error' => $e->getMessage()]);
+            throw $e;
         }
     }
 

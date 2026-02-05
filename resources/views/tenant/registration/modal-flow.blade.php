@@ -61,7 +61,7 @@
                                 <input type="text" name="desired_subdomain" id="subdomain" value="{{ old('desired_subdomain') }}" 
                                     class="input input-bordered join-item flex-1" 
                                     placeholder="smiledental" required>
-                                <span class="join-item bg-base-200 px-4 flex items-center border border-base-300">.dcmsapp.local</span>
+                                <span class="join-item bg-base-200 px-4 flex items-center border border-base-300">.{{ env('LOCAL_BASE_DOMAIN', 'lvh.me') }}</span>
                             </div>
                             <label class="label pb-0">
                                 <span class="label-text-alt">This will be your clinic's unique URL</span>

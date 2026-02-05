@@ -1,3 +1,0 @@
-NAME: ACERO-BARCINA DENTAL CLINIC | SLUG: dental | DOMAIN: dental.dcmsapp.local | EMAIL: joenilpanal@gmail.com
-NAME: BARCINA-ACERO DENTAL CLINIC | SLUG: dentalcare | DOMAIN: dentalcare.dcmsapp.local | EMAIL: joenilapanl@gmail.com
-NAME: DAVID-DILAN DENTAL CLINIC | SLUG: dddc | DOMAIN: dddc.dcmsapp.local | EMAIL: neiljustine537@gmail.com

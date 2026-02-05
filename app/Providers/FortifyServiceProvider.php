@@ -21,7 +21,7 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\Laravel\Fortify\Contracts\LoginResponse::class, \App\Http\Responses\LoginResponse::class);
     }
 
     /**
@@ -33,19 +33,34 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
-        Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
+        // Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
 
         // Custom authentication for tenant users
         Fortify::authenticateUsing(function (Request $request) {
             $tenantId = session('tenant_id');
+            
+            \Illuminate\Support\Facades\Log::debug('Fortify authenticateUsing', [
+                'email' => $request->email,
+                'session_tenant_id' => $tenantId,
+            ]);
+
             if (!$tenantId) {
+                \Illuminate\Support\Facades\Log::warning('Fortify: No tenant_id in session');
                 return null;
             }
 
             $normalizedEmail = strtolower(trim($request->email));
-            $user = \App\Models\User::whereRaw('LOWER(email) = ?', [$normalizedEmail])
+            // Use MongoDB-compatible case-insensitive regex for email matching
+            $user = \App\Models\User::where('email', 'regex', '/^' . preg_quote($normalizedEmail, '/') . '$/i')
                 ->where('tenant_id', $tenantId)
                 ->first();
+
+            \Illuminate\Support\Facades\Log::debug('Fortify: User lookup result', [
+                'email' => $normalizedEmail,
+                'tenant_id' => $tenantId,
+                'user_found' => $user ? 'yes' : 'no',
+                'user_id' => $user?->id,
+            ]);
 
             if ($user && \Illuminate\Support\Facades\Hash::check($request->password, $user->password)) {
                 return $user;

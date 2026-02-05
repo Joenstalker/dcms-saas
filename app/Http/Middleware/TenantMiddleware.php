@@ -95,24 +95,24 @@ class TenantMiddleware
 
             // Fallback: Logout and redirect to this clinic's login
             auth()->logout();
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug])
+            return redirect()->route('login')
                 ->with('tenant_access_error', 'Unauthorized access attempt.');
         }
 
         // Allow public routes (login, register, verification) even on tenant subdomains
+        // Note: 'login' route is now handled by Fortify
         if ($request->routeIs('login') 
-            || $request->routeIs('tenant.login')
-            || $request->routeIs('tenant.login.submit')
+            || $request->routeIs('register')
             || $request->routeIs('tenant.registration.*') 
             || $request->routeIs('tenant.verification.*')
-            || $request->routeIs('tenant.subscription.suspended')) {
+            || $request->routeIs('tenant.subscription.suspended')
+            || $request->routeIs('password.*')) {
             return $next($request);
         }
 
-        // If not authenticated and accessing tenant subdomain, redirect to tenant-specific login
-        if (!auth()->check()) {
-            return redirect()->route('tenant.login', ['tenant' => $tenant->slug]);
-        }
+        // NOTE: Auth check for protected routes is handled by the 'auth' middleware on the routes.
+        // We should NOT redirect to login here, as that causes a loop since the auth middleware
+        // hasn't processed the session yet at this point in the middleware stack.
 
         // Check subscription status - allow access to suspension page
         if ($request->routeIs('tenant.subscription.suspended')) {

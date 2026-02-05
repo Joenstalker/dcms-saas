@@ -27,6 +27,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
         Route::get('/select-plan', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
         Route::post('/initiate/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePayment'])->name('initiate');
+        Route::post('/initiate-payment/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePaymentForTenant'])->name('initiate-payment');
         Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
         // Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment'); // Refactored to separate steps
         Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
@@ -113,6 +114,9 @@ Route::group($centralGroupOptions, function () {
             // Tenants
             Route::resource('tenants', TenantController::class);
             Route::post('tenants/{tenant}/toggle-active', [TenantController::class, 'toggleActive'])->name('tenants.toggle-active');
+            Route::post('tenants/{tenant}/suspend', [TenantController::class, 'suspend'])->name('tenants.suspend');
+            Route::post('tenants/{tenant}/reactivate', [TenantController::class, 'reactivate'])->name('tenants.reactivate')->withTrashed();
+            Route::post('tenants/{tenant}/terminate', [TenantController::class, 'terminate'])->name('tenants.terminate');
             Route::post('tenants/{tenant}/mark-email-verified', [TenantController::class, 'markEmailVerified'])->name('tenants.mark-email-verified');
             Route::post('tenants/{tenant}/resend-verification', [TenantController::class, 'resendVerificationEmail'])->name('tenants.resend-verification');
             Route::get('tenants/{tenant}/impersonate/{user}', [TenantController::class, 'impersonate'])->name('tenants.impersonate');

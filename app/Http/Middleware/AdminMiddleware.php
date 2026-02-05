@@ -17,6 +17,14 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Debug logging
+        \Illuminate\Support\Facades\Log::debug('AdminMiddleware check', [
+            'is_authenticated' => auth()->check(),
+            'user_id' => auth()->id(),
+            'session_id' => session()->getId(),
+            'request_path' => $request->path(),
+        ]);
+
         // Check if user is authenticated
         if (!auth()->check()) {
             return redirect()->route('admin.login');

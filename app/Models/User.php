@@ -10,10 +10,11 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 use App\Traits\BelongsToTenant;
+use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles, BelongsToTenant;
+    use HasFactory, Notifiable, HasRoles, BelongsToTenant, SoftDeletes;
  
     public $incrementing = false;
     protected $keyType = 'string';

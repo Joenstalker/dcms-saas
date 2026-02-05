@@ -160,7 +160,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                         </svg>
                                     </div>
-                                    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-lg shadow-2xl w-48 p-2 border border-base-300 z-[100] mt-1">
+                                    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-lg shadow-2xl w-52 p-2 border border-base-300 z-[100] mt-1">
                                         <li>
                                             <button onclick="document.getElementById('viewModal{{ $tenant->id }}').showModal()" class="flex items-center gap-2">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,32 +179,63 @@
                                             </button>
                                         </li>
                                         <li><hr class="my-1 border-base-300"></li>
+                                        
+                                        {{-- Lifecycle Actions --}}
+                                        @if($tenant->subscription_status !== 'suspended' && $tenant->subscription_status !== 'terminated')
                                         <li>
-                                            <form action="{{ route('admin.tenants.toggle-active', $tenant) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" class="w-full text-left flex items-center gap-2 {{ $tenant->is_active ? 'text-warning' : 'text-success' }}">
-                                                    @if($tenant->is_active)
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                                        </svg>
-                                                    @else
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                    @endif
-                                                    {{ $tenant->is_active ? 'Deactivate' : 'Activate' }}
-                                                </button>
-                                            </form>
+                                            <button onclick="lifecycleAction('{{ route('admin.tenants.suspend', $tenant) }}', 'Suspend', '{{ $tenant->name }}', 'warning')" class="flex items-center gap-2 text-warning">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Suspend Clinic
+                                            </button>
                                         </li>
-                                        <li><hr class="my-1 border-base-300"></li>
+                                        @endif
+                                        
+                                        @if($tenant->subscription_status === 'suspended' || $tenant->subscription_status === 'terminated')
                                         <li>
-                                            <button onclick="document.getElementById('deleteModal{{ $tenant->id }}').showModal()" class="w-full text-left text-error flex items-center gap-2">
+                                            <button onclick="lifecycleAction('{{ route('admin.tenants.reactivate', $tenant) }}', 'Reactivate', '{{ $tenant->name }}', 'success')" class="flex items-center gap-2 text-success">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Reactivate Clinic
+                                            </button>
+                                        </li>
+                                        @endif
+                                        
+                                        @if($tenant->subscription_status !== 'terminated')
+                                        <li>
+                                            <button onclick="lifecycleAction('{{ route('admin.tenants.terminate', $tenant) }}', 'Terminate', '{{ $tenant->name }}', 'error')" class="flex items-center gap-2 text-error">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                                </svg>
+                                                Terminate Clinic
+                                            </button>
+                                        </li>
+                                        @endif
+                                        
+                                        <li><hr class="my-1 border-base-300"></li>
+                                        
+                                        {{-- Permanent Delete - Only for terminated clinics --}}
+                                        @if($tenant->subscription_status === 'terminated')
+                                        <li>
+                                            <button onclick="permanentDelete('{{ route('admin.tenants.destroy', $tenant) }}', '{{ $tenant->name }}')" class="w-full text-left text-error flex items-center gap-2">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                 </svg>
                                                 Delete Permanently
                                             </button>
                                         </li>
+                                        @else
+                                        <li>
+                                            <span class="flex items-center gap-2 text-base-content/40 cursor-not-allowed" title="Terminate clinic first to enable permanent deletion">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Delete (Terminate first)
+                                            </span>
+                                        </li>
+                                        @endif
                                     </ul>
                                 </div>
                             </div>
@@ -533,3 +564,145 @@
 @endsection
 
 @include('admin.tenants.partials.create-modal')
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function lifecycleAction(url, action, clinicName, type) {
+    const colors = {
+        warning: { confirmButtonColor: '#f59e0b', icon: 'warning' },
+        success: { confirmButtonColor: '#22c55e', icon: 'success' },
+        error: { confirmButtonColor: '#ef4444', icon: 'warning' }
+    };
+    
+    const messages = {
+        'Suspend': {
+            title: 'Suspend Clinic?',
+            text: `This will temporarily block "${clinicName}" and disable all user logins. You can reactivate later.`,
+            confirmText: 'Yes, Suspend'
+        },
+        'Reactivate': {
+            title: 'Reactivate Clinic?',
+            text: `This will restore "${clinicName}" and re-enable user access.`,
+            confirmText: 'Yes, Reactivate'
+        },
+        'Terminate': {
+            title: 'Terminate Clinic?',
+            text: `This will terminate "${clinicName}" and soft delete all data. Data will be preserved for 30 days before permanent deletion is allowed.`,
+            confirmText: 'Yes, Terminate'
+        }
+    };
+    
+    const config = messages[action];
+    const color = colors[type];
+    
+    Swal.fire({
+        title: config.title,
+        text: config.text,
+        icon: color.icon,
+        showCancelButton: true,
+        confirmButtonColor: color.confirmButtonColor,
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: config.confirmText,
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Processing...',
+                text: `${action}ing clinic...`,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => { window.location.reload(); });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+            });
+        }
+    });
+}
+
+function permanentDelete(url, clinicName) {
+    Swal.fire({
+        title: 'Permanent Deletion',
+        html: `
+            <p class="mb-4">You are about to <strong>permanently delete</strong> "${clinicName}".</p>
+            <div class="alert alert-error text-left">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                <span>This action is IRREVERSIBLE. All data will be permanently erased.</span>
+            </div>
+        `,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Delete Forever',
+        cancelButtonText: 'Cancel',
+        input: 'text',
+        inputPlaceholder: 'Type clinic name to confirm',
+        inputValidator: (value) => {
+            if (value !== clinicName) {
+                return 'Clinic name does not match!';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Deleting...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: data.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => { window.location.reload(); });
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error', 'An unexpected error occurred.', 'error');
+            });
+        }
+    });
+}
+</script>
+@endpush

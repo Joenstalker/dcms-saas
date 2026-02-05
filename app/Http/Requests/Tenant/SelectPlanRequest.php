@@ -16,7 +16,18 @@ class SelectPlanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pricing_plan_id' => 'required|exists:pricing_plans,id',
+            'pricing_plan_id' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) {
+                    $plan = \App\Models\PricingPlan::find($value);
+                    if (!$plan) {
+                        $fail('The selected subscription plan is invalid.');
+                    } elseif (!$plan->is_active) {
+                        $fail('The selected subscription plan is no longer available.');
+                    }
+                },
+            ],
         ];
     }
 
