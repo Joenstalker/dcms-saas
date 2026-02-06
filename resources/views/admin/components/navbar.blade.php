@@ -137,32 +137,65 @@
 
         let croppieInstance = null;
 
-        const initCroppie = () => {
+        const initCroppie = (url = null) => {
             if (croppieInstance) {
                 croppieInstance.destroy();
+                croppieInstance = null;
             }
-            placeholder.style.display = 'flex';
-            croppieInstance = new Croppie(croppieContainer, {
+            
+            // Clear and create a fresh target element to prevent "already initialized" errors
+            croppieContainer.innerHTML = '<div id="admin-profile-croppie-target"></div>';
+            const target = document.getElementById('admin-profile-croppie-target');
+            
+            placeholder.style.display = url ? 'none' : 'flex';
+            
+            croppieInstance = new Croppie(target, {
                 viewport: { width: 180, height: 180, type: 'square' },
                 boundary: { width: '100%', height: 280 },
                 showZoomer: true,
                 enableOrientation: true
             });
+
+            if (url) {
+                croppieInstance.bind({ url });
+            }
         };
 
         const openModal = () => {
             modal.showModal();
-            croppieContainer.innerHTML = '';
             initCroppie();
         };
 
         const closeModal = () => {
             modal.close();
             if (croppieInstance) {
-                croppieInstance.destroy();
+                try {
+                    croppieInstance.destroy();
+                } catch (e) {}
                 croppieInstance = null;
             }
             fileInput.value = '';
+        };
+
+        const notify = (title, icon = 'success') => {
+            Swal.fire({
+                title: title,
+                icon: icon,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: '#1f2937',
+                color: '#ffffff',
+                customClass: {
+                    popup: 'swal2-solid-popup'
+                },
+                didOpen: (popup) => {
+                    popup.addEventListener('mouseenter', Swal.stopTimer);
+                    popup.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
         };
 
         trigger.addEventListener('click', openModal);
@@ -174,52 +207,101 @@
             if (!file) {
                 return;
             }
+
+            if (!file.type.match('image/(jpeg|png|gif|webp)')) {
+                notify('Invalid image format. Please use JPG, PNG, GIF, or WebP.', 'error');
+                return;
+            }
+
+            if (file.size > 1024 * 1024) {
+                notify('Image is too large. Max size is 1MB.', 'error');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = (loadEvent) => {
-                if (!croppieInstance) {
-                    croppieContainer.innerHTML = '';
-                    initCroppie();
-                }
-                placeholder.style.display = 'none';
-                croppieInstance.bind({ url: loadEvent.target.result });
+                initCroppie(loadEvent.target.result);
             };
             reader.readAsDataURL(file);
         });
 
-        saveButton.addEventListener('click', () => {
+        saveButton.addEventListener('click', async () => {
             if (!croppieInstance) {
                 return;
             }
-            croppieInstance.result({
-                type: 'blob',
-                size: 'viewport',
-                format: 'jpeg',
-                circle: false
-            }).then((blob) => {
+
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...';
+
+            try {
+                const result = await croppieInstance.result({
+                    type: 'base64',
+                    size: 'viewport',
+                    format: 'jpeg',
+                    quality: 0.85
+                });
+
                 const formData = new FormData();
-                formData.append('photo', blob, 'profile-photo.jpg');
-                formData.append('_method', 'patch');
-                if (csrfToken) {
-                    formData.append('_token', csrfToken);
-                }
-                return fetch("{{ route('admin.profile.photo.update') }}", {
+                formData.append('photo_data', result);
+                formData.append('_token', csrfToken || '');
+                formData.append('_method', 'PATCH');
+
+                const response = await fetch("{{ route('admin.profile.photo.update') }}", {
                     method: 'POST',
                     body: formData,
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken || ''
+                        'X-CSRF-TOKEN': csrfToken || '',
+                        'Accept': 'application/json'
                     }
-                }).then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Upload failed');
-                    }
-                    if (avatarImage) {
-                        avatarImage.src = URL.createObjectURL(blob);
-                    }
-                    closeModal();
                 });
-            }).catch(() => {
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Upload failed');
+                }
+
+                if (avatarImage) {
+                    avatarImage.src = result;
+                }
+
                 closeModal();
-            });
+                
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Your profile photo has been updated.',
+                    icon: 'success',
+                    timer: 2500,
+                    showConfirmButton: false,
+                    background: '#ffffff',
+                    color: '#111827',
+                    customClass: {
+                        popup: 'swal2-solid-popup-success'
+                    }
+                });
+            } catch (error) {
+                console.error('Upload error:', error);
+                notify(error.message || 'Failed to update profile photo.', 'error');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.innerHTML = 'Save';
+            }
         });
     })();
 </script>
+
+<style>
+    .swal2-solid-popup {
+        background-color: #1f2937 !important;
+        color: #ffffff !important;
+        opacity: 1 !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    .swal2-solid-popup-success {
+        background-color: #ffffff !important;
+        color: #111827 !important;
+        opacity: 1 !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    }
+</style>

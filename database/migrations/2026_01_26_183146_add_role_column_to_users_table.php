@@ -13,51 +13,44 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->nullable()->after('is_system_admin')->index();
+            $table->string('role')->nullable()->index();
         });
 
-        // Populate existing roles
-        // 1. System Admins
-        DB::table('users')->where('is_system_admin', true)->update(['role' => 'system_admin']);
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('role')->nullable()->index();
+        });
 
-        // 2. Tenant Owners (mapped to 'tenant' role as per user request)
-        DB::table('users')
-            ->where('is_system_admin', false)
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('model_has_roles')
-                    ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                    ->whereColumn('model_has_roles.model_id', 'users.id')
-                    ->where('model_has_roles.model_type', 'App\Models\User')
-                    ->where('roles.name', 'owner');
-            })
-            ->update(['role' => 'tenant']);
+        // Populate existing roles in a MongoDB-compatible way
+        $users = DB::table('users')->get();
 
-        // 3. Dentists
-        DB::table('users')
-            ->where('is_system_admin', false)
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('model_has_roles')
-                    ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                    ->whereColumn('model_has_roles.model_id', 'users.id')
-                    ->where('model_has_roles.model_type', 'App\Models\User')
-                    ->where('roles.name', 'dentist');
-            })
-            ->update(['role' => 'dentist']);
+        foreach ($users as $user) {
+            $userId = (string)($user->_id ?? $user->id ?? null);
+            if (!$userId) continue;
 
-        // 4. Assistants
-        DB::table('users')
-            ->where('is_system_admin', false)
-            ->whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('model_has_roles')
-                    ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-                    ->whereColumn('model_has_roles.model_id', 'users.id')
-                    ->where('model_has_roles.model_type', 'App\Models\User')
-                    ->where('roles.name', 'assistant');
-            })
-            ->update(['role' => 'assistant']);
+            if ($user->is_system_admin ?? false) {
+                DB::table('users')->where((isset($user->_id) ? '_id' : 'id'), $userId)->update(['role' => 'system_admin']);
+                continue;
+            }
+
+            // Fetch role IDs for this user
+            $roleIds = DB::table('model_has_roles')
+                ->where('model_id', $userId)
+                ->where('model_type', 'App\Models\User')
+                ->pluck('role_id');
+
+            if ($roleIds->isNotEmpty()) {
+                $roleNames = DB::table('roles')->whereIn((isset($user->_id) ? '_id' : 'id'), $roleIds)->pluck('name');
+                
+                $newRole = null;
+                if ($roleNames->contains('owner')) $newRole = 'tenant';
+                elseif ($roleNames->contains('dentist')) $newRole = 'dentist';
+                elseif ($roleNames->contains('assistant')) $newRole = 'assistant';
+
+                if ($newRole) {
+                    DB::table('users')->where((isset($user->_id) ? '_id' : 'id'), $userId)->update(['role' => $newRole]);
+                }
+            }
+        }
     }
 
     /**

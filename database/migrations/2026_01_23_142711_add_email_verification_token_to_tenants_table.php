@@ -9,8 +9,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tenants', function (Blueprint $table) {
-            $table->string('email_verification_token')->nullable()->after('email');
-            $table->timestamp('email_verified_at')->nullable()->after('email_verification_token');
+            $table->string('email_verification_token')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
         });
     }
 

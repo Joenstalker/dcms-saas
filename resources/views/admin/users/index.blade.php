@@ -72,9 +72,9 @@
                         <tr class="border-b border-base-200 hover:bg-base-200/50 transition-colors duration-150">
                             <td class="py-2 px-3">
                                 <div class="flex items-center gap-3">
-                                    <div class="avatar placeholder">
-                                        <div class="bg-neutral text-neutral-content rounded-full w-8 h-8">
-                                            <span class="text-xs font-bold">{{ substr($user->name, 0, 1) }}</span>
+                                    <div class="avatar">
+                                        <div class="rounded-full w-8 h-8 bg-base-200 overflow-hidden">
+                                            <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                                         </div>
                                     </div>
                                     <div class="min-w-0 max-w-[200px]">
@@ -128,7 +128,7 @@
                             </td>
                             <td class="py-2 px-3">
                                 <div class="flex items-center justify-end gap-1">
-                                    <button onclick="viewUser{{ $user->id }}.showModal()" class="btn btn-sm btn-ghost btn-circle h-8 w-8 min-h-0 hover:bg-base-200 tooltip tooltip-left" data-tip="View Details">
+                                    <a href="{{ route('admin.users.show', $user) }}" class="btn btn-sm btn-ghost btn-circle h-8 w-8 min-h-0 hover:bg-base-200 tooltip tooltip-left" data-tip="View Profile">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -144,7 +144,7 @@
                                 </div>
                             </td>
                         </tr>
-                        @empty
+@empty
                         <tr>
                             <td colspan="6" class="text-center py-12 text-base-content/70">
                                 <div class="flex flex-col items-center gap-2">
@@ -168,116 +168,6 @@
         </div>
     </div>
 </div>
-
-@foreach($users as $user)
-<!-- User Details Modal -->
-<dialog id="viewUser{{ $user->id }}" class="modal">
-    <div class="modal-box w-11/12 max-w-2xl">
-        <form method="dialog">
-            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-        </form>
-        
-        <div class="flex items-center gap-4 mb-6 pb-6 border-b border-base-300">
-            <div class="avatar placeholder">
-                <div class="bg-primary text-primary-content rounded-full w-16 h-16 text-2xl">
-                    <span class="font-bold">{{ substr($user->name, 0, 1) }}</span>
-                </div>
-            </div>
-            <div>
-                <h3 class="font-bold text-2xl">{{ $user->name }}</h3>
-                <p class="text-base-content/70">
-                    @if($user->is_system_admin)
-                        Super Administrator
-                    @else
-                        {{ $user->roles->pluck('name')->map(fn($n) => ucfirst($n))->join(', ') ?: 'User' }}
-                        @if($user->tenant)
-                            <span class="mx-1">•</span> <span class="text-primary">{{ $user->tenant->name }}</span>
-                        @endif
-                    @endif
-                </p>
-            </div>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h4 class="font-bold text-sm mb-3 uppercase tracking-wider text-base-content/50">Contact info</h4>
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-base-content/60 block">Email Address</label>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="font-medium">{{ $user->email }}</span>
-                            @if($user->email_verified_at)
-                                <div class="badge badge-success badge-xs gap-1" title="Verified on {{ $user->email_verified_at->format('M d, Y') }}">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Verified
-                                </div>
-                            @else
-                                <div class="badge badge-warning badge-xs">Unverified</div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div>
-                <h4 class="font-bold text-sm mb-3 uppercase tracking-wider text-base-content/50">System Info</h4>
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-xs text-base-content/60 block">Account Status</label>
-                        <div class="mt-1">
-                            <!-- Assuming Active means not banned; simplified for now -->
-                            <span class="badge badge-success">Active</span>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs text-base-content/60 block">Member Since</label>
-                        <div class="mt-1 font-medium">{{ $user->created_at->format('F d, Y') }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        @if($user->tenant)
-        <div class="mt-6 pt-6 border-t border-base-300">
-            <h4 class="font-bold text-sm mb-3 uppercase tracking-wider text-base-content/50">Clinic Association</h4>
-            <div class="card bg-base-200/50 border border-base-300">
-                <div class="card-body p-4 flex-row items-center gap-4">
-                    <div class="avatar placeholder">
-                        <div class="bg-secondary text-secondary-content rounded-xl w-12 h-12">
-                            <span class="font-bold">{{ substr($user->tenant->name, 0, 1) }}</span>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="font-bold">{{ $user->tenant->name }}</div>
-                        <div class="text-xs text-base-content/70">{{ $user->tenant->email }}</div>
-                    </div>
-                    <div class="ml-auto">
-                        <a href="{{ route('tenant.dashboard', ['tenant' => $user->tenant->slug]) }}" class="btn btn-xs btn-outline" target="_blank" rel="noopener noreferrer">View Clinic</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-
-        <div class="modal-action border-t border-base-300 mt-8 pt-4">
-            <form method="dialog">
-                <button class="btn btn-ghost">Close</button>
-            </form>
-            <button class="btn btn-outline btn-warning gap-2" onclick="alert('Password reset link has been sent to {{ $user->email }}')">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11.536 17.536A3 3 0 015.657 15.657l1.879-1.879A6 6 0 0115 7z" />
-                </svg>
-                Send Password Reset
-            </button>
-        </div>
-    </div>
-    <form method="dialog" class="modal-backdrop">
-        <button>close</button>
-    </form>
-</dialog>
-@endforeach
 
 @endsection
 

@@ -23,25 +23,31 @@ class AuthController extends Controller
     /**
      * Handle admin login
      */
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request)
     {
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string|min:6',
         ]);
 
-        // Check if user exists and is system admin
-        $user = \App\Models\User::where('email', $credentials['email'])
-            ->where(function($q) {
-                $q->where('role', \App\Models\User::ROLE_SYSTEM_ADMIN)
-                  ->orWhere('is_system_admin', true);
-            })
-            ->first();
+        // Check if user exists
+        $user = \App\Models\User::where('email', $credentials['email'])->first();
 
         if (!$user) {
-            return back()->withErrors([
-                'email' => 'The provided credentials do not match our records or you are not an admin.',
-            ])->onlyInput('email');
+            $message = 'The provided credentials do not match our records.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 401);
+            }
+            return back()->withErrors(['email' => $message])->onlyInput('email');
+        }
+
+        // Check if user is system admin
+        if (!$user->isSystemAdmin()) {
+            $message = 'This account is not authorized to access the admin portal.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 403);
+            }
+            return back()->withErrors(['email' => $message])->onlyInput('email');
         }
 
         // Attempt authentication
@@ -55,12 +61,22 @@ class AuthController extends Controller
                 'session_id' => session()->getId(),
             ]);
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Login successful',
+                    'redirect' => route('admin.dashboard')
+                ]);
+            }
+
             return redirect()->route('admin.dashboard');
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        $message = 'The provided credentials do not match our records.';
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], 401);
+        }
+
+        return back()->withErrors(['email' => $message])->onlyInput('email');
     }
 
     /**

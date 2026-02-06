@@ -69,7 +69,7 @@ class SubscriptionController extends Controller
     /**
      * Initiate payment intent for modal (JSON response) - original method
      */
-    public function initiatePayment(Request $request, $tenant, int $plan): JsonResponse
+    public function initiatePayment(Request $request, $tenant, $plan): JsonResponse
     {
         try {
             // Ensure $tenant is a model
@@ -143,7 +143,7 @@ class SubscriptionController extends Controller
             return response()->json([
                 'clientSecret' => $intent->client_secret,
                 'stripeKey' => config('services.stripe.key'),
-                'amount' => number_format($plan->price, 2),
+                'amount' => number_format((float) $plan->price, 2),
                 'planName' => $plan->name
             ]);
         } catch (\Exception $e) {
@@ -152,8 +152,9 @@ class SubscriptionController extends Controller
         }
     }
 
-    public function confirmPayment(Request $request, $tenant, int $plan): JsonResponse
+    public function confirmPayment(Request $request, $tenant, $plan): JsonResponse
     {
+        // ... (existing logic kept but we are keeping it as fallback or for API calls)
         // Ensure $tenant is a model
         if (!($tenant instanceof Tenant)) {
             $tenant = app('tenant');
@@ -169,7 +170,7 @@ class SubscriptionController extends Controller
         }
 
         $plan = PricingPlan::findOrFail($plan);
-        $paymentIntentId = $request->input('payment_intent_id'); // Passed from frontend if available
+        $paymentIntentId = $request->input('payment_intent_id');
 
         try {
             DB::beginTransaction();
@@ -200,11 +201,10 @@ class SubscriptionController extends Controller
                 'currency' => 'php',
                 'transaction_id' => $paymentIntentId,
                 'status' => 'succeeded',
-                'payment_method' => 'card', // Assumed for now
+                'payment_method' => 'card',
                 'paid_at' => now(),
             ]);
 
-            // Clear session if any
             session()->forget(['selected_plan_id']);
 
             DB::commit();
@@ -215,6 +215,85 @@ class SubscriptionController extends Controller
             DB::rollBack();
             Log::error('Payment Confirmation Failed', ['error' => $e->getMessage()]);
             return response()->json(['error' => 'Payment processing failed on server'], 500);
+        }
+    }
+
+    public function handlePaymentReturn(Request $request, $plan): RedirectResponse
+    {
+        $tenant = app('tenant');
+        
+        // 1. Retrieve params
+        $paymentIntentId = $request->query('payment_intent');
+        $clientSecret = $request->query('payment_intent_client_secret'); // optional verification
+
+        if (!$paymentIntentId) {
+            return redirect()->route('tenant.setup.show', ['step' => 5])
+                ->with('error', 'Invalid payment return parameters.');
+        }
+
+        try {
+            // 2. Verify with Stripe
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+            $intent = \Stripe\PaymentIntent::retrieve($paymentIntentId);
+
+            if ($intent->status !== 'succeeded') {
+                return redirect()->route('tenant.setup.show', ['step' => 5])
+                    ->with('error', 'Payment incomplete. Status: ' . $intent->status);
+            }
+            
+            // Verify tenant matches
+            if ($intent->metadata['tenant_id'] != $tenant->id) {
+                 Log::error('Payment Intent Tenant Mismatch', ['intent_tenant' => $intent->metadata['tenant_id'], 'current_tenant' => $tenant->id]);
+                 abort(403, 'Tenant mismatch.');
+            }
+
+            // 3. Update DB (Reuse logic or copy)
+            DB::beginTransaction();
+            
+            $pricingPlan = PricingPlan::findOrFail($plan);
+            
+            $subscriptionEndsAt = match ($pricingPlan->billing_cycle) {
+                'monthly' => now()->addMonth(),
+                'quarterly' => now()->addMonths(3),
+                'yearly' => now()->addYear(),
+                default => now()->addMonth(),
+            };
+
+            $tenant->update([
+                'pricing_plan_id' => $pricingPlan->id,
+                'is_active' => true,
+                'subscription_status' => 'active',
+                'trial_ends_at' => null,
+                'subscription_ends_at' => $subscriptionEndsAt,
+                'last_payment_date' => now(),
+                'suspended_at' => null,
+            ]);
+
+            // Handle idempotency: Check if payment already recorded
+            $exists = \App\Models\Payment::where('transaction_id', $paymentIntentId)->exists();
+            if (!$exists) {
+                \App\Models\Payment::create([
+                    'tenant_id' => $tenant->id,
+                    'pricing_plan_id' => $pricingPlan->id,
+                    'amount' => $pricingPlan->price,
+                    'currency' => 'php',
+                    'transaction_id' => $paymentIntentId,
+                    'status' => 'succeeded',
+                    'payment_method' => 'card',
+                    'paid_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return redirect()->route('tenant.dashboard')
+                ->with('success', 'Payment successful! Welcome to your dashboard.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Payment Return Error', ['error' => $e->getMessage()]);
+            return redirect()->route('tenant.setup.show', ['step' => 5])
+                ->with('error', 'System error during payment finalization. Please contact support.');
         }
     }
 

@@ -457,111 +457,154 @@
         </div>
         @endif
 
-        <!-- Step 5: Complete -->
+        <!-- Step 5: Checkout / Complete -->
         @if($step == 5)
-        <div class="card bg-base-100 shadow-2xl">
-            <div class="card-body p-6 sm:p-8 text-center">
-                <div class="flex justify-center mb-6">
-                    <div class="rounded-full bg-success/20 p-6">
-                        <svg class="w-16 h-16 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+            @if(isset($paymentData))
+                <!-- Checkout UI for Pending Payment -->
+                <script src="https://js.stripe.com/v3/"></script>
+                
+                <div class="max-w-5xl mx-auto">
+                    <!-- Header -->
+                    <div class="flex items-center gap-4 mb-8">
+                        <h2 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                            <span class="text-primary">&lsaquo;</span> Configure your plan
+                        </h2>
                     </div>
-                </div>
 
-                <h2 class="text-2xl font-bold mb-4 text-primary">Setup Complete!</h2>
-                <p class="text-lg text-base-content/70 mb-6">
-                    Your clinic portal has been configured successfully.
-                </p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                        <!-- Left Column: Payment Form -->
+                        <div class="lg:col-span-2 space-y-8">
+                            
+                            <form id="payment-form" class="space-y-8">
+                                <!-- Payment Method -->
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Payment method</h3>
+                                    <div class="bg-base-100 p-1 rounded-lg">
+                                        <!-- Stripe Payment Element -->
+                                        <div id="payment-element"></div>
+                                    </div>
+                                </div>
 
-                @if($tenant->subscription_status === 'pending_payment')
-                <div class="bg-warning/10 border border-warning rounded-lg p-4 mb-6 text-left">
-                    <div class="flex items-start gap-3">
-                        <svg class="w-6 h-6 text-warning shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                        <div>
-                            <h3 class="font-bold text-warning">Payment Required</h3>
-                            <p class="text-sm mt-1">To activate your {{ $tenant->pricingPlan->name }} subscription, please complete your payment below.</p>
+                                <!-- Billing Address -->
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-4">Billing address</h3>
+                                    <div class="bg-base-100 rounded-lg space-y-4">
+                                        <div class="form-control">
+                                            <label class="label"><span class="label-text">Full name</span></label>
+                                            <input type="text" id="billing-name" class="input input-bordered w-full bg-gray-50" 
+                                                value="{{ auth()->user()->name }}" placeholder="Jane Doe">
+                                        </div>
+                                        
+                                        <div class="form-control">
+                                            <label class="label"><span class="label-text">City</span></label>
+                                            <input type="text" id="billing-city" class="input input-bordered w-full bg-gray-50" 
+                                                value="{{ $tenant->city }}" placeholder="City">
+                                        </div>
+
+                                        <div class="form-control">
+                                            <label class="label"><span class="label-text">Address</span></label>
+                                            <input type="text" id="billing-line1" class="input input-bordered w-full bg-gray-50" 
+                                                value="{{ $tenant->address }}" placeholder="Street address">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Error Message -->
+                                <div id="payment-message" class="hidden alert alert-error"></div>
+                            </form>
+
+                        </div>
+
+                        <!-- Right Column: Order Summary -->
+                        <div class="lg:col-span-1">
+                            <div class="card bg-base-100 shadow-xl border border-gray-100 sticky top-6">
+                                <div class="card-body p-6">
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ $paymentData['plan']->name }} plan</h3>
+                                    
+                                    <div class="space-y-3 mb-6">
+                                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                                            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                            <span>Full Clinic Management Suite</span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                                            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                            <span>Unlimited Patients & Staff</span>
+                                        </div>
+                                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                                            <svg class="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                            <span>Data Security & Backups</span>
+                                        </div>
+                                    </div>
+
+                                    <hr class="border-gray-100 my-4">
+
+                                    <div class="space-y-2 text-sm">
+                                        @php
+                                            $total = $paymentData['amount'];
+                                            $vat = $total * 0.12 / 1.12; // Back-calculate VAT from Gross
+                                            $subtotal = $total - $vat;
+                                        @endphp
+                                        <div class="flex justify-between text-gray-600">
+                                            <span>Monthly subscription</span>
+                                            <span>₱{{ number_format($subtotal, 2) }}</span>
+                                        </div>
+                                        <div class="flex justify-between text-gray-600">
+                                            <span>VAT (12%)</span>
+                                            <span>₱{{ number_format($vat, 2) }}</span>
+                                        </div>
+                                    </div>
+
+                                    <hr class="border-gray-100 my-4">
+
+                                    <div class="flex justify-between items-end mb-6">
+                                        <span class="font-bold text-gray-900">Due today</span>
+                                        <span class="text-2xl font-bold text-gray-900">₱{{ number_format($total, 2) }}</span>
+                                    </div>
+
+                                    <button id="submit-button" form="payment-form" class="btn btn-neutral w-full bg-gray-900 hover:bg-black text-white border-none normal-case h-12 text-lg shadow-lg">
+                                        <span id="button-text">Subscribe</span>
+                                        <span id="spinner" class="loading loading-spinner hidden"></span>
+                                    </button>
+                                    
+                                    <div class="mt-4 text-center">
+                                       <img src="https://js.stripe.com/v3/fingerprinted/img/mastercard-4d8844094130711885b5e41b28c9848f.svg" class="h-6 inline-block opacity-50 mx-1">
+                                       <img src="https://js.stripe.com/v3/fingerprinted/img/visa-36a72fe149302636d7593cfa320b9258.svg" class="h-6 inline-block opacity-50 mx-1">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                @endif
 
-                <div class="bg-base-200 rounded-lg p-6 mb-6 text-left">
-                    <h3 class="font-semibold mb-4">What's Next?</h3>
-                    <ul class="space-y-2 text-sm">
-                        <li class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            Access your clinic dashboard
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            Start managing patients and appointments
-                        </li>
-                        <li class="flex items-center gap-2">
-                            <svg class="w-5 h-5 text-success" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                            </svg>
-                            Invite team members to your clinic
-                        </li>
-                    </ul>
-                </div>
+            @else
+                <!-- Success State (Free plans or Completed) -->
+                <div class="card bg-base-100 shadow-2xl max-w-2xl mx-auto">
+                    <div class="card-body p-6 sm:p-12 text-center">
+                        <div class="flex justify-center mb-6">
+                            <div class="rounded-full bg-success/10 p-6">
+                                <svg class="w-16 h-16 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
 
-                @if($tenant->subscription_status === 'pending_payment')
-                <form action="{{ route('tenant.subscription.initiate-payment', ['tenant' => $tenant]) }}" method="POST" class="mb-4">
-                    @csrf
-                    <input type="hidden" name="plan_id" value="{{ $tenant->pricing_plan_id }}">
-                    <button type="submit" id="pay-btn" class="btn btn-primary btn-lg w-full">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                        </svg>
-                        Complete Payment - ₱{{ number_format($tenant->pricingPlan->price, 2) }}/{{ $tenant->pricingPlan->billing_cycle }}
-                    </button>
-                </form>
-                @endif
+                        <h2 class="text-3xl font-bold mb-4 text-gray-800">Setup Complete!</h2>
+                        <p class="text-lg text-gray-600 mb-8">
+                            Your clinic portal has been configured successfully.
+                        </p>
 
-                <form action="{{ route('tenant.setup.complete', $tenant) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="btn btn-outline btn-lg w-full" @if($tenant->subscription_status === 'pending_payment') onclick="return confirm('Are you sure you want to skip payment? Your subscription will remain pending until payment is completed.')" @endif>
-                        @if($tenant->subscription_status === 'pending_payment')
-                            Skip for Now (Payment Pending)
-                        @else
-                            Go to Dashboard
-                        @endif
-                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        @if($tenant->subscription_status === 'pending_payment')
-        <!-- Payment Modal -->
-        <dialog id="payment_modal" class="modal">
-            <div class="modal-box">
-                <h3 class="font-bold text-lg mb-4">Complete Your Payment</h3>
-                <div id="payment-element" class="mb-4">
-                    <div class="flex justify-center py-8">
-                        <span class="loading loading-spinner loading-lg text-primary"></span>
+                        <form action="{{ route('tenant.setup.complete', $tenant) }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-primary btn-lg w-full">
+                                Go to Dashboard
+                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                </svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
-                <div class="modal-action">
-                    <form method="dialog">
-                        <button class="btn">Cancel</button>
-                    </form>
-                </div>
-            </div>
-            <form method="dialog" class="modal-backdrop">
-                <button>close</button>
-            </form>
-        </dialog>
-        @endif
+            @endif
         @endif
     </div>
 </div>
@@ -610,6 +653,7 @@ function addHMOProvider() {
     container.appendChild(div);
 }
 
+// Dental Service Logic
 let dentalServiceIndex = {{ ($tenant->default_dental_services && count($tenant->default_dental_services) > 0) ? count($tenant->default_dental_services) : 1 }};
 
 function addDentalService() {
@@ -633,8 +677,8 @@ function removeItem(button) {
     button.closest('div').remove();
 }
 
-// Sync color inputs
 document.addEventListener('DOMContentLoaded', function() {
+    // Color Picker Sync
     const primaryPicker = document.getElementById('primary_color_picker');
     const primaryInput = document.getElementById('primary_color_input');
     const secondaryPicker = document.getElementById('secondary_color_picker');
@@ -662,85 +706,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle payment modal
-    const payBtn = document.getElementById('pay-btn');
-    const paymentModal = document.getElementById('payment_modal');
-    const paymentElement = document.getElementById('payment-element');
+    // Checkout Logic for Step 5
+    @if(isset($paymentData))
+        const stripe = Stripe("{{ $paymentData['stripeKey'] }}");
+        const clientSecret = "{{ $paymentData['clientSecret'] }}";
 
-    if (payBtn && paymentModal) {
-        payBtn.addEventListener('click', async function(e) {
+        const appearance = {
+            theme: 'stripe',
+            labels: 'floating',
+            variables: {
+                colorPrimary: '#0f172a',
+            },
+        };
+
+        const elements = stripe.elements({ appearance, clientSecret });
+        const paymentElement = elements.create("payment", {
+            layout: "tabs",
+        });
+        paymentElement.mount("#payment-element");
+
+        const form = document.getElementById("payment-form");
+        const submitButton = document.getElementById("submit-button");
+        const spinner = document.getElementById("spinner");
+        const buttonText = document.getElementById("button-text");
+        const messageContainer = document.getElementById("payment-message");
+
+        form.addEventListener("submit", async function(e) {
             e.preventDefault();
-            paymentModal.showModal();
+            setLoading(true);
 
-            try {
-                const response = await fetch("{{ route('tenant.subscription.initiate-payment', $tenant) }}", {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                    },
-                    body: new FormData(payBtn.form)
-                });
+            // Trigger Stripe confirmation
+            // Note: return_url MUST be an absolute URL
+            const { error } = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: "{{ route('tenant.subscription.payment.return', ['plan' => $paymentData['plan']->id, 'tenant' => $tenant->slug]) }}",
+                    payment_method_data: {
+                        billing_details: {
+                            name: document.getElementById('billing-name').value,
+                            address: {
+                                city: document.getElementById('billing-city').value,
+                                line1: document.getElementById('billing-line1').value,
+                            }
+                        }
+                    }
+                },
+            });
 
-                const result = await response.json();
-
-                if (result.error) {
-                    paymentElement.innerHTML = `
-                        <div class="alert alert-error">
-                            <span>${result.error}</span>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Initialize Stripe Elements
-                if (result.clientSecret && result.stripeKey) {
-                    const stripe = Stripe(result.stripeKey);
-                    const elements = stripe.elements({
-                        clientSecret: result.clientSecret,
-                        appearance: { theme: 'stripe' }
-                    });
-
-                    const paymentElement = elements.create('payment');
-                    paymentElement.mount('#payment-element');
-
-                    // Store for confirmation
-                    window.stripePaymentIntent = result.clientSecret;
-                    window.stripeTenantId = {{ $tenant->id }};
+            if (error) {
+                if (error.type === "card_error" || error.type === "validation_error") {
+                    showMessage(error.message);
                 } else {
-                    paymentElement.innerHTML = `
-                        <div class="text-center py-4">
-                            <p class="font-bold text-lg">${result.planName}</p>
-                            <p class="text-2xl font-bold text-primary mt-2">₱${result.amount}</p>
-                            <p class="text-sm text-base-content/70 mt-2">Payment integration not configured. Please contact support.</p>
-                        </div>
-                    `;
+                    showMessage("An unexpected error occurred.");
                 }
-            } catch (error) {
-                console.error('Payment init error:', error);
-                paymentElement.innerHTML = `
-                    <div class="alert alert-error">
-                        <span>Failed to initialize payment. Please try again.</span>
-                    </div>
-                `;
+                setLoading(false);
+            } else {
+                // Success! Stripe redirects to return_url
             }
         });
-    }
-});
-        });
-    }
 
-    if (secondaryPicker && secondaryInput) {
-        secondaryPicker.addEventListener('input', function() {
-            secondaryInput.value = this.value;
-        });
-        secondaryInput.addEventListener('input', function() {
-            if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
-                secondaryPicker.value = this.value;
+        function showMessage(messageText) {
+            messageContainer.classList.remove("hidden");
+            messageContainer.textContent = messageText;
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                spinner.classList.remove("hidden");
+                buttonText.classList.add("hidden");
+            } else {
+                submitButton.disabled = false;
+                spinner.classList.add("hidden");
+                buttonText.classList.remove("hidden");
             }
-        });
-    }
+        }
+    @endif
 });
 </script>
 @endsection

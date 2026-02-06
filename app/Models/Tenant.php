@@ -206,4 +206,9 @@ class Tenant extends Model
     {
         return 'slug';
     }
+
+    public function hasFeature(string $feature): bool
+    {
+        return $this->pricingPlan && $this->pricingPlan->hasFeature($feature);
+    }
 }

@@ -137,14 +137,42 @@ class RegistrationController extends Controller
             // Login the user
             Auth::login($user);
 
-            // For paid plans, set session flag and redirect to wizard for payment
+            // For paid plans, redirect to wizard for payment
             $needsPayment = !$isFreePlan;
 
-            if ($request->ajax() || $request->wantsJson()) {
-                $port = $request->getPort();
-                $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-                $wizardUrl = "http://{$generatedDomain}{$portSuffix}/setup/wizard?step=5&payment_required=" . ($needsPayment ? '1' : '0');
+            // Generate Auto-Login URL to bridge session to subdomain
+            $port = $request->getPort();
+            $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+            $scheme = $request->getScheme(); // http or https
+            
+            $timestamp = now()->timestamp;
+            
+            // Debug logging to see why ID might be missing
+            \Illuminate\Support\Facades\Log::info('Generating Auto-Login URL', [
+                'user_id' => $user->getKey(),
+                'tenant_id' => $tenant->getKey(),
+                'user_object_id' => $user->id,
+                'tenant_object_id' => $tenant->id,
+            ]);
 
+            // Cast IDs to string using getKey() for reliability
+            $userIdStr = (string)$user->getKey();
+            $tenantIdStr = (string)$tenant->getKey();
+            
+            $dataToSign = $userIdStr . $tenantIdStr . $timestamp;
+            $signature = hash_hmac('sha256', $dataToSign, config('app.key'));
+            
+            $redirectPath = $needsPayment ? '/setup/5' : '/';
+            
+            $autoLoginUrl = "{$scheme}://{$generatedDomain}{$portSuffix}/auto-login?" . http_build_query([
+                'user_id' => $userIdStr,
+                'timestamp' => $timestamp,
+                'signature' => $signature,
+                'redirect' => $redirectPath,
+                'payment_required' => $needsPayment ? '1' : '0',
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
                 if ($needsPayment) {
                     session(['pending_payment_tenant_id' => $tenant->id]);
                     return response()->json([
@@ -152,7 +180,7 @@ class RegistrationController extends Controller
                         'payment_required' => true,
                         'message' => 'Your clinic is ready! Complete your setup and add payment method.',
                         'subdomain' => $normalizedSubdomain,
-                        'redirect_url' => $wizardUrl
+                        'redirect_url' => $autoLoginUrl
                     ], 201);
                 }
 
@@ -160,19 +188,15 @@ class RegistrationController extends Controller
                     'success' => true,
                     'message' => 'Welcome to DCMS! Your clinic has been created successfully! Redirecting you now...',
                     'subdomain' => $normalizedSubdomain,
-                    'redirect_url' => "http://{$generatedDomain}{$portSuffix}"
+                    'redirect_url' => $autoLoginUrl
                 ], 201);
             }
 
-            $port = $request->getPort();
-            $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-
             if ($needsPayment) {
                 session(['pending_payment_tenant_id' => $tenant->id]);
-                return redirect()->away("http://{$generatedDomain}{$portSuffix}/setup/wizard?step=5&payment_required=1");
             }
 
-            return redirect()->away("http://{$generatedDomain}{$portSuffix}");
+            return redirect()->away($autoLoginUrl);
 
             if ($request->ajax() || $request->wantsJson()) {
                 $port = $request->getPort();

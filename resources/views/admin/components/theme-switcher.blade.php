@@ -1,11 +1,14 @@
 @if((auth()->check() && auth()->user()->is_system_admin) || (isset($tenant) && $tenant->pricingPlan && $tenant->pricingPlan->hasFeature('Customizable Themes')))
-<div class="dropdown dropdown-end">
+<div class="dropdown dropdown-end dropdown-bottom">
     <div tabindex="0" role="button" class="btn btn-ghost btn-circle btn-sm">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
         </svg>
     </div>
-    <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box shadow-2xl w-56 p-2 border border-base-300 mt-2 max-h-[70vh] overflow-y-auto overflow-x-hidden z-50">
+    <div class="dropdown-content z-50 mt-2">
+        <div class="card bg-base-100 rounded-box shadow-2xl w-60 border border-base-300 overflow-hidden">
+            <div class="max-h-[70vh] overflow-y-auto overflow-x-hidden theme-dropdown-scroll p-2">
+                <ul class="menu p-0">
         @php
             $standardThemes = [
                 'light' => 'Light',
@@ -83,8 +86,28 @@
                 </button>
             </li>
         @endforeach
-    </ul>
+            </ul>
+        </div>
+    </div>
 </div>
+</div>
+
+<style>
+    .theme-dropdown-scroll::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .theme-dropdown-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .theme-dropdown-scroll::-webkit-scrollbar-thumb {
+        background: rgba(var(--bc), 0.2);
+        border-radius: 10px;
+    }
+    .theme-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+        background: rgba(var(--bc), 0.3);
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

@@ -10,24 +10,24 @@ return new class extends Migration
     {
         Schema::table('tenants', function (Blueprint $table) {
             // Setup completion flag
-            $table->boolean('setup_completed')->default(false)->after('is_active');
+            $table->boolean('setup_completed')->default(false);
             
             // Branding fields
-            $table->string('primary_color')->nullable()->after('logo');
-            $table->string('secondary_color')->nullable()->after('primary_color');
-            $table->text('invoice_header')->nullable()->after('secondary_color');
-            $table->text('receipt_header')->nullable()->after('invoice_header');
+            $table->string('primary_color')->nullable();
+            $table->string('secondary_color')->nullable();
+            $table->text('invoice_header')->nullable();
+            $table->text('receipt_header')->nullable();
             
             // Business hours (stored as JSON)
-            $table->json('business_hours')->nullable()->after('receipt_header');
+            $table->json('business_hours')->nullable();
             
             // Consent & certificates configuration
-            $table->json('consent_forms')->nullable()->after('business_hours');
-            $table->json('certificate_templates')->nullable()->after('consent_forms');
+            $table->json('consent_forms')->nullable();
+            $table->json('certificate_templates')->nullable();
             
             // Default configurations
-            $table->json('default_hmo_providers')->nullable()->after('certificate_templates');
-            $table->json('default_dental_services')->nullable()->after('default_hmo_providers');
+            $table->json('default_hmo_providers')->nullable();
+            $table->json('default_dental_services')->nullable();
         });
     }
 

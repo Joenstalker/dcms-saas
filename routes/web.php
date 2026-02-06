@@ -22,12 +22,14 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     // Tenant Authentication routes
     // Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout'); (Handled by Fortify)
     Route::get('/impersonate/{user}', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'impersonate'])->name('impersonate')->middleware('signed');
+    Route::get('/auto-login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'autoLogin'])->name('auto-login');
 
     // Tenant Subscription & Payment (Authenticated)
     Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
         Route::get('/select-plan', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
         Route::post('/initiate/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePayment'])->name('initiate');
         Route::post('/initiate-payment/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePaymentForTenant'])->name('initiate-payment');
+        Route::get('/payment-return/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'handlePaymentReturn'])->name('payment.return');
         Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
         // Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment'); // Refactored to separate steps
         Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
@@ -63,9 +65,12 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
         Route::get('/services', function(\App\Models\Tenant $tenant) { 
             return view('tenant.services.index', compact('tenant')); 
         })->name('services.index');
-        Route::get('/role-permission', function(\App\Models\Tenant $tenant) { 
-            return view('tenant.RolePermission', compact('tenant')); 
-        })->name('role-permission.index');
+        Route::get('/role-permission', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'index'])->name('role-permission.index');
+        Route::post('/role-permission', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'store'])->name('role-permission.store');
+        Route::put('/role-permission/{role}', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'update'])->name('role-permission.update');
+        Route::delete('/role-permission/{role}', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'destroy'])->name('role-permission.destroy');
+        Route::post('/role-permission/{role}/permissions', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignPermissions'])->name('role-permission.permissions');
+        Route::post('/role-permission/users/{user}/roles', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignUserRole'])->name('role-permission.user-roles');
         
         Route::get('/expenses', function(\App\Models\Tenant $tenant) { 
             return view('tenant.expenses.index', compact('tenant')); 
@@ -150,6 +155,7 @@ Route::group($centralGroupOptions, function () {
             Route::get('role-permission/{role}/edit', [\App\Http\Controllers\Admin\RolePermissionController::class, 'edit'])->name('role-permission.edit');
             Route::put('role-permission/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'update'])->name('role-permission.update');
             Route::delete('role-permission/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'destroy'])->name('role-permission.destroy');
+            Route::get('role-permission/tenant/{tenant}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'viewTenantRoles'])->name('role-permission.tenant');
         });
     });
 

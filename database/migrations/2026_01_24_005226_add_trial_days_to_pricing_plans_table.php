@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pricing_plans', function (Blueprint $table) {
-            $table->integer('trial_days')->default(0)->after('billing_cycle');
-            $table->boolean('is_popular')->default(false)->after('is_active');
-            $table->string('badge_text')->nullable()->after('is_popular');
-            $table->string('badge_color')->nullable()->after('badge_text');
+            $table->integer('trial_days')->default(0);
+            $table->boolean('is_popular')->default(false);
+            $table->string('badge_text')->nullable();
+            $table->string('badge_color')->nullable();
         });
     }
 

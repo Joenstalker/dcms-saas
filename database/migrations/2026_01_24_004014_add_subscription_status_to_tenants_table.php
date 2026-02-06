@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::table('tenants', function (Blueprint $table) {
             $table->enum('subscription_status', ['active', 'trial', 'expired', 'suspended', 'cancelled'])
                 ->default('trial')
-                ->after('subscription_ends_at');
-            $table->timestamp('last_payment_date')->nullable()->after('subscription_status');
-            $table->timestamp('suspended_at')->nullable()->after('last_payment_date');
+                ;
+            $table->timestamp('last_payment_date')->nullable();
+            $table->timestamp('suspended_at')->nullable();
         });
     }
 

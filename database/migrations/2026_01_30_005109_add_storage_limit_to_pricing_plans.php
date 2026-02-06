@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pricing_plans', function (Blueprint $table) {
-            $table->integer('storage_limit_mb')->nullable()->after('max_patients')->comment('Storage limit in Megabytes');
+            $table->integer('storage_limit_mb')->nullable()->comment('Storage limit in Megabytes');
         });
     }
 

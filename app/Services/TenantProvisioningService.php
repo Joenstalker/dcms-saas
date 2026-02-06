@@ -126,34 +126,44 @@ class TenantProvisioningService
 
     protected function createDefaultRoles(Tenant $tenant): void
     {
-        // Create tenant-specific roles: Owner, Dentist, Assistant
-        // Owner can be business owner or dentist itself
         $roles = [
             [
                 'name' => 'owner',
                 'guard_name' => 'web',
+                'description' => 'Full access to all clinic management features',
+                'is_system_role' => false,
+                'is_editable' => true,
             ],
             [
                 'name' => 'dentist',
                 'guard_name' => 'web',
+                'description' => 'Dentist with patient and appointment management access',
+                'is_system_role' => false,
+                'is_editable' => true,
             ],
             [
                 'name' => 'assistant',
                 'guard_name' => 'web',
+                'description' => 'Assistant with limited access',
+                'is_system_role' => false,
+                'is_editable' => true,
             ],
         ];
 
         foreach ($roles as $roleData) {
-            // Create role scoped to this tenant
             $role = Role::firstOrCreate(
                 [
                     'tenant_id' => $tenant->id,
                     'name' => $roleData['name'],
                     'guard_name' => $roleData['guard_name'],
+                ],
+                [
+                    'description' => $roleData['description'],
+                    'is_system_role' => $roleData['is_system_role'],
+                    'is_editable' => $roleData['is_editable'],
                 ]
             );
 
-            // Assign permissions based on role
             $this->assignRolePermissions($role, $roleData['name'], $tenant);
         }
     }

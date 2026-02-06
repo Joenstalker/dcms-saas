@@ -34,6 +34,7 @@ class User extends Authenticatable
         'status',
         'must_reset_password',
         'profile_photo_path',
+        'profile_photo_data',
     ];
 
     public const ROLE_SYSTEM_ADMIN = 'system_admin';
@@ -70,17 +71,25 @@ class User extends Authenticatable
         'profile_photo_url',
     ];
 
-    public function getProfilePhotoUrlAttribute()
+    public function getProfilePhotoUrlAttribute(): string
     {
+        if ($this->profile_photo_data) {
+            return $this->profile_photo_data;
+        }
+
         if ($this->profile_photo_path) {
             return asset('storage/' . $this->profile_photo_path);
         }
 
-        if ($this->isDentist() || $this->isAssistant()) {
-            return $this->initialAvatarDataUrl();
+        return $this->initialAvatarDataUrl();
+    }
+
+    public function setProfilePhotoDataAttribute(?string $value): void
+    {
+        $this->attributes['profile_photo_data'] = $value;
+        if ($value) {
+            $this->attributes['profile_photo_path'] = null;
         }
-        
-        return asset('images/dcms-logo.png');
     }
 
     protected function initialAvatarDataUrl(): string

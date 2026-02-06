@@ -106,7 +106,8 @@ class TenantMiddleware
             || $request->routeIs('tenant.registration.*') 
             || $request->routeIs('tenant.verification.*')
             || $request->routeIs('tenant.subscription.suspended')
-            || $request->routeIs('password.*')) {
+            || $request->routeIs('password.*')
+            || $request->routeIs('auto-login')) {
             return $next($request);
         }
 
@@ -121,12 +122,23 @@ class TenantMiddleware
 
         // Check if tenant has active subscription
         if (! $tenant->hasActiveSubscription()) {
+            // Allow pending_payment users to access setup wizard for initial setup/payment
+            if ($tenant->subscription_status === 'pending_payment' &&
+                $request->routeIs('tenant.setup.*')) {
+                return $next($request);
+            }
+
             if (! $tenant->pricing_plan_id) {
                 if (! $request->routeIs('tenant.subscription.*')) {
                     return redirect()->route('tenant.subscription.select-plan', ['tenant' => $tenant->slug]);
                 }
 
                 return $next($request);
+            }
+
+            // If pending payment, redirect to payment setup instead of suspending
+            if ($tenant->subscription_status === 'pending_payment') {
+                return redirect()->route('tenant.setup.show', ['tenant' => $tenant->slug, 'step' => 5]);
             }
 
             // Mark as suspended if not already

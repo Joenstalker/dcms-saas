@@ -9,6 +9,7 @@
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
 
     <script>
         // Apply theme immediately to prevent FOUC
@@ -20,6 +21,7 @@
 
     @vite(['resources/css/admin.css', 'resources/js/app.js'])
     @include('components.custom-theme-styles')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
 </head>
 <body class="font-sans antialiased text-base-content">
     <div class="min-h-screen bg-base-200 transition-colors duration-300">

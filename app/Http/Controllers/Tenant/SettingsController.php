@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Models\Tenant;
 use App\Models\TenantSetting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -126,7 +127,7 @@ class SettingsController extends Controller
             ->with('success', 'Password updated successfully.');
     }
 
-    public function updateProfilePhoto(Tenant $tenant, Request $request): RedirectResponse
+    public function updateProfilePhoto(Tenant $tenant, Request $request): JsonResponse|RedirectResponse
     {
         $user = auth()->user();
 
@@ -135,25 +136,118 @@ class SettingsController extends Controller
         }
 
         $request->validate([
-            'photo' => ['required', 'image', 'max:1024'],
+            'photo_data' => ['required', 'string'],
         ]);
 
-        if ($request->hasFile('photo')) {
-            $photoFile = $request->file('photo');
-            if (!$tenant->hasEnoughStorage($photoFile->getSize())) {
-                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan to upload more files.');
-            }
-            
-            if ($user->profile_photo_path) {
-                Storage::disk('public')->delete($user->profile_photo_path);
-            }
+        $base64Data = $request->input('photo_data');
 
-            $path = $photoFile->store('profile-photos', 'public');
-            $user->profile_photo_path = $path;
-            $user->save();
+        if (!$this->isValidBase64Image($base64Data)) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Invalid image data.'], 422);
+            }
+            return back()->with('error', 'Invalid image data.');
+        }
+
+        $user->profile_photo_data = $base64Data;
+        $user->save();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Profile photo updated successfully!',
+                'photo_url' => $base64Data
+            ]);
         }
 
         return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
             ->with('success', 'Profile photo updated successfully.');
+    }
+
+    protected function isValidBase64Image(string $base64): bool
+    {
+        if (!preg_match('/^data:image\/(jpeg|png|gif|webp);base64,/', $base64, $matches)) {
+            return false;
+        }
+
+        $base64Data = preg_replace('/^data:image\/(jpeg|png|gif|webp);base64,/', '', $base64);
+
+        if (!$base64Data) {
+            return false;
+        }
+
+        $decoded = base64_decode($base64Data, true);
+
+        if ($decoded === false) {
+            return false;
+        }
+
+        $imageInfo = @getimagesize('data://image/jpeg;base64,' . $base64Data);
+
+        if ($imageInfo === false || !in_array($imageInfo[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_GIF, IMAGETYPE_WEBP])) {
+            return false;
+        }
+
+        return strlen($decoded) <= 1024 * 1024;
+    }
+
+    protected function processImageToBase64($file): string
+    {
+        $imageData = file_get_contents($file->getRealPath());
+        $imageInfo = getimagesizefromstring($imageData);
+
+        if ($imageInfo === false) {
+            throw new \Exception('Invalid image file');
+        }
+
+        $width = $imageInfo[0];
+        $height = $imageInfo[1];
+        $type = $imageInfo[2];
+
+        $maxSize = 400;
+        $ratio = min($maxSize / $width, $maxSize / $height);
+
+        if ($ratio < 1) {
+            $newWidth = (int) round($width * $ratio);
+            $newHeight = (int) round($height * $ratio);
+        } else {
+            $newWidth = $width;
+            $newHeight = $height;
+        }
+
+        $srcImage = match ($type) {
+            IMAGETYPE_JPEG => imagecreatefromjpeg($file->getRealPath()),
+            IMAGETYPE_PNG => imagecreatefrompng($file->getRealPath()),
+            IMAGETYPE_GIF => imagecreatefromgif($file->getRealPath()),
+            default => throw new \Exception('Unsupported image type'),
+        };
+
+        if (!$srcImage) {
+            throw new \Exception('Failed to create image from file');
+        }
+
+        $dstImage = imagecreatetruecolor($newWidth, $newHeight);
+
+        if ($type === IMAGETYPE_PNG) {
+            imagealphablending($dstImage, false);
+            imagesavealpha($dstImage, true);
+            $transparent = imagecolorallocatealpha($dstImage, 0, 0, 0, 127);
+            imagefill($dstImage, 0, 0, $transparent);
+        }
+
+        imagecopyresampled(
+            $dstImage, $srcImage,
+            0, 0, 0, 0,
+            $newWidth, $newHeight,
+            $width, $height
+        );
+
+        imagedestroy($srcImage);
+
+        ob_start();
+        imagejpeg($dstImage, null, 85);
+        $encoded = ob_get_clean();
+
+        imagedestroy($dstImage);
+
+        return 'data:image/jpeg;base64,' . base64_encode($encoded);
     }
 }

@@ -205,19 +205,28 @@
         initCroppie();
     }
 
-    function initCroppie() {
+    function initCroppie(url = null) {
         if (croppieInstance) {
             croppieInstance.destroy();
+            croppieInstance = null;
         }
         
-        croppiePlaceholder.style.display = 'flex'; // Show placeholder initially
+        // Recreate the target element to prevent "already initialized" errors
+        croppieContainer.innerHTML = '<div id="croppie-target"></div>';
+        const target = document.getElementById('croppie-target');
         
-        croppieInstance = new Croppie(croppieContainer, {
-            viewport: { width: 200, height: 200, type: 'square' }, // Square based on screenshot, though circle better for avatars. User screenshot shows square.
+        croppiePlaceholder.style.display = url ? 'none' : 'flex';
+        
+        croppieInstance = new Croppie(target, {
+            viewport: { width: 200, height: 200, type: 'square' },
             boundary: { width: '100%', height: 300 },
             showZoomer: true,
             enableOrientation: true
         });
+
+        if (url) {
+            croppieInstance.bind({ url });
+        }
     }
 
     photoInput.addEventListener('change', function(e) {
@@ -227,20 +236,12 @@
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                // We assume modal is already open if we clicked Browse inside it
-                // But if we clicked 'Change Photo' and it triggered input immediately (old behavior), this ensures modal opens.
-                // However, current design: Open Modal -> Click Browse. 
-                // Checks if modal is open.
+                // Open modal if not already open
                 if(!cropModal.open) {
                     cropModal.showModal();
-                    initCroppie();
                 }
 
-                croppiePlaceholder.style.display = 'none';
-                
-                croppieInstance.bind({
-                    url: e.target.result
-                });
+                initCroppie(e.target.result);
             };
             
             reader.readAsDataURL(file);

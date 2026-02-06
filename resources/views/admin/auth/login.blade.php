@@ -150,44 +150,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Accept': 'application/json'
             }
         })
-        .then(response => {
-            if (response.redirected) {
+        .then(async response => {
+            const data = await response.json();
+            
+            if (response.ok) {
                 // Login successful, show success then redirect
                 Swal.fire({
                     icon: 'success',
                     title: 'Welcome!',
-                    text: 'Redirecting to dashboard...',
+                    text: data.message || 'Redirecting to dashboard...',
                     timer: 1500,
                     showConfirmButton: false,
                     allowOutsideClick: false
                 }).then(() => {
-                    window.location.href = response.url;
+                    window.location.href = data.redirect;
                 });
             } else {
-                return response.json();
-            }
-        })
-        .then(data => {
-            if (data && data.errors) {
+                // Handle different error statuses
+                let title = 'Login Failed';
+                let text = data.message || 'An unexpected error occurred.';
+
+                if (response.status === 422) {
+                    // Validation errors
+                    if (data.errors) {
+                        text = Object.values(data.errors).flat()[0];
+                    }
+                } else if (response.status === 403) {
+                    title = 'Access Denied';
+                }
+
                 Swal.fire({
                     icon: 'error',
-                    title: 'Login Failed',
-                    text: data.errors.email ? data.errors.email[0] : 'Invalid credentials',
-                    confirmButtonColor: '#3085d6'
-                });
-            } else if (data && data.message) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Failed',
-                    text: data.message,
+                    title: title,
+                    text: text,
                     confirmButtonColor: '#3085d6'
                 });
             }
         })
         .catch(error => {
-            // If fetch fails but we have a redirect (form submitted normally)
-            // Just submit the form traditionally
-            loginForm.submit();
+            console.error('Login Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Request Failed',
+                text: 'Could not connect to the server. Please check your internet connection.',
+                confirmButtonColor: '#3085d6'
+            });
         });
     });
 });

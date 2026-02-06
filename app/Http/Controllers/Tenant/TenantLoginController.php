@@ -106,4 +106,69 @@ class TenantLoginController extends Controller
             ->with('success', 'Welcome back! ' . $tenant->name);
     }
 
+    public function autoLogin(Request $request)
+    {
+        $tenantId = session('tenant_id');
+        if (!$tenantId) {
+            // Find tenant by subdomain if not in session (Middleware should have handled this)
+            $host = $request->getHost();
+            $subdomain = explode('.', $host)[0];
+            $tenant = Tenant::where('slug', $subdomain)->first();
+            if (!$tenant) {
+                 abort(404, 'Clinic not found');
+            }
+        } else {
+             $tenant = Tenant::find($tenantId);
+        }
+
+        $userId = $request->input('user_id');
+        $timestamp = $request->input('timestamp');
+        $signature = $request->input('signature');
+        $redirectPath = $request->input('redirect');
+        
+        // Validation
+        if (!$userId || !$timestamp || !$signature) {
+             abort(403, 'Invalid request parameters');
+        }
+
+        // Verify expiration (10 minutes to be safe)
+        if (now()->timestamp - $timestamp > 600) {
+             abort(403, 'Link expired');
+        }
+
+        // Verify signature
+        // Ensure tenant ID is string to match registration controller
+        $tenantIdStr = (string)$tenant->getKey();
+        $dataToSign = $userId . $tenantIdStr . $timestamp;
+        $expectedSignature = hash_hmac('sha256', $dataToSign, config('app.key'));
+        
+        if (!hash_equals($expectedSignature, $signature)) {
+             abort(403, 'Invalid signature');
+        }
+
+        $user = User::where('id', $userId)->where('tenant_id', $tenant->id)->firstOrFail();
+
+        // Login
+        Auth::login($user);
+        $request->session()->regenerate();
+        session(['tenant_id' => $tenant->id, 'tenant_slug' => $tenant->slug]);
+
+        if ($redirectPath) {
+             // Construct full URL with current host
+             $port = $request->getPort();
+             $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+             $scheme = $request->getScheme();
+             $url = "{$scheme}://{$request->getHost()}{$portSuffix}{$redirectPath}";
+             
+             // Append query params if any (e.g. payment_required)
+             $queryParams = $request->except(['user_id', 'timestamp', 'signature', 'redirect']);
+             if (!empty($queryParams)) {
+                 $url .= (str_contains($url, '?') ? '&' : '?') . http_build_query($queryParams);
+             }
+             
+             return redirect()->away($url);
+        }
+
+        return redirect()->route('tenant.dashboard', ['tenant' => $tenant->slug]);
+    }
 }

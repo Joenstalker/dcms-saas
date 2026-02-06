@@ -36,7 +36,43 @@ class SetupController extends Controller
                 ->with('info', 'Setup already completed.');
         }
 
-        return view('tenant.setup.wizard', compact('tenant', 'step'));
+        $paymentData = [];
+        
+        // Prepare Payment Intent for Checkout Step (Step 5) if pending payment
+        if ($step == 5 && $tenant->subscription_status === 'pending_payment') {
+            try {
+                \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+                
+                $plan = $tenant->pricingPlan;
+                
+                // Create Stripe Customer if not exists (optional, keeping it simple for now)
+                
+                // Create PaymentIntent
+                $intent = \Stripe\PaymentIntent::create([
+                    'amount' => (int) ($plan->price * 100),
+                    'currency' => 'php',
+                    'automatic_payment_methods' => ['enabled' => true],
+                    'metadata' => [
+                        'tenant_id' => $tenant->id,
+                        'plan_id' => $plan->id,
+                        'tenant_name' => $tenant->name,
+                    ],
+                ]);
+
+                $paymentData = [
+                    'clientSecret' => $intent->client_secret,
+                    'stripeKey' => config('services.stripe.key'),
+                    'plan' => $plan,
+                    'amount' => $plan->price,
+                ];
+            } catch (\Exception $e) {
+                Log::error('Stripe Init Failed in Setup Wizard', ['error' => $e->getMessage()]);
+                // Don't crash, just show error in view
+                $paymentData['error'] = 'Could not initialize payment system. Please contact support.';
+            }
+        }
+
+        return view('tenant.setup.wizard', compact('tenant', 'step', 'paymentData'));
     }
 
     public function updateBranding(Request $request, Tenant $tenant): RedirectResponse

@@ -16,6 +16,15 @@ class Role extends Model implements RoleContract
 
     public $guarded = ['id'];
 
+    protected $fillable = [
+        'name',
+        'guard_name',
+        'tenant_id',
+        'is_system_role',
+        'is_editable',
+        'description',
+    ];
+
     public function __construct(array $attributes = [])
     {
         $attributes['guard_name'] = $attributes['guard_name'] ?? config('auth.defaults.guard');
