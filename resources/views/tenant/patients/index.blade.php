@@ -127,7 +127,7 @@
                                     </svg>
                                 </a>
                                 @if(auth()->user()->isOwner())
-                                <form action="{{ route('tenant.patients.destroy', [$tenant->slug, $patient->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this patient? This action cannot be undone.')" class="inline">
+                                <form action="{{ route('tenant.patients.destroy', [$tenant->slug, $patient->id]) }}" method="POST" data-confirm-delete="Are you sure you want to delete this patient? This action cannot be undone." class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-ghost btn-xs join-item text-error tooltip" data-tip="Delete">

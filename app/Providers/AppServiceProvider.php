@@ -7,6 +7,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 use App\Http\Responses\LoginResponse;
+use App\Services\TenantBrandingService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,8 +16,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind custom LoginResponse for Fortify to redirect to tenant dashboard
         $this->app->singleton(LoginResponseContract::class, LoginResponse::class);
+        $this->app->singleton(TenantBrandingService::class, function ($app) {
+            return new TenantBrandingService();
+        });
+        $this->app->alias(TenantBrandingService::class, 'tenant_branding');
     }
 
     /**

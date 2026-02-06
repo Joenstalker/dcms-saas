@@ -69,5 +69,38 @@
         </div>
     </div>
     @stack('scripts')
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Global Delete Confirmation
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form.hasAttribute('data-confirm-delete')) {
+                e.preventDefault();
+                const message = form.getAttribute('data-confirm-delete') || 'Are you sure you want to delete this?';
+                
+                Swal.fire({
+                    title: 'Confirm Deletion',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#0ea5e9',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton: 'btn btn-error',
+                        cancelButton: 'btn btn-ghost'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.removeAttribute('data-confirm-delete');
+                        form.submit();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

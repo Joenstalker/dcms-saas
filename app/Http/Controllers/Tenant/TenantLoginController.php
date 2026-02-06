@@ -26,7 +26,7 @@ class TenantLoginController extends Controller
             abort(404, 'Clinic not found.');
         }
 
-        $tenant = Tenant::find($tenantId);
+        $tenant = Tenant::with('customization')->find($tenantId);
         if (!$tenant || !$tenant->is_active) {
             abort(404, 'Clinic not found or inactive.');
         }

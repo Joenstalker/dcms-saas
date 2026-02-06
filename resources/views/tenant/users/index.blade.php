@@ -81,7 +81,7 @@
                                 Edit
                             </a>
                             @if(!$user->isOwner() && $user->id !== auth()->id())
-                                <form action="{{ route('tenant.users.destroy', ['tenant' => $tenant->slug, 'user' => $user->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this staff member?')">
+                                <form action="{{ route('tenant.users.destroy', ['tenant' => $tenant->slug, 'user' => $user->id]) }}" method="POST" data-confirm-delete="Are you sure you want to remove this staff member?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-ghost btn-xs text-error">Remove</button>

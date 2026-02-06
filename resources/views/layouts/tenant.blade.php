@@ -1,11 +1,27 @@
 @php
+    use App\Services\TenantBrandingService;
+
     $tenant = $tenant ?? auth()->user()->tenant ?? null;
-    $tenantCustomization = $tenantCustomization ?? app('tenant_customization') ?? [];
-    $fontFamily = $tenantCustomization['font_family'] ?? 'Figtree';
-    $fontFamilyLabel = trim(explode(',', $fontFamily)[0]);
-    $primaryColor = $tenantCustomization['theme_color_primary'] ?? null;
-    $secondaryColor = $tenantCustomization['theme_color_secondary'] ?? null;
-    $faviconPath = $tenantCustomization['favicon_path'] ?? null;
+    $brandingService = app(TenantBrandingService::class);
+    
+    if ($tenant) {
+        $branding = $brandingService->getBrandingArray($tenant);
+        $fontFamily = $branding['font_body'] ?? 'Figtree';
+        $fontFamilyLabel = trim(explode(',', $fontFamily)[0]);
+        $primaryColor = $branding['primary_color'] ?? null;
+        $secondaryColor = $branding['secondary_color'] ?? null;
+        $faviconPath = $branding['favicon_url'] ?? null;
+        $sidebarPosition = $branding['sidebar_position'] ?? 'left';
+        $customBrandName = $branding['custom_brand_name'] ?? null;
+    } else {
+        $fontFamily = 'Figtree';
+        $fontFamilyLabel = 'Figtree';
+        $primaryColor = null;
+        $secondaryColor = null;
+        $faviconPath = null;
+        $sidebarPosition = 'left';
+        $customBrandName = null;
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -13,7 +29,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $tenant->name ?? 'DCMS' }} - Dashboard</title>
+    <title>{{ $customBrandName ?? $tenant->name ?? 'DCMS' }} - Dashboard</title>
     @if($faviconPath)
         <link rel="icon" href="{{ asset('storage/' . $faviconPath) }}">
     @endif
@@ -22,9 +38,11 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family={{ str_replace(' ', '+', $fontFamilyLabel) }}:wght@400;500;600;700&display=swap" rel="stylesheet">
     @endif
+    <style>
+        body { font-family: {{ $fontFamily }}, {{ $fontFamilyLabel }}, system-ui, -apple-system, sans-serif; }
+    </style>
 
     <script>
-        // Apply theme immediately to prevent FOUC
         (function() {
             const savedTheme = localStorage.getItem('theme') || 'dcms';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -33,7 +51,10 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" />
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    @include('components.tenant-branding-styles', ['tenant' => $tenant])
     @include('components.custom-theme-styles')
 </head>
 <body class="bg-base-200" style="font-family: {{ $fontFamily }}; @if($primaryColor) --p: {{ $primaryColor }}; @endif @if($secondaryColor) --s: {{ $secondaryColor }}; @endif">
@@ -42,7 +63,8 @@
         $sidebarComponent = $sidebarComponent ?? 'tenant.components.sidebar';
     @endphp
     @if($tenant)
-    <div class="drawer lg:drawer-open {{ ($tenantCustomization['sidebar_position'] ?? 'left') === 'right' ? 'drawer-end' : '' }}">
+    <?php $sidebarPosition = $sidebarPosition ?? 'left'; ?>
+    <div class="drawer lg:drawer-open @if($sidebarPosition === 'right') drawer-end @endif">
         <input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
         
         <!-- Page content -->
@@ -361,23 +383,65 @@
             });
         @endif
 
-        @if(session('warning'))
+        // Global Delete Confirmation
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form.hasAttribute('data-confirm-delete')) {
+                e.preventDefault();
+                const message = form.getAttribute('data-confirm-delete') || 'Are you sure you want to delete this?';
+                
+                Swal.fire({
+                    title: 'Confirm Deletion',
+                    text: message,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: 'var(--p, #0ea5e9)',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true,
+                    customClass: {
+                        confirmButton: 'btn btn-error',
+                        cancelButton: 'btn btn-ghost'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.removeAttribute('data-confirm-delete');
+                        form.submit();
+                    }
+                });
+            }
+        });
+
+        window.showUpgradeModal = function() {
             Swal.fire({
                 icon: 'warning',
-                title: 'Warning',
-                text: "{{ session('warning') }}",
-                confirmButtonColor: 'var(--p, #0ea5e9)'
+                title: 'Upgrade Required',
+                html: '<div class="text-center py-4">' +
+                      '<div class="text-5xl mb-4">🔒</div>' +
+                      '<h3 class="text-xl font-bold mb-2">Roles & Permissions Locked</h3>' +
+                      '<p class="text-base-content/70 mb-4">This feature is available for <strong>Pro</strong> and <strong>Ultimate</strong> plans only.</p>' +
+                      '<div class="bg-base-200 rounded-lg p-4 mb-4">' +
+                      '<p class="text-sm font-semibold mb-2">With Pro/Ultimate, you get:</p>' +
+                      '<ul class="text-sm text-left space-y-1">' +
+                      '<li>✅ Full Role-Based Access Control</li>' +
+                      '<li>✅ Custom Permission Sets</li>' +
+                      '<li>✅ Team Management</li>' +
+                      '<li>✅ Advanced Security Features</li>' +
+                      '</ul>' +
+                      '</div>' +
+                      '</div>',
+                showCancelButton: true,
+                confirmButtonText: 'Upgrade Now',
+                cancelButtonText: 'Maybe Later',
+                confirmButtonColor: 'var(--p, #0ea5e9)',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '{{ route('tenant.subscription.select-plan', ['tenant' => $tenant->slug ?? auth()->user()->tenant?->slug]) }}';
+                }
             });
-        @endif
-        
-        @if($errors->any())
-            Swal.fire({
-                icon: 'error',
-                title: 'Validation Error',
-                html: '<ul class="text-left text-sm">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>',
-                confirmButtonColor: 'var(--p, #0ea5e9)'
-            });
-        @endif
+        };
     </script>
 </body>
 </html>

@@ -46,7 +46,7 @@
                     </div>
 
                     <div class="card-actions justify-end pt-4 border-t border-base-200">
-                        <form action="{{ route('admin.themes.destroy', $theme) }}" method="POST" onsubmit="return confirm('Delete this theme?')">
+                        <form action="{{ route('admin.themes.destroy', $theme) }}" method="POST" class="inline" data-confirm-delete="Delete this theme? This cannot be undone.">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-ghost btn-sm text-error hover:bg-error/10">

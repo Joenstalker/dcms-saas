@@ -62,6 +62,16 @@ class PricingPlan extends Model
         return in_array($feature, $features);
     }
 
+    public function canManageRoles(): bool
+    {
+        return $this->hasFeature('manage_roles') || $this->hasFeature('all_features');
+    }
+
+    public function canManageUsers(): bool
+    {
+        return $this->hasFeature('manage_users') || $this->hasFeature('all_features');
+    }
+
     public function hasTrial(): bool
     {
         return $this->trial_duration > 0 || $this->trial_days > 0;

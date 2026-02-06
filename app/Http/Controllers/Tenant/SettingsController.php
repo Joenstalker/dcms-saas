@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PlatformSetting;
 use App\Models\Tenant;
 use App\Models\TenantSetting;
+use App\Services\TenantBrandingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,20 +18,26 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
+    private TenantBrandingService $brandingService;
+
+    public function __construct(TenantBrandingService $brandingService)
+    {
+        $this->brandingService = $brandingService;
+    }
     public function index(Tenant $tenant): View
     {
         $user = auth()->user();
 
-        if (! $user || $user->tenant_id !== $tenant->id) {
+        if (!$user || $user->tenant_id !== $tenant->id) {
             abort(403);
         }
 
         $platformSettings = PlatformSetting::first();
         $tenantSettings = TenantSetting::where('tenant_id', $tenant->id)->first();
 
-        $canCustomize = $tenant->pricingPlan && $tenant->pricingPlan->hasFeature('customization');
+        $canCustomize = true;
 
-        return view('tenant.settings.index', [
+        return view('tenant.settings.branding', [
             'tenant' => $tenant,
             'platformSettings' => $platformSettings,
             'tenantSettings' => $tenantSettings,
@@ -42,68 +49,109 @@ class SettingsController extends Controller
     {
         $user = auth()->user();
 
-        if (! $user || $user->tenant_id !== $tenant->id || ! $user->isOwner()) {
+        if (!$user || $user->tenant_id !== $tenant->id || !$user->isOwner()) {
             abort(403);
-        }
-
-        $plan = $tenant->pricingPlan;
-        if (! $plan || ! $plan->hasFeature('customization')) {
-            return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
-                ->with('error', 'Customization is available for Pro and Ultimate plans only.');
         }
 
         $validated = $request->validate([
             'theme_color_primary' => 'nullable|string|max:7',
             'theme_color_secondary' => 'nullable|string|max:7',
+            'theme_color_accent' => 'nullable|string|max:7',
+            'theme_color_neutral' => 'nullable|string|max:7',
+            'theme_color_info' => 'nullable|string|max:7',
+            'theme_color_success' => 'nullable|string|max:7',
+            'theme_color_warning' => 'nullable|string|max:7',
+            'theme_color_error' => 'nullable|string|max:7',
             'sidebar_position' => 'required|in:left,right',
-            'font_family' => 'required|string|max:255',
-            'dashboard_widgets' => 'nullable|array',
-            'dashboard_widgets.*' => 'string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:2048',
-            'favicon' => 'nullable|image|mimes:png,ico,svg|max:512',
+            'sidebar_collapsed' => 'nullable|boolean',
+            'font_family_heading' => 'nullable|string|max:100',
+            'font_family_body' => 'nullable|string|max:100',
+            'custom_brand_name' => 'nullable|string|max:100',
+            'logo_path' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
+            'dark_logo_path' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
+            'favicon_path' => 'nullable|image|mimes:png,ico,svg|max:512',
+            'remove_logo' => 'nullable|boolean',
+            'remove_dark_logo' => 'nullable|boolean',
+            'remove_favicon' => 'nullable|boolean',
         ]);
 
         $settings = TenantSetting::firstOrCreate(['tenant_id' => $tenant->id]);
 
-        $settings->theme_color_primary = $validated['theme_color_primary'] ?? $settings->theme_color_primary;
-        $settings->theme_color_secondary = $validated['theme_color_secondary'] ?? $settings->theme_color_secondary;
+        $settings->theme_color_primary = $validated['theme_color_primary'] ?? $settings->theme_color_primary ?? '#3b82f6';
+        $settings->theme_color_secondary = $validated['theme_color_secondary'] ?? $settings->theme_color_secondary ?? '#6366f1';
+        $settings->theme_color_accent = $validated['theme_color_accent'] ?? $settings->theme_color_accent ?? '#0ea5e9';
+        $settings->theme_color_neutral = $validated['theme_color_neutral'] ?? $settings->theme_color_neutral ?? '#6b7280';
+        $settings->theme_color_info = $validated['theme_color_info'] ?? $settings->theme_color_info ?? '#3b82f6';
+        $settings->theme_color_success = $validated['theme_color_success'] ?? $settings->theme_color_success ?? '#22c55e';
+        $settings->theme_color_warning = $validated['theme_color_warning'] ?? $settings->theme_color_warning ?? '#f59e0b';
+        $settings->theme_color_error = $validated['theme_color_error'] ?? $settings->theme_color_error ?? '#ef4444';
         $settings->sidebar_position = $validated['sidebar_position'];
-        $settings->font_family = $validated['font_family'];
-        $settings->dashboard_widgets = $validated['dashboard_widgets'] ?? [];
+        $settings->sidebar_collapsed = isset($validated['sidebar_collapsed']) && $validated['sidebar_collapsed'];
+        $settings->font_family_heading = $validated['font_family_heading'] ?? $settings->font_family_heading ?? 'Figtree';
+        $settings->font_family_body = $validated['font_family_body'] ?? $settings->font_family_body ?? 'Inter';
+        $settings->custom_brand_name = $validated['custom_brand_name'] ?? null;
 
-        if ($request->hasFile('logo')) {
-            $logoFile = $request->file('logo');
+        if ($request->hasFile('logo_path')) {
+            $logoFile = $request->file('logo_path');
             if (!$tenant->hasEnoughStorage($logoFile->getSize())) {
-                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan to upload more files.');
+                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan.');
             }
             if ($settings->logo_path) {
                 Storage::disk('public')->delete($settings->logo_path);
             }
             $settings->logo_path = $logoFile->store('tenant-branding', 'public');
+        } elseif (isset($validated['remove_logo']) && $validated['remove_logo']) {
+            if ($settings->logo_path) {
+                Storage::disk('public')->delete($settings->logo_path);
+            }
+            $settings->logo_path = null;
         }
 
-        if ($request->hasFile('favicon')) {
-            $faviconFile = $request->file('favicon');
+        if ($request->hasFile('dark_logo_path')) {
+            $logoFile = $request->file('dark_logo_path');
+            if (!$tenant->hasEnoughStorage($logoFile->getSize())) {
+                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan.');
+            }
+            if ($settings->dark_logo_path) {
+                Storage::disk('public')->delete($settings->dark_logo_path);
+            }
+            $settings->dark_logo_path = $logoFile->store('tenant-branding', 'public');
+        } elseif (isset($validated['remove_dark_logo']) && $validated['remove_dark_logo']) {
+            if ($settings->dark_logo_path) {
+                Storage::disk('public')->delete($settings->dark_logo_path);
+            }
+            $settings->dark_logo_path = null;
+        }
+
+        if ($request->hasFile('favicon_path')) {
+            $faviconFile = $request->file('favicon_path');
             if (!$tenant->hasEnoughStorage($faviconFile->getSize())) {
-                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan to upload more files.');
+                return redirect()->back()->with('error', 'Storage limit reached! Please upgrade your plan.');
             }
             if ($settings->favicon_path) {
                 Storage::disk('public')->delete($settings->favicon_path);
             }
             $settings->favicon_path = $faviconFile->store('tenant-branding', 'public');
+        } elseif (isset($validated['remove_favicon']) && $validated['remove_favicon']) {
+            if ($settings->favicon_path) {
+                Storage::disk('public')->delete($settings->favicon_path);
+            }
+            $settings->favicon_path = null;
         }
 
         $settings->save();
 
+        $this->brandingService->clearSettingsCache($tenant);
+
         return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
-            ->with('success', 'Customization updated successfully.');
+            ->with('success', 'Branding settings updated successfully!');
     }
 
     public function updatePassword(Tenant $tenant, Request $request): RedirectResponse
     {
         $user = auth()->user();
 
-        if (! $user || $user->tenant_id !== $tenant->id) {
+        if (!$user || $user->tenant_id !== $tenant->id) {
             abort(403);
         }
 
@@ -131,7 +179,7 @@ class SettingsController extends Controller
     {
         $user = auth()->user();
 
-        if (! $user || $user->tenant_id !== $tenant->id) {
+        if (!$user || $user->tenant_id !== $tenant->id) {
             abort(403);
         }
 

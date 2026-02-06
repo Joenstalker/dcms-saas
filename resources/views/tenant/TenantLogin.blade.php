@@ -10,19 +10,25 @@
             
             <!-- Clinic Logo/Icon -->
             <div class="text-center mb-6">
-                @if($tenant->logo)
-                    <img src="{{ asset('storage/' . $tenant->logo) }}" alt="{{ $tenant->name }}" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
+                @php
+                    $branding = $tenant->customization;
+                    $logoPath = $branding?->logo_path ?? $tenant->logo;
+                    $brandName = $branding?->custom_brand_name ?? $tenant->name;
+                @endphp
+
+                @if($logoPath)
+                    <img src="{{ asset('storage/' . $logoPath) }}" alt="{{ $brandName }}" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
                 @else
                     <img src="{{ asset('images/dcms-logo.png') }}" alt="DCMS Logo" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500">
                 @endif
-            </img>
+            </div>
 
             <!-- Welcome Message -->
             <div class="text-center mb-6">
                 <h2 class="text-3xl font-black text-gray-900 tracking-tight leading-none italic uppercase">Login Portal</h2>
                 <div class="flex items-center justify-center gap-2 mt-3">
                     <span class="h-px w-8 bg-sky-100"></span>
-                    <p class="text-[10px] text-sky-500 font-black tracking-[0.2em] uppercase">{{ $tenant->name }}</p>
+                    <p class="text-[10px] text-sky-500 font-black tracking-[0.2em] uppercase">{{ $brandName }}</p>
                     <span class="h-px w-8 bg-sky-100"></span>
                 </div>
             </div>
@@ -147,3 +153,4 @@
         </div>
     </div>
 </div>
+@endsection

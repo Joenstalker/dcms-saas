@@ -13,9 +13,12 @@
                 {{ $tenant->is_active ? 'Deactivate' : 'Activate' }}
             </button>
         </form>
-        <button onclick="document.getElementById('deleteModal{{ $tenant->id }}').showModal()" class="btn btn-error">
-            Delete Permanently
-        </button>
+        <form action="{{ route('admin.tenants.destroy', $tenant) }}" method="POST" data-confirm-delete="Delete Clinic Permanently? This action is irreversible and will erase all data!">
+            @csrf @method('DELETE')
+            <button type="submit" class="btn btn-error">
+                Delete Permanently
+            </button>
+        </form>
     </div>
 </div>
 

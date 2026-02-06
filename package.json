@@ -19,10 +19,12 @@
     "dependencies": {
         "@alpinejs/collapse": "^3.15.4",
         "@alpinejs/focus": "^3.15.4",
+        "@kilocode/cli": "^1.0.16",
         "chart.js": "^4.5.1",
         "croppie": "^2.6.5",
         "flatpickr": "^4.6.13",
         "mongodb": "^7.0.0",
+        "node-fpdf": "^1.0.49",
         "sweetalert": "^2.1.2",
         "sweetalert2": "^11.26.17"
     }

@@ -155,28 +155,36 @@
             </li>
             @endif
 
-            <!-- Account Section -->
+            <!-- Settings Section -->
             <li>
-                <details {{ request()->routeIs('tenant.settings.*') || request()->routeIs('tenant.users.*') || request()->routeIs('tenant.role-permission.*') ? 'open' : '' }} name="sidebar-menu" class="group">
+                <details {{ request()->routeIs('tenant.settings.*') || request()->routeIs('tenant.role-permission.*') ? 'open' : '' }} name="sidebar-menu" class="group">
                     <summary class="flex items-center gap-3 font-semibold text-base-content/80 hover:bg-base-200 rounded-lg p-2.5 transition-all cursor-pointer group-open:after:rotate-180">
                         <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span class="flex-1">Account</span>
+                        <span class="flex-1">Settings</span>
                     </summary>
                     <ul class="mt-1 ml-4 border-l-2 border-base-200 pl-2 gap-1">
                         <li>
-                            <a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.settings.index') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70' }} py-2 px-4 rounded-md">
-                                Settings
+                            <a href="{{ route('tenant.settings.branding', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.settings.branding') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70' }} py-2 px-4 rounded-md">
+                                Branding
                             </a>
                         </li>
-                        <!-- Concerns Section -->
+                        @if(in_array($planSlug, ['pro', 'ultimate']))
                         <li>
-                            <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200 flex justify-between items-center">
-                                Concerns
-                                <span class="badge badge-primary badge-xs">0</span>
+                            <a href="{{ route('tenant.role-permission.index', ['tenant' => $tenant->slug]) }}" class="{{ request()->routeIs('tenant.role-permission.*') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70' }} py-2 px-4 rounded-md">
+                                Roles & Permissions
                             </a>
                         </li>
+                        @elseif(auth()->user()->isOwner())
+                        <li>
+                            <a href="#" onclick="showUpgradeModal(); return false;" class="text-base-content/50 py-2 px-4 rounded-md flex items-center gap-2 cursor-not-allowed opacity-60" title="Upgrade to Pro or Ultimate to access this feature">
+                                Roles & Permissions
+                                <span class="badge badge-warning badge-xs ml-auto">PRO</span>
+                            </a>
+                        </li>
+                        @endif
                     </ul>
                 </details>
             </li>

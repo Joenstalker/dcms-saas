@@ -27,10 +27,13 @@ class RolePermissionController extends Controller
             abort(403, 'Tenant context not found');
         }
 
-        if (!$tenant->hasFeature('rbac')) {
+        $planSlug = $tenant->pricingPlan?->slug ?? '';
+        $allowedPlans = ['pro', 'ultimate'];
+
+        if (!in_array($planSlug, $allowedPlans)) {
             return view('tenant.subscription-required', [
-                'feature' => 'Role & Permission Management',
-                'message' => 'Upgrade your subscription to access RBAC features'
+                'feature' => 'Roles & Permissions Management',
+                'message' => 'Upgrade to Pro or Ultimate plan to access role-based access control features.'
             ]);
         }
 

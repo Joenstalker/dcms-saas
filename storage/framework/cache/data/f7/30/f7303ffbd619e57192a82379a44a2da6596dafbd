@@ -1,0 +1,38 @@
+1770392902s:1986:"<style id="tenant-branding-styles" data-sidebar-position="left">
+            :root {
+                --tenant-font-heading: roboto, sans-serif;
+                --tenant-font-body: roboto, sans-serif;
+                --tenant-primary: 25 95% 53.1%;
+                --tenant-secondary: 27 96% 61%;
+                --tenant-accent: 31 97.2% 72.4%;
+                --tenant-neutral: 220 8.9% 46.1%;
+                --tenant-info: 217 91.2% 59.8%;
+                --tenant-success: 142 70.6% 45.3%;
+                --tenant-warning: 38 92.1% 50.2%;
+                --tenant-error: 0 84.2% 60.2%;
+                --tenant-primary-content: 0 0% 0%;
+                --tenant-secondary-content: 0 0% 0%;
+                --tenant-accent-content: 0 0% 0%;
+                --tenant-info-content: 0 0% 100%;
+                --tenant-success-content: 0 0% 0%;
+                --tenant-warning-content: 0 0% 0%;
+                --tenant-error-content: 0 0% 100%;
+            }
+            html { --font-heading: var(--tenant-font-heading); --font-body: var(--tenant-font-body); }
+            body { font-family: var(--font-body), sans-serif; }
+            h1, h2, h3, h4, h5, h6, .font-heading { font-family: var(--font-heading), sans-serif; }
+            [data-theme="tenant"] {
+                --p: 25 95% 53.1%; --pc: 0 0% 0%;
+                --s: 27 96% 61%; --sc: 0 0% 0%;
+                --a: 31 97.2% 72.4%; --ac: 0 0% 0%;
+                --n: 220 8.9% 46.1%; --nc: 0 0% 100%; --nf: 0 0% 90%;
+                --b1: 0 0% 100%; --b2: 0 0% 96%; --b3: 0 0% 92%;
+                --in: 212 86% 54%; --inc: 0 0% 100%;
+                --su: 142 70.6% 45.3%; --suc: 0 0% 0%;
+                --wa: 38 92.1% 50.2%; --wac: 0 0% 0%;
+                --er: 0 84.2% 60.2%; --erc: 0 0% 100%;
+            }
+            .tenant-theme-primary { --tw-primary: #f97316; }
+            .tenant-theme-secondary { --tw-secondary: #fb923c; }
+            .tenant-theme-accent { --tw-accent: #fdba74; }
+            </style>";
