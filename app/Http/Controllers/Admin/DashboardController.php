@@ -23,7 +23,7 @@ class DashboardController extends Controller
                 'active_tenants' => Tenant::where('is_active', true)->count(),
                 'total_users' => User::where('role', '!=', User::ROLE_SYSTEM_ADMIN)->count(),
                 'system_admins' => User::where('role', User::ROLE_SYSTEM_ADMIN)->count(),
-                'total_income' => \App\Models\Payment::where('status', 'succeeded')->sum('amount'),
+                'total_income' => (float) (string) \App\Models\Payment::where('status', 'succeeded')->sum('amount'),
             ];
 
             $recentTenants = Tenant::with('pricingPlan')

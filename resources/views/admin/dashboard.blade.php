@@ -106,7 +106,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm font-medium text-base-content/70 mb-1">Total Income</p>
-                        <p class="text-4xl font-bold text-accent">₱{{ number_format($stats['total_income'], 2) }}</p>
+                        <p class="text-4xl font-bold text-accent">₱{{ number_format((float) (string) $stats['total_income'], 2) }}</p>
                         <p class="text-xs text-base-content/60 mt-2">Total platform revenue</p>
                     </div>
                     <div class="avatar placeholder">
@@ -249,7 +249,7 @@
                             <tr class="hover">
                                 <td class="font-medium">{{ $payment->tenant->name }}</td>
                                 <td>{{ $payment->pricingPlan->name }}</td>
-                                <td class="font-bold text-accent">₱{{ number_format($payment->amount, 2) }}</td>
+                                <td class="font-bold text-accent">₱{{ number_format((float) (string) $payment->amount, 2) }}</td>
                                 <td class="text-sm text-base-content/70">{{ $payment->paid_at->format('M d, Y H:i') }}</td>
                                 <td>
                                     <span class="badge badge-success badge-sm">Paid</span>
@@ -293,7 +293,7 @@
                                 <div>
                                     @if($item->pricingPlan)
                                         <p class="font-semibold">{{ $item->pricingPlan->name }}</p>
-                                        <p class="text-xs text-base-content/70">₱{{ number_format($item->pricingPlan->price, 0) }}/mo</p>
+                                        <p class="text-xs text-base-content/70">₱{{ number_format((float) (string) $item->pricingPlan->price, 0) }}/mo</p>
                                     @else
                                         <p class="font-semibold">No plan</p>
                                         <p class="text-xs text-base-content/70">Not selected yet</p>

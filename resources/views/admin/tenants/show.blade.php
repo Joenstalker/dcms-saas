@@ -184,7 +184,7 @@
                         <label class="text-sm text-base-content/70">Pricing Plan</label>
                         @if($tenant->pricingPlan)
                             <p class="font-medium mt-1">{{ $tenant->pricingPlan->name }}</p>
-                            <p class="text-sm text-base-content/70">₱{{ number_format($tenant->pricingPlan->price, 2) }}/{{ $tenant->pricingPlan->billing_cycle }}</p>
+                            <p class="text-sm text-base-content/70">₱{{ number_format((float) (string) $tenant->pricingPlan->price, 2) }}/{{ $tenant->pricingPlan->billing_cycle }}</p>
                         @else
                             <p class="font-medium mt-1"><span class="badge badge-warning">No plan</span></p>
                             <p class="text-sm text-base-content/70">Clinic has not selected a plan yet.</p>

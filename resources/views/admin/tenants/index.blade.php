@@ -466,7 +466,7 @@
                         @if(isset($pricingPlans))
                             @foreach($pricingPlans as $plan)
                                 <option value="{{ $plan->id }}" {{ $tenant->pricing_plan_id == $plan->id ? 'selected' : '' }}>
-                                    {{ $plan->name }} (₱{{ number_format($plan->price, 2) }}/{{ $plan->billing_cycle }})
+                                    {{ $plan->name }} (₱{{ number_format((float) (string) $plan->price, 2) }}/{{ $plan->billing_cycle }})
                                 </option>
                             @endforeach
                         @endif

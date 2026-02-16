@@ -24,18 +24,22 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     Route::get('/impersonate/{user}', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'impersonate'])->name('impersonate')->middleware('signed');
     Route::get('/auto-login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'autoLogin'])->name('auto-login');
 
-    // Tenant Subscription & Payment (Authenticated)
-    Route::middleware(['auth'])->prefix('subscription')->name('tenant.subscription.')->group(function () {
+    // Tenant Subscription & Payment
+    Route::prefix('subscription')->name('tenant.subscription.')->group(function () {
+        // Public renewal flow routes
         Route::get('/select-plan', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'selectPlan'])->name('select-plan');
-        Route::post('/initiate/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePayment'])->name('initiate');
-        Route::post('/initiate-payment/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePaymentForTenant'])->name('initiate-payment');
-        Route::get('/payment-return/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'handlePaymentReturn'])->name('payment.return');
-        Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
-        // Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment'); // Refactored to separate steps
+        Route::post('/process-payment', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'processPayment'])->name('process-payment');
         Route::get('/payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'showPayment'])->name('payment');
-        // Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment'); // Replaced by AJAX version
+        Route::get('/payment-return/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'handlePaymentReturn'])->name('payment.return');
         Route::get('/success', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'success'])->name('success');
         Route::get('/cancel', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'cancel'])->name('cancel');
+        
+        // Internal/Setup payment routes (Stripe API)
+        Route::middleware(['auth'])->group(function () {
+            Route::post('/initiate/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePayment'])->name('initiate');
+            Route::post('/initiate-payment/{tenant}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'initiatePaymentForTenant'])->name('initiate-payment');
+            Route::post('/confirm-payment/{plan}', [\App\Http\Controllers\Tenant\SubscriptionController::class, 'confirmPayment'])->name('confirm-payment');
+        });
     });
 
     // Tenant Setup Wizard (Authenticated)

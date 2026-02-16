@@ -63,10 +63,10 @@ class LoginResponse implements LoginResponseContract
                 'dashboardUrl' => $dashboardUrl,
             ]);
 
-            // Use direct redirect instead of intended() to avoid session issues
+            // Use intended() to return to the previous page (e.g., subscription renewal) after login
             return $request->wantsJson()
                 ? response()->json(['two_factor' => false, 'redirect' => $dashboardUrl])
-                : redirect($dashboardUrl);
+                : redirect()->intended($dashboardUrl);
         }
 
         // Fallback: redirect to login if no tenant found
