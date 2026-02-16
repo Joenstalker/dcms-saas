@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Cache Implementation: This controller caches active pricing plans dropdown
+ * with 1-second TTL. Cache key: 'admin_pricing_plans_active'
+ * Note: Tenant list is NOT cached to preserve search/filter functionality
+ */
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
@@ -11,6 +17,7 @@ use App\Services\TenantProvisioningService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class TenantController extends Controller
 {
@@ -29,7 +36,11 @@ class TenantController extends Controller
         }
 
         $tenants = $query->latest()->paginate(15)->withQueryString();
-        $pricingPlans = PricingPlan::where('is_active', true)->orderBy('sort_order')->get();
+        
+        // Cache pricing plans dropdown
+        $pricingPlans = Cache::remember('admin_pricing_plans_active', now()->addSeconds(30), function () {
+            return PricingPlan::where('is_active', true)->orderBy('sort_order')->get();
+        });
 
         return view('admin.tenants.index', compact('tenants', 'pricingPlans'));
     }

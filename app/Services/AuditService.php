@@ -12,12 +12,12 @@ class AuditService
         string $resourceType,
         ?string $resourceId,
         ?string $tenantId,
-        ?int $userId,
+        ?string $userId,
         string $reason,
         ?string $ipAddress = null,
         ?string $userAgent = null
     ): ?AuditLog {
-        $id = DB::table('audit_logs')->insertGetId([
+        return AuditLog::create([
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId,
@@ -26,11 +26,7 @@ class AuditService
             'description' => $reason,
             'ip_address' => $ipAddress,
             'user_agent' => $userAgent,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
-
-        return $id ? AuditLog::find($id) : null;
     }
 
     public function logSuperAdminAttempt(
@@ -38,10 +34,10 @@ class AuditService
         string $resourceType,
         ?string $resourceId,
         ?string $targetTenantId,
-        ?int $superAdminId,
+        ?string $superAdminId,
         string $reason
     ): ?AuditLog {
-        $id = DB::table('audit_logs')->insertGetId([
+        return AuditLog::create([
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId,
@@ -50,11 +46,7 @@ class AuditService
             'description' => "SUPER_ADMIN_RESTRICTION: {$reason}",
             'ip_address' => request()?->ip(),
             'user_agent' => request()?->userAgent(),
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
-
-        return $id ? AuditLog::find($id) : null;
     }
 
     public function logSubscriptionViolation(
@@ -62,10 +54,10 @@ class AuditService
         string $resourceType,
         ?string $resourceId,
         string $tenantId,
-        ?int $userId,
+        ?string $userId,
         string $missingFeature
     ): ?AuditLog {
-        $id = DB::table('audit_logs')->insertGetId([
+        return AuditLog::create([
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId,
@@ -74,11 +66,7 @@ class AuditService
             'description' => "SUBSCRIPTION_REQUIRED: Feature '{$missingFeature}' is required for this action",
             'ip_address' => request()?->ip(),
             'user_agent' => request()?->userAgent(),
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
-
-        return $id ? AuditLog::find($id) : null;
     }
 
     public function logCrossTenantAttempt(
@@ -86,10 +74,10 @@ class AuditService
         string $resourceType,
         ?string $resourceId,
         string $targetTenantId,
-        ?int $userId,
+        ?string $userId,
         string $reason
     ): ?AuditLog {
-        $id = DB::table('audit_logs')->insertGetId([
+        return AuditLog::create([
             'action' => $action,
             'resource_type' => $resourceType,
             'resource_id' => $resourceId,
@@ -98,10 +86,6 @@ class AuditService
             'description' => "CROSS_TENANT_VIOLATION: {$reason}",
             'ip_address' => request()?->ip(),
             'user_agent' => request()?->userAgent(),
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
-
-        return $id ? AuditLog::find($id) : null;
     }
 }

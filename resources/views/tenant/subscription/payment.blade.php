@@ -162,7 +162,7 @@
             elements,
             confirmParams: {
                 // Return URL where the customer should be redirected after the PaymentIntent is confirmed.
-                return_url: "{{ route('tenant.subscription.confirm-payment', ['tenant' => $tenant, 'plan' => $plan->id]) }}",
+                return_url: "{{ route('tenant.subscription.payment.return', ['plan' => $plan->id]) }}",
             },
         });
 

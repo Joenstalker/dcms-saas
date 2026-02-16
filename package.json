@@ -19,7 +19,6 @@
     "dependencies": {
         "@alpinejs/collapse": "^3.15.4",
         "@alpinejs/focus": "^3.15.4",
-        "@kilocode/cli": "^1.0.16",
         "chart.js": "^4.5.1",
         "croppie": "^2.6.5",
         "flatpickr": "^4.6.13",

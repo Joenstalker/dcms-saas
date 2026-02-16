@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Cache Implementation: This controller caches paginated patient list with 1-second TTL
+ * Cache key: tenant_{id}_patients_page_{page}
+ */
+
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
@@ -7,14 +12,20 @@ use App\Models\Patient;
 use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class PatientController extends Controller
 {
     public function index(Tenant $tenant): View
     {
-        $patients = Patient::where('tenant_id', $tenant->id)
-            ->orderBy('last_name')
-            ->paginate(15);
+        $page = request()->get('page', 1);
+        $cacheKey = "tenant_{$tenant->id}_patients_page_{$page}";
+        
+        $patients = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant) {
+            return Patient::where('tenant_id', $tenant->id)
+                ->orderBy('last_name')
+                ->paginate(15);
+        });
 
         return view('tenant.patients.index', compact('tenant', 'patients'));
     }

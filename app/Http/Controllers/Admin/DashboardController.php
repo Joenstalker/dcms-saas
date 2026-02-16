@@ -9,42 +9,49 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $stats = [
-            'total_tenants' => Tenant::count(),
-            'active_tenants' => Tenant::where('is_active', true)->count(),
-            'total_users' => User::where('role', '!=', User::ROLE_SYSTEM_ADMIN)->count(),
-            'system_admins' => User::where('role', User::ROLE_SYSTEM_ADMIN)->count(),
-            'total_income' => \App\Models\Payment::where('status', 'succeeded')->sum('amount'),
-        ];
+        $cacheKey = 'admin_dashboard';
+        
+        $data = Cache::remember($cacheKey, now()->addSeconds(30), function () {
+            $stats = [
+                'total_tenants' => Tenant::count(),
+                'active_tenants' => Tenant::where('is_active', true)->count(),
+                'total_users' => User::where('role', '!=', User::ROLE_SYSTEM_ADMIN)->count(),
+                'system_admins' => User::where('role', User::ROLE_SYSTEM_ADMIN)->count(),
+                'total_income' => \App\Models\Payment::where('status', 'succeeded')->sum('amount'),
+            ];
 
-        $recentTenants = Tenant::with('pricingPlan')
-            ->latest()
-            ->take(5)
-            ->get();
+            $recentTenants = Tenant::with('pricingPlan')
+                ->latest()
+                ->take(5)
+                ->get();
 
-        $tenantsByPlan = Tenant::select('pricing_plan_id')
-            ->get()
-            ->groupBy('pricing_plan_id')
-            ->map(function ($items, $planId) {
-                return (object) [
-                    'pricing_plan_id' => $planId,
-                    'count' => $items->count(),
-                    'pricingPlan' => \App\Models\PricingPlan::find($planId),
-                ];
-            })
-            ->values();
+            $tenantsByPlan = Tenant::select('pricing_plan_id')
+                ->get()
+                ->groupBy('pricing_plan_id')
+                ->map(function ($items, $planId) {
+                    return (object) [
+                        'pricing_plan_id' => $planId,
+                        'count' => $items->count(),
+                        'pricingPlan' => \App\Models\PricingPlan::find($planId),
+                    ];
+                })
+                ->values();
 
-        $recentPayments = \App\Models\Payment::with(['tenant', 'pricingPlan'])
-            ->where('status', 'succeeded')
-            ->latest()
-            ->take(5)
-            ->get();
+            $recentPayments = \App\Models\Payment::with(['tenant', 'pricingPlan'])
+                ->where('status', 'succeeded')
+                ->latest()
+                ->take(5)
+                ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentTenants', 'tenantsByPlan', 'recentPayments'));
+            return compact('stats', 'recentTenants', 'tenantsByPlan', 'recentPayments');
+        });
+
+        return view('admin.dashboard', $data);
     }
 }

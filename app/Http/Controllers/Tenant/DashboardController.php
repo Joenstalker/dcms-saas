@@ -11,6 +11,7 @@ use App\Models\Appointment;
 use App\Models\User;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -38,90 +39,108 @@ class DashboardController extends Controller
             return $this->assistantDashboard($tenant);
         }
 
-        // Load pricing plan relationship
-        $tenant->load('pricingPlan');
-
-        // Check if tenant needs to select a plan
-        $needsPlan = ! $tenant->pricing_plan_id;
+        $cacheKey = "tenant_dashboard_{$tenant->id}";
         
-        $availablePlans = \App\Models\PricingPlan::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
-        
-        // Backward compatibility if view uses $pricingPlans for initial selection
-        $pricingPlans = $availablePlans;
+        $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant) {
+            // Load pricing plan relationship
+            $tenant->load('pricingPlan');
 
-        // Get dashboard statistics
-        $stats = [
-            'total_patients' => Patient::count(),
-            'total_appointments' => Appointment::count(),
-            'today_appointments' => Appointment::whereDate('scheduled_at', now()->today())->count(),
-            'total_users' => User::count(),
-        ];
+            // Check if tenant needs to select a plan
+            $needsPlan = ! $tenant->pricing_plan_id;
+            
+            $availablePlans = \App\Models\PricingPlan::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+            
+            // Backward compatibility if view uses $pricingPlans for initial selection
+            $pricingPlans = $availablePlans;
 
-        // Get recent appointments
-        $recentAppointments = Appointment::with(['patient', 'dentist'])
-            ->orderBy('scheduled_at', 'asc')
-            ->where('scheduled_at', '>=', now())
-            ->take(5)
-            ->get();
+            // Get dashboard statistics
+            $stats = [
+                'total_patients' => Patient::count(),
+                'total_appointments' => Appointment::count(),
+                'today_appointments' => Appointment::whereDate('scheduled_at', now()->today())->count(),
+                'total_users' => User::count(),
+            ];
 
-        // Get dashboard modules based on plan (if plan exists)
-        $customization = app('tenant_customization') ?? [];
-        $modules = $tenant->pricing_plan_id
-            ? ($customization['dashboard_widgets'] ?? ['patients', 'appointments', 'basic_reports'])
-            : [];
+            // Get recent appointments
+            $recentAppointments = Appointment::with(['patient', 'dentist'])
+                ->orderBy('scheduled_at', 'asc')
+                ->where('scheduled_at', '>=', now())
+                ->take(5)
+                ->get();
 
-        return view('tenant.dashboard.index', compact('tenant', 'stats', 'recentAppointments', 'modules', 'needsPlan', 'pricingPlans'));
+            // Get dashboard modules based on plan (if plan exists)
+            $customization = app('tenant_customization') ?? [];
+            $modules = $tenant->pricing_plan_id
+                ? ($customization['dashboard_widgets'] ?? ['patients', 'appointments', 'basic_reports'])
+                : [];
+
+            return compact('tenant', 'stats', 'recentAppointments', 'modules', 'needsPlan', 'pricingPlans');
+        });
+
+        return view('tenant.dashboard.index', $data);
     }
 
     protected function dentistDashboard(Tenant $tenant): View
     {
         $user = auth()->user();
         
-        $stats = [
-            'total_patients' => Patient::count(),
-            'today_appointments' => Appointment::where('dentist_id', $user->id)
-                ->whereDate('scheduled_at', now()->today())
-                ->count(),
-            'income_today' => 2450.00, // Simulated data
-            'income_weekly' => 12800.00, // Simulated data
-            'income_monthly' => 45600.00, // Simulated data
-        ];
+        $cacheKey = "dentist_dashboard_{$tenant->id}_{$user->id}";
+        
+        $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $user) {
+            $stats = [
+                'total_patients' => Patient::count(),
+                'today_appointments' => Appointment::where('dentist_id', $user->id)
+                    ->whereDate('scheduled_at', now()->today())
+                    ->count(),
+                'income_today' => 2450.00, // Simulated data
+                'income_weekly' => 12800.00, // Simulated data
+                'income_monthly' => 45600.00, // Simulated data
+            ];
 
-        $appointments = Appointment::with('patient')
-            ->where('dentist_id', $user->id)
-            ->where('scheduled_at', '>=', now()->startOfDay())
-            ->orderBy('scheduled_at', 'asc')
-            ->get();
+            $appointments = Appointment::with('patient')
+                ->where('dentist_id', $user->id)
+                ->where('scheduled_at', '>=', now()->startOfDay())
+                ->orderBy('scheduled_at', 'asc')
+                ->get();
 
-        $all_patients = Patient::orderBy('last_name')->get();
-        $recent_patients = Patient::orderBy('created_at', 'desc')->take(5)->get();
+            $all_patients = Patient::orderBy('last_name')->get();
+            $recent_patients = Patient::orderBy('created_at', 'desc')->take(5)->get();
 
-        return view('tenant.dentist.dashboard', compact('tenant', 'stats', 'appointments', 'all_patients', 'recent_patients'));
+            return compact('tenant', 'stats', 'appointments', 'all_patients', 'recent_patients');
+        });
+
+        return view('tenant.dentist.dashboard', $data);
     }
 
     protected function assistantDashboard(Tenant $tenant): View
     {
-        $stats = [
-            'pending_appointments' => Appointment::where('status', 'pending')->count(),
-            'today_appointments' => Appointment::whereDate('scheduled_at', now()->today())->count(),
-            'total_patients' => Patient::count(),
-        ];
+        $cacheKey = "assistant_dashboard_{$tenant->id}";
+        
+        $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant) {
+            $stats = [
+                'pending_appointments' => Appointment::where('status', 'pending')->count(),
+                'today_appointments' => Appointment::whereDate('scheduled_at', now()->today())->count(),
+                'total_patients' => Patient::count(),
+            ];
 
-        $upcomingAppointments = Appointment::with(['patient', 'dentist'])
-            ->where('scheduled_at', '>=', now())
-            ->orderBy('scheduled_at', 'asc')
-            ->take(10)
-            ->get();
+            $upcomingAppointments = Appointment::with(['patient', 'dentist'])
+                ->where('scheduled_at', '>=', now())
+                ->orderBy('scheduled_at', 'asc')
+                ->take(10)
+                ->get();
 
-        $dentists = User::where('tenant_id', $tenant->id)
-            ->whereHas('roles', function($q) {
-                $q->where('name', 'dentist');
-            })->get();
+            $dentists = User::where('tenant_id', $tenant->id)
+                ->whereHas('roles', function($q) {
+                    $q->where('name', 'dentist');
+                })->get();
 
-        $patients = Patient::where('tenant_id', $tenant->id)->get();
+            $patients = Patient::where('tenant_id', $tenant->id)->get();
 
-        return view('tenant.assistant.dashboard', compact('tenant', 'stats', 'upcomingAppointments', 'dentists', 'patients'));
+            return compact('tenant', 'stats', 'upcomingAppointments', 'dentists', 'patients');
+        });
+
+        return view('tenant.assistant.dashboard', $data);
     }
 }

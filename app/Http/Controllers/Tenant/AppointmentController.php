@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Cache Implementation: This controller caches dropdown data only (dentists and patients) with 1-second TTL
+ * Cache keys: tenant_{id}_dentists and tenant_{id}_patients_all
+ * Note: Appointments list is NOT cached as it changes frequently
+ */
+
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
@@ -9,22 +15,30 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class AppointmentController extends Controller
 {
     public function index(Tenant $tenant): View
     {
+        // Don't cache appointments - they change frequently
         $appointments = Appointment::where('tenant_id', $tenant->id)
             ->with(['patient', 'dentist'])
             ->orderBy('scheduled_at')
             ->get();
 
-        $dentists = User::where('tenant_id', $tenant->id)
-            ->whereHas('roles', function($q) {
-                $q->where('name', 'dentist');
-            })->get();
+        // Cache dentists list
+        $dentists = Cache::remember("tenant_{$tenant->id}_dentists", now()->addSeconds(30), function () use ($tenant) {
+            return User::where('tenant_id', $tenant->id)
+                ->whereHas('roles', function($q) {
+                    $q->where('name', 'dentist');
+                })->get();
+        });
 
-        $patients = Patient::where('tenant_id', $tenant->id)->get();
+        // Cache patients list
+        $patients = Cache::remember("tenant_{$tenant->id}_patients_all", now()->addSeconds(30), function () use ($tenant) {
+            return Patient::where('tenant_id', $tenant->id)->get();
+        });
 
         return view('tenant.appointments.index', compact('tenant', 'appointments', 'dentists', 'patients'));
     }

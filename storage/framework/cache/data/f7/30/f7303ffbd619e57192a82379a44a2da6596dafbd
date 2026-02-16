@@ -1,10 +1,10 @@
-1770392902s:1986:"<style id="tenant-branding-styles" data-sidebar-position="left">
+1770626761s:2001:"<style id="tenant-branding-styles" data-sidebar-position="left">
             :root {
-                --tenant-font-heading: roboto, sans-serif;
+                --tenant-font-heading: figtree, sans-serif;
                 --tenant-font-body: roboto, sans-serif;
-                --tenant-primary: 25 95% 53.1%;
-                --tenant-secondary: 27 96% 61%;
-                --tenant-accent: 31 97.2% 72.4%;
+                --tenant-primary: 142 70.6% 45.3%;
+                --tenant-secondary: 160 84.1% 39.4%;
+                --tenant-accent: 173 80.4% 40%;
                 --tenant-neutral: 220 8.9% 46.1%;
                 --tenant-info: 217 91.2% 59.8%;
                 --tenant-success: 142 70.6% 45.3%;
@@ -22,9 +22,9 @@
             body { font-family: var(--font-body), sans-serif; }
             h1, h2, h3, h4, h5, h6, .font-heading { font-family: var(--font-heading), sans-serif; }
             [data-theme="tenant"] {
-                --p: 25 95% 53.1%; --pc: 0 0% 0%;
-                --s: 27 96% 61%; --sc: 0 0% 0%;
-                --a: 31 97.2% 72.4%; --ac: 0 0% 0%;
+                --p: 142 70.6% 45.3%; --pc: 0 0% 0%;
+                --s: 160 84.1% 39.4%; --sc: 0 0% 0%;
+                --a: 173 80.4% 40%; --ac: 0 0% 0%;
                 --n: 220 8.9% 46.1%; --nc: 0 0% 100%; --nf: 0 0% 90%;
                 --b1: 0 0% 100%; --b2: 0 0% 96%; --b3: 0 0% 92%;
                 --in: 212 86% 54%; --inc: 0 0% 100%;
@@ -32,7 +32,7 @@
                 --wa: 38 92.1% 50.2%; --wac: 0 0% 0%;
                 --er: 0 84.2% 60.2%; --erc: 0 0% 100%;
             }
-            .tenant-theme-primary { --tw-primary: #f97316; }
-            .tenant-theme-secondary { --tw-secondary: #fb923c; }
-            .tenant-theme-accent { --tw-accent: #fdba74; }
+            .tenant-theme-primary { --tw-primary: #22c55e; }
+            .tenant-theme-secondary { --tw-secondary: #10b981; }
+            .tenant-theme-accent { --tw-accent: #14b8a6; }
             </style>";

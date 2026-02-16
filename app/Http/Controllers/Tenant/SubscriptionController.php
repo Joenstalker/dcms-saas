@@ -18,10 +18,17 @@ use Illuminate\View\View;
 
 class SubscriptionController extends Controller
 {
-    public function selectPlan(Tenant $tenant): View
+    public function selectPlan(): View
     {
+        // Get tenant from middleware (already resolved by TenantMiddleware)
+        $tenant = app('tenant');
+        
+        if (!$tenant || !$tenant->exists) {
+            abort(404, 'Tenant not found');
+        }
+
         // Ensure user is authenticated and belongs to this tenant
-        if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
+        if (! auth()->check() || (string)auth()->user()->tenant_id !== (string)$tenant->id) {
             return redirect()->route('login')
                 ->with('error', 'Please login to select a plan.');
         }
@@ -39,10 +46,17 @@ class SubscriptionController extends Controller
         return view('tenant.subscription.select-plan', compact('tenant', 'pricingPlans'));
     }
 
-    public function processPayment(SelectPlanRequest $request, Tenant $tenant): RedirectResponse
+    public function processPayment(SelectPlanRequest $request): RedirectResponse
     {
+        // Get tenant from middleware
+        $tenant = app('tenant');
+        
+        if (!$tenant || !$tenant->exists) {
+            abort(404, 'Tenant not found');
+        }
+
         // Ensure user is authenticated and belongs to this tenant
-        if (! auth()->check() || auth()->user()->tenant_id !== $tenant->id) {
+        if (! auth()->check() || (string)auth()->user()->tenant_id !== (string)$tenant->id) {
             return redirect()->route('login')
                 ->with('error', 'Please login to select a plan.');
         }
@@ -64,6 +78,44 @@ class SubscriptionController extends Controller
             'tenant' => $tenant,
             'plan' => $plan->id,
         ]);
+    }
+    public function showPayment($plan)
+    {
+        $tenant = app('tenant');
+        $plan = PricingPlan::findOrFail($plan);
+
+        // Ensure user is authenticated and belongs to this tenant
+        if (! auth()->check() || (string)auth()->user()->tenant_id !== (string)$tenant->id) {
+            return redirect()->route('login')
+                ->with('error', 'Please login to continue payment.');
+        }
+
+        try {
+            // Create Stripe PaymentIntent
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+            
+            $intent = \Stripe\PaymentIntent::create([
+                'amount' => (int) ($plan->price * 100),
+                'currency' => 'php',
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => [
+                    'tenant_id' => $tenant->id,
+                    'plan_id' => $plan->id,
+                    'tenant_name' => $tenant->name,
+                ],
+            ]);
+
+            return view('tenant.subscription.payment', [
+                'tenant' => $tenant,
+                'plan' => $plan,
+                'clientSecret' => $intent->client_secret,
+                'stripeKey' => config('services.stripe.key'),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Stripe Payment Page Failure', ['error' => $e->getMessage()]);
+            return redirect()->route('tenant.subscription.select-plan')
+                ->with('error', 'Could not initialize payment. Please try again.');
+        }
     }
 
     /**

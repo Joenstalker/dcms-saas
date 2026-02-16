@@ -121,9 +121,11 @@ $centralGroupOptions = app()->environment('local') ? [] : ['domain' => $baseDoma
 Route::group($centralGroupOptions, function () {
     // Home Page
     Route::get('/', function () {
-        $pricingPlans = \App\Models\PricingPlan::where('is_active', true)
-            ->orderBy('sort_order')
-            ->get();
+        $pricingPlans = \Illuminate\Support\Facades\Cache::remember('active_pricing_plans', 60, function () {
+            return \App\Models\PricingPlan::where('is_active', true)
+                ->orderBy('sort_order')
+                ->get();
+        });
         return view('welcome', compact('pricingPlans'));
     })->name('home');
 

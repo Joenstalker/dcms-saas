@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use App\Models\Service;
+use App\Models\Medicine;
+use App\Models\ConsentTemplate;
+use App\Models\CertificateTemplate;
 
 class TenantProvisioningService
 {
@@ -275,24 +279,20 @@ class TenantProvisioningService
         foreach ($services as $service) {
             // Handle both array and string formats
             if (is_array($service)) {
-                DB::table('tenant_services')->insert([
+                Service::create([
                     'tenant_id' => $tenant->id,
                     'name' => $service['name'] ?? 'Service',
-                    'price' => $service['price'] ?? 0.00,
+                    'amount' => $service['price'] ?? 0.00,
                     'category' => $service['category'] ?? 'General',
                     'is_active' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
             } else {
-                DB::table('tenant_services')->insert([
+                Service::create([
                     'tenant_id' => $tenant->id,
                     'name' => $service,
-                    'price' => 0.00,
+                    'amount' => 0.00,
                     'category' => 'General',
                     'is_active' => true,
-                    'created_at' => now(),
-                    'updated_at' => now(),
                 ]);
             }
         }
@@ -309,14 +309,11 @@ class TenantProvisioningService
         ];
 
         foreach ($defaultMedicines as $medicine) {
-            DB::table('tenant_medicines')->insert([
+            Medicine::create([
                 'tenant_id' => $tenant->id,
                 'name' => $medicine['name'],
                 'unit' => $medicine['unit'],
-                'stock' => $medicine['stock'],
                 'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
     }
@@ -329,29 +326,22 @@ class TenantProvisioningService
 
         // Create consent form templates
         foreach ($consentForms as $formName) {
-            DB::table('tenant_templates')->insert([
+            ConsentTemplate::create([
                 'tenant_id' => $tenant->id,
-                'name' => is_array($formName) ? ($formName['name'] ?? 'Consent Form') : $formName,
-                'type' => 'consent',
+                'label' => is_array($formName) ? ($formName['name'] ?? 'Consent Form') : $formName,
                 'content' => is_array($formName) ? ($formName['content'] ?? 'I consent to the proposed dental treatment...') : 'I consent to the proposed dental treatment...',
                 'is_active' => true,
-                'is_default' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
 
         // Create certificate templates
         foreach ($certificateTemplates as $templateName) {
-            DB::table('tenant_templates')->insert([
+            CertificateTemplate::create([
                 'tenant_id' => $tenant->id,
-                'name' => is_array($templateName) ? ($templateName['name'] ?? 'Certificate') : $templateName,
-                'type' => 'certificate',
-                'content' => is_array($templateName) ? ($templateName['content'] ?? 'This certifies that...') : 'This certifies that...',
+                'label' => is_array($templateName) ? ($templateName['name'] ?? 'Certificate') : $templateName,
+                'template_html' => is_array($templateName) ? ($templateName['content'] ?? 'This certifies that...') : 'This certifies that...',
+                'variables' => CertificateTemplate::defaultVariables(),
                 'is_active' => true,
-                'is_default' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         }
     }

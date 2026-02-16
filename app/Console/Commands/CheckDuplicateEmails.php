@@ -33,75 +33,112 @@ class CheckDuplicateEmails extends Command
 
         $duplicatesFound = false;
 
-        // Check Users table
-        $this->info('Checking Users table...');
-        $userDuplicates = DB::table('users')
-            ->select(DB::raw('LOWER(TRIM(email)) as normalized_email'), DB::raw('COUNT(*) as count'))
-            ->groupBy(DB::raw('LOWER(TRIM(email))'))
-            ->havingRaw('COUNT(*) > 1')
-            ->get();
+        // Check Users collection
+        $this->info('Checking Users collection...');
+        $userDuplicates = User::raw(function($collection) {
+            return $collection->aggregate([
+                [
+                    '$project' => [
+                        'normalized_email' => ['$toLower' => ['$trim' => ['input' => '$email']]]
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$normalized_email',
+                        'count' => ['$sum' => 1]
+                    ]
+                ],
+                [
+                    '$match' => [
+                        'count' => ['$gt' => 1]
+                    ]
+                ]
+            ]);
+        });
 
-        if ($userDuplicates->isNotEmpty()) {
+        $userDuplicatesCollection = collect($userDuplicates);
+
+        if ($userDuplicatesCollection->isNotEmpty()) {
             $duplicatesFound = true;
-            $this->error('Found duplicate emails in Users table:');
+            $this->error('Found duplicate emails in Users collection:');
             $this->table(
                 ['Email', 'Count', 'User IDs'],
-                $userDuplicates->map(function ($duplicate) {
-                    $users = User::whereRaw('LOWER(TRIM(email)) = ?', [$duplicate->normalized_email])
-                        ->get(['id', 'email']);
+                $userDuplicatesCollection->map(function ($duplicate) {
+                    $email = $duplicate['_id'];
+                    $users = User::where('email', 'regex', "/^{$email}$/i")->get(['_id', 'email']);
 
                     return [
-                        $users->first()->email ?? $duplicate->normalized_email,
-                        $duplicate->count,
-                        implode(', ', $users->pluck('id')->toArray()),
+                        $email,
+                        $duplicate['count'],
+                        implode(', ', $users->pluck('_id')->toArray()),
                     ];
                 })
             );
         } else {
-            $this->info('✓ No duplicates found in Users table.');
+            $this->info('✓ No duplicates found in Users collection.');
         }
 
         $this->newLine();
 
-        // Check Tenants table
-        $this->info('Checking Tenants table...');
-        $tenantDuplicates = DB::table('tenants')
-            ->select(DB::raw('LOWER(TRIM(email)) as normalized_email'), DB::raw('COUNT(*) as count'))
-            ->groupBy(DB::raw('LOWER(TRIM(email))'))
-            ->havingRaw('COUNT(*) > 1')
-            ->get();
+        // Check Tenants collection
+        $this->info('Checking Tenants collection...');
+        $tenantDuplicates = Tenant::raw(function($collection) {
+            return $collection->aggregate([
+                [
+                    '$project' => [
+                        'normalized_email' => ['$toLower' => ['$trim' => ['input' => '$email']]]
+                    ]
+                ],
+                [
+                    '$group' => [
+                        '_id' => '$normalized_email',
+                        'count' => ['$sum' => 1]
+                    ]
+                ],
+                [
+                    '$match' => [
+                        'count' => ['$gt' => 1]
+                    ]
+                ]
+            ]);
+        });
 
-        if ($tenantDuplicates->isNotEmpty()) {
+        $tenantDuplicatesCollection = collect($tenantDuplicates);
+
+        if ($tenantDuplicatesCollection->isNotEmpty()) {
             $duplicatesFound = true;
-            $this->error('Found duplicate emails in Tenants table:');
+            $this->error('Found duplicate emails in Tenants collection:');
             $this->table(
                 ['Email', 'Count', 'Tenant IDs'],
-                $tenantDuplicates->map(function ($duplicate) {
-                    $tenants = Tenant::whereRaw('LOWER(TRIM(email)) = ?', [$duplicate->normalized_email])
-                        ->get(['id', 'email']);
+                $tenantDuplicatesCollection->map(function ($duplicate) {
+                    $email = $duplicate['_id'];
+                    $tenants = Tenant::where('email', 'regex', "/^{$email}$/i")->get(['_id', 'email']);
 
                     return [
-                        $tenants->first()->email ?? $duplicate->normalized_email,
-                        $duplicate->count,
-                        implode(', ', $tenants->pluck('id')->toArray()),
+                        $email,
+                        $duplicate['count'],
+                        implode(', ', $tenants->pluck('_id')->toArray()),
                     ];
                 })
             );
         } else {
-            $this->info('✓ No duplicates found in Tenants table.');
+            $this->info('✓ No duplicates found in Tenants collection.');
         }
 
         $this->newLine();
 
-        // Check cross-table duplicates (email in both users and tenants)
+        // Check cross-collection duplicates (email in both users and tenants)
         $this->info('Checking for emails that exist in both Users and Tenants...');
-        $allUserEmails = User::select(DB::raw('LOWER(TRIM(email)) as email'))
-            ->distinct()
-            ->pluck('email')
-            ->toArray();
+        $allUserEmails = User::get(['email'])->map(function($user) {
+            return strtolower(trim($user->email));
+        })->unique()->toArray();
 
-        $crossDuplicates = Tenant::whereIn(DB::raw('LOWER(TRIM(email))'), $allUserEmails)
-            ->get(['id', 'email', 'name']);
+        // MongoDB chunk processing if list is huge, but for this utility, whereIn should suffice
+        $crossDuplicates = Tenant::where(function($query) use ($allUserEmails) {
+            foreach ($allUserEmails as $email) {
+                $query->orWhere('email', 'regex', "/^{$email}$/i");
+            }
+        })->get(['_id', 'email', 'name']);
 
         if ($crossDuplicates->isNotEmpty()) {
             $duplicatesFound = true;

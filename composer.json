@@ -20,10 +20,12 @@
         "livewire/livewire": "^3.0",
         "mongodb/laravel-mongodb": "*",
         "nesbot/carbon": "^3.0",
+        "predis/predis": "^3.4",
         "spatie/laravel-permission": "^6.0",
         "stripe/stripe-php": "^19.3"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^4.0",
         "fakerphp/faker": "^1.23",
         "laravel/boost": "^1.8",
         "laravel/pint": "^1.13",

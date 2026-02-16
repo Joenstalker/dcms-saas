@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Cache Implementation: This controller caches platform settings with 1-second TTL
+ * since settings rarely change. Cache key: 'admin_platform_settings'
+ */
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
@@ -9,12 +14,15 @@ use App\Models\PlatformSetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends Controller
 {
     public function index(): View
     {
-        $settings = PlatformSetting::first();
+        $settings = Cache::remember('admin_platform_settings', now()->addSeconds(30), function () {
+            return PlatformSetting::first();
+        });
 
         return view('admin.settings.index', [
             'settings' => $settings,

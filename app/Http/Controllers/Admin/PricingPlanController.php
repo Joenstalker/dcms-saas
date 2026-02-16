@@ -1,5 +1,7 @@
 <?php
 
+
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
@@ -10,12 +12,19 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class PricingPlanController extends Controller
 {
     public function index(): View
     {
-        $pricingPlans = PricingPlan::orderBy('sort_order')->get();
+/**
+ * Cache Implementation: This controller uses Cache::remember() with 1-second TTL
+ * to reduce database queries for pricing plans list. Cache key: 'admin_pricing_plans'
+ */
+        $pricingPlans = Cache::remember('admin_pricing_plans', now()->addSeconds(30), function () {
+            return PricingPlan::orderBy('sort_order')->get();
+        });
 
         return view('admin.pricing-plans.index', compact('pricingPlans'));
     }

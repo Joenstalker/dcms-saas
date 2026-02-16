@@ -61,8 +61,15 @@ class TenantMiddleware
         // Set default URL parameter for route generation
         \Illuminate\Support\Facades\URL::defaults(['tenant' => $tenant->slug]);
 
-        $platformSettings = PlatformSetting::first();
-        $tenantSettings = TenantSetting::where('tenant_id', $tenant->id)->first();
+        // Cache platform settings (rarely changes)
+        $platformSettings = \Illuminate\Support\Facades\Cache::remember('platform_settings', 300, function () {
+            return PlatformSetting::first();
+        });
+
+        // Cache tenant settings (changes infrequently)
+        $tenantSettings = \Illuminate\Support\Facades\Cache::remember("tenant_settings_{$tenant->id}", 60, function () use ($tenant) {
+            return TenantSetting::where('tenant_id', $tenant->id)->first();
+        });
 
         $customization = [
             'theme_color_primary' => $tenantSettings?->theme_color_primary ?? $platformSettings?->default_theme_primary ?? '#0ea5e9',
@@ -79,61 +86,56 @@ class TenantMiddleware
         app()->instance('tenant_customization', $customization);
         view()->share('tenantCustomization', $customization);
 
-        if (auth()->check() && auth()->user()->isSystemAdmin()) {
-            return $next($request);
-        }
-
-        // PROTECT: Ensure authenticated users belong to this specific tenant
-        if (auth()->check() && (string)auth()->user()->tenant_id !== (string)$tenant->id) {
-            // Get the user's actual clinic slug
-            $userTenantSlug = auth()->user()->tenant->slug ?? null;
-            
-            if ($userTenantSlug) {
-                return redirect()->route('tenant.dashboard', ['tenant' => $userTenantSlug])
-                    ->with('tenant_access_error', 'You do not have access to ' . $tenant->name . '. Redirected to your clinic.');
-            }
-
-            // Fallback: Logout and redirect to this clinic's login
-            auth()->logout();
-            return redirect()->route('login')
-                ->with('tenant_access_error', 'Unauthorized access attempt.');
-        }
-
-        // Allow public routes (login, register, verification) even on tenant subdomains
-        // Note: 'login' route is now handled by Fortify
+        // 1. Allow public routes (login, register, verification) even on tenant subdomains
         if ($request->routeIs('login') 
             || $request->routeIs('register')
             || $request->routeIs('tenant.registration.*') 
             || $request->routeIs('tenant.verification.*')
             || $request->routeIs('tenant.subscription.suspended')
+            || $request->routeIs('tenant.subscription.*')
+            || $request->routeIs('tenant.setup.*')
             || $request->routeIs('password.*')
             || $request->routeIs('auto-login')) {
             return $next($request);
         }
 
-        // NOTE: Auth check for protected routes is handled by the 'auth' middleware on the routes.
-        // We should NOT redirect to login here, as that causes a loop since the auth middleware
-        // hasn't processed the session yet at this point in the middleware stack.
-
-        // Check subscription status - allow access to suspension page
-        if ($request->routeIs('tenant.subscription.suspended')) {
+        if (auth()->check() && auth()->user()->isSystemAdmin()) {
             return $next($request);
+        }
+
+        // PROTECT: Ensure authenticated users belong to this specific tenant
+        if (auth()->check()) {
+            $userTenantId = (string) auth()->user()->tenant_id;
+            $currentTenantId = (string) $tenant->id;
+
+            if ($userTenantId !== $currentTenantId) {
+                // Log the mismatch for debugging
+                \Illuminate\Support\Facades\Log::warning('Tenant Mismatch in Middleware', [
+                    'user_id' => auth()->id(),
+                    'user_tenant_id' => $userTenantId,
+                    'request_tenant_id' => $currentTenantId,
+                    'url' => $request->fullUrl()
+                ]);
+
+                // Get the user's actual clinic slug
+                $userTenantSlug = auth()->user()->tenant->slug ?? null;
+                
+                if ($userTenantSlug) {
+                    return redirect()->route('tenant.dashboard', ['tenant' => $userTenantSlug])
+                        ->with('tenant_access_error', 'You do not have access to ' . $tenant->name . '. Redirected to your clinic.');
+                }
+
+                // Fallback: Logout and redirect to this clinic's login
+                auth()->logout();
+                return redirect()->route('login')
+                    ->with('tenant_access_error', 'Unauthorized access attempt.');
+            }
         }
 
         // Check if tenant has active subscription
         if (! $tenant->hasActiveSubscription()) {
-            // Allow pending_payment users to access setup wizard for initial setup/payment
-            if ($tenant->subscription_status === 'pending_payment' &&
-                $request->routeIs('tenant.setup.*')) {
-                return $next($request);
-            }
-
             if (! $tenant->pricing_plan_id) {
-                if (! $request->routeIs('tenant.subscription.*')) {
-                    return redirect()->route('tenant.subscription.select-plan', ['tenant' => $tenant->slug]);
-                }
-
-                return $next($request);
+                return redirect()->route('tenant.subscription.select-plan', ['tenant' => $tenant->slug]);
             }
 
             // If pending payment, redirect to payment setup instead of suspending

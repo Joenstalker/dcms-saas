@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Cache Implementation: This controller caches all 6 catalog GET methods with 1-second TTL:
+ * - getServices() - Cache key: tenant_{id}_services_{search}_{category}_page_{page}
+ * - getMedicines() - Cache key: tenant_{id}_medicines_{search}_page_{page}
+ * - getConditions() - Cache key: tenant_{id}_conditions_{search}_page_{page}
+ * - getConsentTemplates() - Cache key: tenant_{id}_consent_templates_{search}_page_{page}
+ * - getCertificateTemplates() - Cache key: tenant_{id}_certificate_templates_{search}_page_{page}
+ * - getPrescriptionTemplates() - Cache key: tenant_{id}_prescription_templates_{search}_page_{page}
+ */
+
 namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
@@ -13,6 +23,7 @@ use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class CatalogController extends Controller
 {
@@ -70,23 +81,28 @@ class CatalogController extends Controller
         $search = $request->search ?? '';
         $category = $request->category ?? '';
         $perPage = $request->per_page ?? 15;
+        $page = $request->page ?? 1;
 
-        $query = Service::where('tenant_id', $tenant->id);
+        $cacheKey = "tenant_{$tenant->id}_services_{$search}_{$category}_page_{$page}";
+        
+        $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $search, $category, $perPage) {
+            $query = Service::where('tenant_id', $tenant->id);
 
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%");
+            }
 
-        if ($category) {
-            $query->where('category', $category);
-        }
+            if ($category) {
+                $query->where('category', $category);
+            }
 
-        $services = $query->orderBy('name')->paginate($perPage);
+            $services = $query->orderBy('name')->paginate($perPage);
+            $categories = Service::categories();
 
-        return response()->json([
-            'services' => $services,
-            'categories' => Service::categories(),
-        ]);
+            return compact('services', 'categories');
+        });
+
+        return response()->json($data);
     }
 
     public function storeService(Tenant $tenant, Request $request)
@@ -142,15 +158,20 @@ class CatalogController extends Controller
     {
         $search = $request->search ?? '';
         $perPage = $request->per_page ?? 15;
+        $page = $request->page ?? 1;
 
-        $query = Medicine::where('tenant_id', $tenant->id);
+        $cacheKey = "tenant_{$tenant->id}_medicines_{$search}_page_{$page}";
+        
+        $medicines = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $search, $perPage) {
+            $query = Medicine::where('tenant_id', $tenant->id);
 
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('generic_name', 'like', "%{$search}%");
-        }
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('generic_name', 'like', "%{$search}%");
+            }
 
-        $medicines = $query->orderBy('name')->paginate($perPage);
+            return $query->orderBy('name')->paginate($perPage);
+        });
 
         return response()->json([
             'medicines' => $medicines,
@@ -195,15 +216,20 @@ class CatalogController extends Controller
     {
         $search = $request->search ?? '';
         $perPage = $request->per_page ?? 15;
+        $page = $request->page ?? 1;
 
-        $query = MedicalCondition::where('tenant_id', $tenant->id);
+        $cacheKey = "tenant_{$tenant->id}_conditions_{$search}_page_{$page}";
+        
+        $conditions = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $search, $perPage) {
+            $query = MedicalCondition::where('tenant_id', $tenant->id);
 
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('icd_code', 'like', "%{$search}%");
-        }
+            if ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('icd_code', 'like', "%{$search}%");
+            }
 
-        $conditions = $query->orderBy('name')->paginate($perPage);
+            return $query->orderBy('name')->paginate($perPage);
+        });
 
         return response()->json([
             'conditions' => $conditions,
@@ -244,14 +270,19 @@ class CatalogController extends Controller
     {
         $search = $request->search ?? '';
         $perPage = $request->per_page ?? 10;
+        $page = $request->page ?? 1;
 
-        $query = ConsentTemplate::where('tenant_id', $tenant->id);
+        $cacheKey = "tenant_{$tenant->id}_consent_templates_{$search}_page_{$page}";
+        
+        $templates = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $search, $perPage) {
+            $query = ConsentTemplate::where('tenant_id', $tenant->id);
 
-        if ($search) {
-            $query->where('label', 'like', "%{$search}%");
-        }
+            if ($search) {
+                $query->where('label', 'like', "%{$search}%");
+            }
 
-        $templates = $query->orderBy('label')->paginate($perPage);
+            return $query->orderBy('label')->paginate($perPage);
+        });
 
         return response()->json([
             'templates' => $templates,
@@ -290,14 +321,19 @@ class CatalogController extends Controller
     {
         $search = $request->search ?? '';
         $perPage = $request->per_page ?? 10;
+        $page = $request->page ?? 1;
 
-        $query = CertificateTemplate::where('tenant_id', $tenant->id);
+        $cacheKey = "tenant_{$tenant->id}_certificate_templates_{$search}_page_{$page}";
+        
+        $templates = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $search, $perPage) {
+            $query = CertificateTemplate::where('tenant_id', $tenant->id);
 
-        if ($search) {
-            $query->where('label', 'like', "%{$search}%");
-        }
+            if ($search) {
+                $query->where('label', 'like', "%{$search}%");
+            }
 
-        $templates = $query->orderBy('label')->paginate($perPage);
+            return $query->orderBy('label')->paginate($perPage);
+        });
 
         return response()->json([
             'templates' => $templates,
@@ -338,22 +374,28 @@ class CatalogController extends Controller
     {
         $search = $request->search ?? '';
         $perPage = $request->per_page ?? 10;
+        $page = $request->page ?? 1;
 
-        $query = PrescriptionTemplate::where('tenant_id', $tenant->id);
+        $cacheKey = "tenant_{$tenant->id}_prescription_templates_{$search}_page_{$page}";
+        
+        $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant, $search, $perPage) {
+            $query = PrescriptionTemplate::where('tenant_id', $tenant->id);
 
-        if ($search) {
-            $query->where('label', 'like', "%{$search}%");
-        }
+            if ($search) {
+                $query->where('label', 'like', "%{$search}%");
+            }
 
-        $templates = $query->orderBy('label')->paginate($perPage);
-
-        return response()->json([
-            'templates' => $templates,
-            'availableMedicines' => Medicine::where('tenant_id', $tenant->id)
+            $templates = $query->orderBy('label')->paginate($perPage);
+            
+            $availableMedicines = Medicine::where('tenant_id', $tenant->id)
                 ->active()
                 ->orderBy('name')
-                ->get(),
-        ]);
+                ->get();
+
+            return compact('templates', 'availableMedicines');
+        });
+
+        return response()->json($data);
     }
 
     public function storePrescriptionTemplate(Tenant $tenant, Request $request)

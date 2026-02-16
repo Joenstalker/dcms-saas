@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Cache Implementation: This controller caches both platform and tenant settings with 1-second TTL
+ * Cache keys: 'platform_settings' (shared) and 'tenant_{id}_settings' (tenant-specific)
+ */
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant;
@@ -15,6 +20,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends Controller
 {
@@ -32,8 +38,13 @@ class SettingsController extends Controller
             abort(403);
         }
 
-        $platformSettings = PlatformSetting::first();
-        $tenantSettings = TenantSetting::where('tenant_id', $tenant->id)->first();
+        $platformSettings = Cache::remember('platform_settings', now()->addSeconds(30), function () {
+            return PlatformSetting::first();
+        });
+        
+        $tenantSettings = Cache::remember("tenant_{$tenant->id}_settings", now()->addSeconds(30), function () use ($tenant) {
+            return TenantSetting::where('tenant_id', $tenant->id)->first();
+        });
 
         $canCustomize = true;
 

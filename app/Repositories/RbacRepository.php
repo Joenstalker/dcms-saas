@@ -74,13 +74,10 @@ class RbacRepository
             return false;
         }
 
-        DB::table('role_has_permissions')
-            ->where('role_id', $roleId)
-            ->delete();
-
-        DB::table('model_has_roles')
-            ->where('role_id', $roleId)
-            ->delete();
+        // When using Spatie/HasPermissions trait with MongoDB,
+        // it handles detachment when the role is deleted
+        // but we can be explicit here using Eloquent if needed.
+        $role->permissions()->detach();
 
         return $role->delete();
     }
@@ -92,13 +89,15 @@ class RbacRepository
 
     public function getRolePermissions(string $roleId, string $tenantId): Collection
     {
-        return DB::table('role_has_permissions')
-            ->join('permissions', 'role_has_permissions.permission_id', '=', 'permissions.id')
-            ->join('roles', 'role_has_permissions.role_id', '=', 'roles.id')
-            ->where('role_has_permissions.role_id', $roleId)
-            ->where('roles.tenant_id', $tenantId)
-            ->select('permissions.*')
-            ->get();
+        $role = Role::where('_id', $roleId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if (!$role) {
+            return new Collection();
+        }
+
+        return $role->permissions;
     }
 
     public function assignPermissionToRole(string $roleId, string $permissionId, string $tenantId): bool
@@ -111,22 +110,13 @@ class RbacRepository
             return false;
         }
 
-        $exists = DB::table('role_has_permissions')
-            ->where('role_id', $roleId)
-            ->where('permission_id', $permissionId)
-            ->exists();
-
-        if ($exists) {
-            return true;
+        $permission = Permission::find($permissionId);
+        if (!$permission) {
+            return false;
         }
 
-        return DB::table('role_has_permissions')->insert([
-            'role_id' => $roleId,
-            'permission_id' => $permissionId,
-            'tenant_id' => $tenantId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $role->givePermissionTo($permission);
+        return true;
     }
 
     public function revokePermissionFromRole(string $roleId, string $permissionId, string $tenantId): bool
@@ -139,10 +129,13 @@ class RbacRepository
             return false;
         }
 
-        return DB::table('role_has_permissions')
-            ->where('role_id', $roleId)
-            ->where('permission_id', $permissionId)
-            ->delete();
+        $permission = Permission::find($permissionId);
+        if (!$permission) {
+            return false;
+        }
+
+        $role->revokePermissionTo($permission);
+        return true;
     }
 
     public function syncRolePermissions(string $roleId, string $tenantId, array $permissionIds): bool
@@ -155,24 +148,13 @@ class RbacRepository
             return false;
         }
 
-        DB::table('role_has_permissions')
-            ->where('role_id', $roleId)
-            ->delete();
-
-        $permissions = array_map(function ($permissionId) use ($roleId, $tenantId) {
-            return [
-                'role_id' => $roleId,
-                'permission_id' => $permissionId,
-                'tenant_id' => $tenantId,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }, $permissionIds);
-
-        return DB::table('role_has_permissions')->insert($permissions);
+        $permissions = Permission::whereIn('_id', $permissionIds)->get();
+        $role->syncPermissions($permissions);
+        
+        return true;
     }
 
-    public function assignRoleToUser(string $roleId, int $userId, string $tenantId): bool
+    public function assignRoleToUser(string $roleId, string $userId, string $tenantId): bool
     {
         $role = Role::where('_id', $roleId)
             ->where('tenant_id', $tenantId)
@@ -182,7 +164,7 @@ class RbacRepository
             return false;
         }
 
-        $user = User::where('id', $userId)
+        $user = User::where('_id', $userId)
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -190,27 +172,11 @@ class RbacRepository
             return false;
         }
 
-        $exists = DB::table('model_has_roles')
-            ->where('role_id', $roleId)
-            ->where('model_id', $userId)
-            ->where('model_type', User::class)
-            ->exists();
-
-        if ($exists) {
-            return true;
-        }
-
-        return DB::table('model_has_roles')->insert([
-            'role_id' => $roleId,
-            'model_type' => User::class,
-            'model_id' => $userId,
-            'tenant_id' => $tenantId,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $user->assignRole($role);
+        return true;
     }
 
-    public function revokeRoleFromUser(string $roleId, int $userId, string $tenantId): bool
+    public function revokeRoleFromUser(string $roleId, string $userId, string $tenantId): bool
     {
         $role = Role::where('_id', $roleId)
             ->where('tenant_id', $tenantId)
@@ -220,17 +186,7 @@ class RbacRepository
             return false;
         }
 
-        return DB::table('model_has_roles')
-            ->where('role_id', $roleId)
-            ->where('model_id', $userId)
-            ->where('model_type', User::class)
-            ->where('tenant_id', $tenantId)
-            ->delete();
-    }
-
-    public function syncUserRoles(int $userId, string $tenantId, array $roleIds): bool
-    {
-        $user = User::where('id', $userId)
+        $user = User::where('_id', $userId)
             ->where('tenant_id', $tenantId)
             ->first();
 
@@ -238,35 +194,39 @@ class RbacRepository
             return false;
         }
 
-        DB::table('model_has_roles')
-            ->where('model_id', $userId)
-            ->where('model_type', User::class)
-            ->where('tenant_id', $tenantId)
-            ->delete();
-
-        $roles = array_map(function ($roleId) use ($userId, $tenantId) {
-            return [
-                'role_id' => $roleId,
-                'model_type' => User::class,
-                'model_id' => $userId,
-                'tenant_id' => $tenantId,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }, $roleIds);
-
-        return DB::table('model_has_roles')->insert($roles);
+        $user->removeRole($role);
+        return true;
     }
 
-    public function getUserRoles(int $userId, string $tenantId): Collection
+    public function syncUserRoles(string $userId, string $tenantId, array $roleIds): bool
     {
-        return DB::table('model_has_roles')
-            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->where('model_has_roles.model_id', $userId)
-            ->where('model_has_roles.model_type', User::class)
-            ->where('roles.tenant_id', $tenantId)
-            ->select('roles.*')
+        $user = User::where('_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if (!$user) {
+            return false;
+        }
+
+        $roles = Role::whereIn('_id', $roleIds)
+            ->where('tenant_id', $tenantId)
             ->get();
+
+        $user->syncRoles($roles);
+        return true;
+    }
+
+    public function getUserRoles(string $userId, string $tenantId): Collection
+    {
+        $user = User::where('_id', $userId)
+            ->where('tenant_id', $tenantId)
+            ->first();
+
+        if (!$user) {
+            return new Collection();
+        }
+
+        return $user->roles;
     }
 
     public function getAllTenants(): \Illuminate\Database\Eloquent\Collection
