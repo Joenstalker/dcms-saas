@@ -29,14 +29,13 @@ class DashboardController extends Controller
             abort(403, 'You do not have access to this clinic.');
         }
 
-        // Redirect based on role if needed, but for now we'll handle view logic in the index
-        // or create specific dashboard views.
+        // Redirect based on role to their dedicated dashboard
         if ($user->isDentist()) {
-            return $this->dentistDashboard($tenant);
+            return redirect()->route('tenant.dentist.dashboard', $tenant);
         }
 
         if ($user->isAssistant()) {
-            return $this->assistantDashboard($tenant);
+            return redirect()->route('tenant.assistant.dashboard', $tenant);
         }
 
         $cacheKey = "tenant_dashboard_{$tenant->id}";
@@ -82,9 +81,9 @@ class DashboardController extends Controller
         return view('tenant.dashboard.index', $data);
     }
 
-    protected function dentistDashboard(Tenant $tenant): View
+    public function dentistDashboard(Tenant $tenant, ?User $user = null): View
     {
-        $user = auth()->user();
+        $user = $user ?? auth()->user();
         
         $cacheKey = "dentist_dashboard_{$tenant->id}_{$user->id}";
         
@@ -114,9 +113,50 @@ class DashboardController extends Controller
         return view('tenant.dentist.dashboard', $data);
     }
 
-    protected function assistantDashboard(Tenant $tenant): View
+    /**
+     * Dentist dashboard - accessible by dentists and owners
+     */
+    public function dentist(Tenant $tenant): View
     {
-        $cacheKey = "assistant_dashboard_{$tenant->id}";
+        $user = auth()->user();
+
+        // Ensure user belongs to this tenant
+        if ($user->tenant_id !== $tenant->id && ! $user->isSystemAdmin()) {
+            abort(403, 'You do not have access to this clinic.');
+        }
+
+        // Only dentists and owners can access dentist dashboard
+        if (! $user->isDentist() && ! $user->isOwner()) {
+            abort(403, 'You do not have access to this dashboard.');
+        }
+
+        return $this->dentistDashboard($tenant, $user);
+    }
+
+    /**
+     * Assistant dashboard - accessible by assistants and owners
+     */
+    public function assistant(Tenant $tenant): View
+    {
+        $user = auth()->user();
+
+        // Ensure user belongs to this tenant
+        if ($user->tenant_id !== $tenant->id && ! $user->isSystemAdmin()) {
+            abort(403, 'You do not have access to this clinic.');
+        }
+
+        // Only assistants and owners can access assistant dashboard
+        if (! $user->isAssistant() && ! $user->isOwner()) {
+            abort(403, 'You do not have access to this dashboard.');
+        }
+
+        return $this->assistantDashboard($tenant, $user);
+    }
+
+    public function assistantDashboard(Tenant $tenant, ?User $user = null): View
+    {
+        $user = $user ?? auth()->user();
+        $cacheKey = "assistant_dashboard_{$tenant->id}_{$user->id}";
         
         $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant) {
             $stats = [

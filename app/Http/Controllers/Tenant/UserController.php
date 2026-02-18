@@ -8,13 +8,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\StoreUserRequest;
 use App\Models\User;
 use App\Models\Tenant;
+use App\Notifications\StaffInvitationNotification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 use Illuminate\View\View;
 use App\Http\Controllers\Tenant\DashboardController;
 
@@ -49,10 +50,10 @@ class UserController extends Controller
         // Only allow viewing dentist and assistant portals
         if ($user->isDentist()) {
             $dashboardController = new DashboardController();
-            return $dashboardController->dentistDashboard($tenant);
+            return $dashboardController->dentistDashboard($tenant, $user);
         } elseif ($user->isAssistant()) {
             $dashboardController = new DashboardController();
-            return $dashboardController->assistantDashboard($tenant);
+            return $dashboardController->assistantDashboard($tenant, $user);
         }
 
         abort(404, 'Portal not available for this user role.');
@@ -120,12 +121,31 @@ class UserController extends Controller
                 $user->assignRole($role);
             }
 
+            // Send invitation email to the new staff member
+            // Generate tenant-specific login URL using subdomain
+            $baseDomain = config('app.url', 'http://dcmsapp.local');
+            $baseDomain = str_replace(['http://', 'https://'], '', $baseDomain);
+            $loginUrl = 'http://' . $tenant->slug . '.' . $baseDomain;
+            
+            try {
+                $user->notify(new StaffInvitationNotification(
+                    tempPassword: $randomPassword,
+                    clinicName: $tenant->name,
+                    loginUrl: $loginUrl,
+                    role: $request->role
+                ));
+            } catch (\Exception $e) {
+                // Log error but don't fail the user creation
+                Log::warning('Failed to send staff invitation email', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             DB::commit();
 
             return redirect()->route('tenant.users.index', $tenant)
-                ->with('success', ucfirst($request->role) . ' added successfully!')
-                ->with('temp_password', $randomPassword)
-                ->with('staff_email', $request->email);
+                ->with('success', ucfirst($request->role) . ' added successfully! An invitation email has been sent to ' . $request->email);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -263,7 +283,7 @@ class UserController extends Controller
         }
 
         try {
-            $user->delete();
+            $user->forceDelete();
 
             return redirect()->route('tenant.users.index', $tenant)
                 ->with('success', 'User removed successfully!');

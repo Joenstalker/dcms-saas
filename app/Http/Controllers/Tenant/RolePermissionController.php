@@ -27,6 +27,12 @@ class RolePermissionController extends Controller
             abort(403, 'Tenant context not found');
         }
 
+        // Only owners can access RBAC
+        $user = auth()->user();
+        if (!$user || !$user->isOwner()) {
+            abort(403, 'Only clinic owners can access Roles & Permissions.');
+        }
+
         $planSlug = $tenant->pricingPlan?->slug ?? '';
         $allowedPlans = ['pro', 'ultimate'];
 

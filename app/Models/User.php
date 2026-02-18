@@ -152,6 +152,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is assistant in their tenant
+     */
+    public function isAssistant(): bool
+    {
+        return $this->role === self::ROLE_ASSISTANT || $this->hasTenantRole('assistant');
+    }
+
+    /**
      * Check if user is dentist in their tenant
      */
     public function isDentist(): bool
@@ -160,10 +168,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is assistant in their tenant
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
      */
-    public function isAssistant(): bool
+    public function sendPasswordResetNotification($token)
     {
-        return $this->role === self::ROLE_ASSISTANT || $this->hasTenantRole('assistant');
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
     }
 }

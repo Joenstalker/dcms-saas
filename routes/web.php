@@ -55,7 +55,30 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
 
     // Tenant Dashboard & Modules (Protected)
     Route::middleware(['auth'])->name('tenant.')->group(function () {
+        // Role-specific dashboards
         Route::get('/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/dentist/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'dentist'])->name('dentist.dashboard');
+        Route::get('/assistant/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'assistant'])->name('assistant.dashboard');
+        
+        // Dentist-specific routes
+        Route::prefix('dentist')->name('dentist.')->group(function () {
+            Route::get('/patients', [\App\Http\Controllers\Tenant\PatientController::class, 'index'])->name('patients.index');
+            Route::get('/patients/{patient}', [\App\Http\Controllers\Tenant\PatientController::class, 'show'])->name('patients.show');
+            Route::get('/appointments', [\App\Http\Controllers\Tenant\AppointmentController::class, 'index'])->name('appointments.index');
+            Route::get('/appointments/{appointment}', [\App\Http\Controllers\Tenant\AppointmentController::class, 'show'])->name('appointments.show');
+            Route::get('/services', [\App\Http\Controllers\Tenant\CatalogController::class, 'index'])->name('services.index');
+            Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
+        });
+        
+        // Assistant-specific routes
+        Route::prefix('assistant')->name('assistant.')->group(function () {
+            Route::get('/patients', [\App\Http\Controllers\Tenant\PatientController::class, 'index'])->name('patients.index');
+            Route::get('/patients/{patient}', [\App\Http\Controllers\Tenant\PatientController::class, 'show'])->name('patients.show');
+            Route::get('/appointments', [\App\Http\Controllers\Tenant\AppointmentController::class, 'index'])->name('appointments.index');
+            Route::get('/appointments/{appointment}', [\App\Http\Controllers\Tenant\AppointmentController::class, 'show'])->name('appointments.show');
+            Route::get('/services', [\App\Http\Controllers\Tenant\CatalogController::class, 'index'])->name('services.index');
+            Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
+        });
         
         // User Management (Owner only)
         Route::get('/users/{user}/view-portal', [\App\Http\Controllers\Tenant\UserController::class, 'viewPortal'])->name('users.view-portal');
@@ -120,7 +143,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
 /**
  * 🏠 CENTRAL ROUTES (dcmsapp.local, 127.0.0.1, localhost)
  */
-$centralGroupOptions = app()->environment('local') ? [] : ['domain' => $baseDomain];
+$centralGroupOptions = ['domain' => $baseDomain];
 
 Route::group($centralGroupOptions, function () {
     // Home Page

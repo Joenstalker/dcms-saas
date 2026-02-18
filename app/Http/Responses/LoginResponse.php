@@ -56,11 +56,20 @@ class LoginResponse implements LoginResponseContract
             $port = env('APP_PORT', '8000');
             $scheme = $request->getScheme();
 
+            // Determine dashboard path based on user role
+            $dashboardPath = '/dashboard';
+            if ($user->isDentist()) {
+                $dashboardPath = '/dentist/dashboard';
+            } elseif ($user->isAssistant()) {
+                $dashboardPath = '/assistant/dashboard';
+            }
+
             // Build the full URL to the tenant dashboard
-            $dashboardUrl = "{$scheme}://{$tenantSlug}.{$baseDomain}:{$port}/dashboard";
+            $dashboardUrl = "{$scheme}://{$tenantSlug}.{$baseDomain}:{$port}{$dashboardPath}";
 
             \Illuminate\Support\Facades\Log::debug('LoginResponse redirecting to', [
                 'dashboardUrl' => $dashboardUrl,
+                'user_role' => $user->role,
             ]);
 
             // Use intended() to return to the previous page (e.g., subscription renewal) after login
