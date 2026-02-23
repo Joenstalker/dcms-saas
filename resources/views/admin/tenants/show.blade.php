@@ -6,13 +6,18 @@
 <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold">{{ $tenant->name }}</h1>
     <div class="flex gap-2">
-        <a href="{{ route('admin.clinics.edit', $tenant) }}" class="btn btn-primary">Edit</a>
-        <form action="{{ route('admin.clinics.toggle-active', $tenant) }}" method="POST" class="inline">
-            @csrf
-            <button type="submit" class="btn {{ $tenant->is_active ? 'btn-warning' : 'btn-success' }}">
-                {{ $tenant->is_active ? 'Deactivate' : 'Activate' }}
-            </button>
-        </form>
+        <a href="{{ route('admin.tenants.edit', $tenant) }}" class="btn btn-primary">Edit</a>
+        @if($tenant->is_active)
+            <form action="{{ route('admin.tenants.suspend', $tenant) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="btn btn-warning">Deactivate</button>
+            </form>
+        @else
+            <form action="{{ route('admin.tenants.reactivate', $tenant) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="btn btn-success">Activate</button>
+            </form>
+        @endif
         <form action="{{ route('admin.tenants.destroy', $tenant) }}" method="POST" data-confirm-delete="Delete Clinic Permanently? This action is irreversible and will erase all data!">
             @csrf @method('DELETE')
             <button type="submit" class="btn btn-error">
@@ -106,7 +111,7 @@
                                     </td>
                                     <td class="text-right">
                                         @if(!$user->is_system_admin)
-                                            <a href="{{ route('admin.clinics.impersonate', ['clinic' => $tenant->id, 'user' => $user->id]) }}" target="_blank" class="btn btn-xs btn-ghost gap-1" title="View Portal">
+                                            <a href="{{ route('admin.tenants.impersonate', ['tenant' => $tenant->id, 'user' => $user->id]) }}" target="_blank" class="btn btn-xs btn-ghost gap-1" title="View Portal">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -165,13 +170,13 @@
                         </div>
                         @if(!$tenant->isEmailVerified())
                             <div class="mt-2 space-y-1">
-                                <form action="{{ route('admin.clinics.mark-email-verified', $tenant) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.tenants.mark-email-verified', $tenant) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="btn btn-xs btn-success">
                                         Mark as Verified
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.clinics.resend-verification', $tenant) }}" method="POST" class="inline">
+                                <form action="{{ route('admin.tenants.resend-verification', $tenant) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="btn btn-xs btn-outline">
                                         Resend Email
@@ -203,14 +208,14 @@
             <div class="card-body">
                 <h2 class="card-title">Quick Actions</h2>
                 <div class="mt-4 space-y-2">
-                    <a href="{{ route('admin.clinics.edit', $tenant) }}" class="btn btn-block btn-sm btn-ghost">Edit Clinic</a>
+                    <a href="{{ route('admin.tenants.edit', $tenant) }}" class="btn btn-block btn-sm btn-ghost">Edit Clinic</a>
                     
                     {{-- Find the owner user to impersonate --}}
                     @php
                         $owner = $tenant->users->where('role', 'clinic')->first();
                     @endphp
                     @if($owner)
-                        <a href="{{ route('admin.clinics.impersonate', ['clinic' => $tenant->id, 'user' => $owner->id]) }}" target="_blank" class="btn btn-block btn-sm btn-primary">
+                        <a href="{{ route('admin.tenants.impersonate', ['tenant' => $tenant->id, 'user' => $owner->id]) }}" target="_blank" class="btn btn-block btn-sm btn-primary">
                             Login as Owner
                         </a>
                     @else
@@ -221,13 +226,13 @@
                     <button class="btn btn-block btn-sm btn-ghost">Manage Users</button>
                     @if(!$tenant->isEmailVerified())
                         <hr class="my-2">
-                        <form action="{{ route('admin.clinics.mark-email-verified', $tenant) }}" method="POST" class="inline w-full">
+                        <form action="{{ route('admin.tenants.mark-email-verified', $tenant) }}" method="POST" class="inline w-full">
                             @csrf
                             <button type="submit" class="btn btn-block btn-sm btn-success">
                                 Mark Email Verified
                             </button>
                         </form>
-                        <form action="{{ route('admin.clinics.resend-verification', $tenant) }}" method="POST" class="inline w-full">
+                        <form action="{{ route('admin.tenants.resend-verification', $tenant) }}" method="POST" class="inline w-full">
                             @csrf
                             <button type="submit" class="btn btn-block btn-sm btn-outline">
                                 Resend Verification Email

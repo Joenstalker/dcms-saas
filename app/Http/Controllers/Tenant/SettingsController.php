@@ -79,8 +79,11 @@ class SettingsController extends Controller
             'font_family_body' => 'nullable|string|max:100',
             'custom_brand_name' => 'nullable|string|max:100',
             'logo_path' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
+            'logo_data' => 'nullable|string',
             'dark_logo_path' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
+            'dark_logo_data' => 'nullable|string',
             'favicon_path' => 'nullable|image|mimes:png,ico,svg|max:512',
+            'favicon_data' => 'nullable|string',
             'remove_logo' => 'nullable|boolean',
             'remove_dark_logo' => 'nullable|boolean',
             'remove_favicon' => 'nullable|boolean',
@@ -111,11 +114,23 @@ class SettingsController extends Controller
                 Storage::disk('public')->delete($settings->logo_path);
             }
             $settings->logo_path = $logoFile->store('tenant-branding', 'public');
+            $settings->logo_data = null; // Clear base64 if new file uploaded
+        } elseif ($request->filled('logo_data')) {
+            if (!$this->isValidBase64Image($request->logo_data)) {
+                return redirect()->back()->with('error', 'Invalid logo image data.');
+            }
+            // Clear old file if switching to base64
+            if ($settings->logo_path) {
+                Storage::disk('public')->delete($settings->logo_path);
+                $settings->logo_path = null;
+            }
+            $settings->logo_data = $request->logo_data;
         } elseif (isset($validated['remove_logo']) && $validated['remove_logo']) {
             if ($settings->logo_path) {
                 Storage::disk('public')->delete($settings->logo_path);
             }
             $settings->logo_path = null;
+            $settings->logo_data = null;
         }
 
         if ($request->hasFile('dark_logo_path')) {
@@ -127,11 +142,22 @@ class SettingsController extends Controller
                 Storage::disk('public')->delete($settings->dark_logo_path);
             }
             $settings->dark_logo_path = $logoFile->store('tenant-branding', 'public');
+            $settings->dark_logo_data = null;
+        } elseif ($request->filled('dark_logo_data')) {
+            if (!$this->isValidBase64Image($request->dark_logo_data)) {
+                return redirect()->back()->with('error', 'Invalid dark logo image data.');
+            }
+            if ($settings->dark_logo_path) {
+                Storage::disk('public')->delete($settings->dark_logo_path);
+                $settings->dark_logo_path = null;
+            }
+            $settings->dark_logo_data = $request->dark_logo_data;
         } elseif (isset($validated['remove_dark_logo']) && $validated['remove_dark_logo']) {
             if ($settings->dark_logo_path) {
                 Storage::disk('public')->delete($settings->dark_logo_path);
             }
             $settings->dark_logo_path = null;
+            $settings->dark_logo_data = null;
         }
 
         if ($request->hasFile('favicon_path')) {
@@ -143,11 +169,22 @@ class SettingsController extends Controller
                 Storage::disk('public')->delete($settings->favicon_path);
             }
             $settings->favicon_path = $faviconFile->store('tenant-branding', 'public');
+            $settings->favicon_data = null;
+        } elseif ($request->filled('favicon_data')) {
+            if (!$this->isValidBase64Image($request->favicon_data)) {
+                return redirect()->back()->with('error', 'Invalid favicon image data.');
+            }
+            if ($settings->favicon_path) {
+                Storage::disk('public')->delete($settings->favicon_path);
+                $settings->favicon_path = null;
+            }
+            $settings->favicon_data = $request->favicon_data;
         } elseif (isset($validated['remove_favicon']) && $validated['remove_favicon']) {
             if ($settings->favicon_path) {
                 Storage::disk('public')->delete($settings->favicon_path);
             }
             $settings->favicon_path = null;
+            $settings->favicon_data = null;
         }
 
         $settings->save();

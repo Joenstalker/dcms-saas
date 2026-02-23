@@ -70,6 +70,7 @@ class TenantBrandingService
             'warning_color' => $settings->theme_color_warning ?? '#f59e0b',
             'error_color' => $settings->theme_color_error ?? '#ef4444',
             'logo_url' => $settings->getLogoUrl(),
+            'dark_logo_url' => $settings->getDarkLogoUrl(),
             'favicon_url' => $settings->getFaviconUrl(),
             'custom_brand_name' => $settings->custom_brand_name,
         ];

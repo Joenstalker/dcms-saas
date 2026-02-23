@@ -16,7 +16,9 @@
                     $brandName = $branding?->custom_brand_name ?? $tenant->name;
                 @endphp
 
-                @if($logoPath)
+                @if($branding?->getLogoUrl())
+                    <img src="{{ $branding->getLogoUrl() }}" alt="{{ $brandName }}" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
+                @elseif($logoPath)
                     <img src="{{ asset('storage/' . $logoPath) }}" alt="{{ $brandName }}" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
                 @else
                     <img src="{{ asset('images/dcms-logo.png') }}" alt="DCMS Logo" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500">

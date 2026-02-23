@@ -22,9 +22,15 @@ class Patient extends Model
         'gender',
         'address',
         'medical_history',
+        'balance',
     ];
 
     protected $casts = [
         'dob' => 'date',
+        'balance' => 'decimal:2',
     ];
+    public function appointments(): HasMany
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

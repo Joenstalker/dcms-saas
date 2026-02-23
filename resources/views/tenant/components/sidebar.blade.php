@@ -11,8 +11,10 @@
         <!-- Logo/Brand -->
         <div class="p-4 border-b border-base-300">
             <div class="flex items-center gap-3">
-                @if($logoPath)
-                    <img src="{{ asset('storage/' . $logoPath) }}" alt="Logo" class="w-10 h-10 rounded">
+                @if(isset($tenantCustomization['logo_url']) && $tenantCustomization['logo_url'])
+                    <img src="{{ $tenantCustomization['logo_url'] }}" alt="Logo" class="w-10 h-10 rounded">
+                @elseif(isset($tenantCustomization['logo_path']) && $tenantCustomization['logo_path'])
+                    <img src="{{ asset('storage/' . $tenantCustomization['logo_path']) }}" alt="Logo" class="w-10 h-10 rounded">
                 @else
                     <div class="w-10 h-10 bg-primary rounded flex items-center justify-center">
                         <span class="text-primary-content font-bold text-lg">{{ substr($tenant->name, 0, 1) }}</span>

@@ -4,12 +4,13 @@
     'sidebarComponent' => 'tenant.dentist.components.sidebar'
 ])
 
+@section('page-title', 'Dentist Dashboard')
+
 @section('content')
 <div class="p-6" x-data="{ activeTab: 'home' }">
     <!-- Header with Tabs -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-base-content">Dentist Dashboard</h1>
             <p class="text-base-content/60 text-sm">Welcome back, Dr. {{ auth()->user()->name }}</p>
         </div>
         

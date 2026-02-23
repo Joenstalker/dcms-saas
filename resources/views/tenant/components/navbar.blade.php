@@ -7,8 +7,8 @@
         </label>
     </div>
     
-    <div class="flex-1">
-        <h2 class="text-xl font-semibold">@yield('page-title', 'Dashboard')</h2>
+    <div class="flex-1 min-w-0">
+        <h2 class="text-xl font-bold truncate">@yield('page-title', 'Dashboard')</h2>
     </div>
     
     <div class="flex-none gap-2">
@@ -45,7 +45,7 @@
                 <li><a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
-                    <form action="{{ route('logout') }}" method="POST">
+                    <form action="{{ route('logout', ['tenant' => $tenant->slug]) }}" method="POST">
                         @csrf
                         <button type="submit" class="w-full text-left">Logout</button>
                     </form>

@@ -85,6 +85,7 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
         Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
         
         // Module routes
+        Route::patch('patients/{patient}/update-balance', [\App\Http\Controllers\Tenant\PatientController::class, 'updateBalance'])->name('patients.update-balance');
         Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class);
         
         Route::resource('appointments', \App\Http\Controllers\Tenant\AppointmentController::class);

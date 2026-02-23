@@ -336,7 +336,9 @@
                             <span class="label-text font-medium">Clinic Logo</span>
                         </label>
                         <input type="file" name="logo" class="file-input file-input-bordered w-full" accept="image/*" {{ $canCustomize ? '' : 'disabled' }}>
-                        @if($tenantSettings?->logo_path)
+                        @if($tenantSettings?->getLogoUrl())
+                            <img src="{{ $tenantSettings->getLogoUrl() }}" class="h-14 rounded mt-3" alt="Logo">
+                        @elseif($tenantSettings?->logo_path)
                             <img src="{{ asset('storage/' . $tenantSettings->logo_path) }}" class="h-14 rounded mt-3" alt="Logo">
                         @endif
                     </div>
@@ -345,7 +347,9 @@
                             <span class="label-text font-medium">Favicon</span>
                         </label>
                         <input type="file" name="favicon" class="file-input file-input-bordered w-full" accept="image/*" {{ $canCustomize ? '' : 'disabled' }}>
-                        @if($tenantSettings?->favicon_path)
+                        @if($tenantSettings?->getFaviconUrl())
+                            <img src="{{ $tenantSettings->getFaviconUrl() }}" class="h-10 rounded mt-3" alt="Favicon">
+                        @elseif($tenantSettings?->favicon_path)
                             <img src="{{ asset('storage/' . $tenantSettings->favicon_path) }}" class="h-10 rounded mt-3" alt="Favicon">
                         @endif
                     </div>

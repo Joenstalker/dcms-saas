@@ -31,7 +31,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $customBrandName ?? $tenant->name ?? 'DCMS' }} - Dashboard</title>
     @if($faviconPath)
-        <link rel="icon" href="{{ asset('storage/' . $faviconPath) }}">
+        <link rel="icon" href="{{ $faviconPath }}">
     @endif
     @if($fontFamilyLabel && strtolower($fontFamilyLabel) !== 'system')
         <link rel="preconnect" href="https://fonts.googleapis.com">

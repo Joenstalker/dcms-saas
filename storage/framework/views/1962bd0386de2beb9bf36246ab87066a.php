@@ -47,7 +47,7 @@
                 <li><a href="<?php echo e(route('tenant.settings.index', ['tenant' => $tenant->slug])); ?>">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
-                    <form action="<?php echo e(route('logout')); ?>" method="POST">
+                    <form action="<?php echo e(route('logout', ['tenant' => $tenant->slug])); ?>" method="POST">
                         <?php echo csrf_field(); ?>
                         <button type="submit" class="w-full text-left text-error">Logout</button>
                     </form>

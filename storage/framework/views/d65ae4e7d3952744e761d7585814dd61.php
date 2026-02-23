@@ -31,7 +31,7 @@
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title><?php echo e($customBrandName ?? $tenant->name ?? 'DCMS'); ?> - Dashboard</title>
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($faviconPath): ?>
-        <link rel="icon" href="<?php echo e(asset('storage/' . $faviconPath)); ?>">
+        <link rel="icon" href="<?php echo e($faviconPath); ?>">
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($fontFamilyLabel && strtolower($fontFamilyLabel) !== 'system'): ?>
         <link rel="preconnect" href="https://fonts.googleapis.com">

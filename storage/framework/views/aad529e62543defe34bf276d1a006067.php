@@ -16,7 +16,9 @@
                     $brandName = $branding?->custom_brand_name ?? $tenant->name;
                 ?>
 
-                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($logoPath): ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($branding?->getLogoUrl()): ?>
+                    <img src="<?php echo e($branding->getLogoUrl()); ?>" alt="<?php echo e($brandName); ?>" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
+                <?php elseif($logoPath): ?>
                     <img src="<?php echo e(asset('storage/' . $logoPath)); ?>" alt="<?php echo e($brandName); ?>" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500 rounded-xl">
                 <?php else: ?>
                     <img src="<?php echo e(asset('images/dcms-logo.png')); ?>" alt="DCMS Logo" class="h-24 mx-auto object-contain transition-all hover:scale-105 duration-500">

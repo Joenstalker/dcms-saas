@@ -13,8 +13,11 @@
                 <li><a href="#">About</a></li>
                 <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
                     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!auth()->user()->is_system_admin): ?>
-                        <li><a href="<?php echo e(route('logout')); ?>" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">Logout</a></li>
-                        <form id="logout-form-mobile" action="<?php echo e(route('logout')); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
+                        <?php
+                            $userTenantSlug = auth()->user()->tenant->slug ?? null;
+                        ?>
+                        <li><a href="<?php echo e(route('logout', ['tenant' => $userTenantSlug])); ?>" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">Logout</a></li>
+                        <form id="logout-form-mobile" action="<?php echo e(route('logout', ['tenant' => $userTenantSlug])); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <?php else: ?>
                     <li><a href="<?php echo e(route('admin.login')); ?>">Login</a></li>
@@ -45,9 +48,12 @@
         <?php echo $__env->make('admin.components.theme-switcher', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
          <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(auth()->guard()->check()): ?>
-            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!auth()->user()->is_system_admin): ?>
-                <a href="<?php echo e(route('logout')); ?>" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
+             <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!auth()->user()->is_system_admin): ?>
+                <?php
+                    $userTenantSlug = auth()->user()->tenant->slug ?? null;
+                ?>
+                <a href="<?php echo e(route('logout', ['tenant' => $userTenantSlug])); ?>" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                <form id="logout-form" action="<?php echo e(route('logout', ['tenant' => $userTenantSlug])); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
             <?php else: ?>
                  <a href="<?php echo e(route('admin.dashboard')); ?>" class="btn btn-primary">Dashboard</a>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>

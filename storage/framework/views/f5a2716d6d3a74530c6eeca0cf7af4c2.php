@@ -7,8 +7,8 @@
         </label>
     </div>
     
-    <div class="flex-1">
-        <h2 class="text-xl font-semibold"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h2>
+    <div class="flex-1 min-w-0">
+        <h2 class="text-xl font-bold truncate"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h2>
     </div>
     
     <div class="flex-none gap-2">
@@ -45,7 +45,7 @@
                 <li><a href="<?php echo e(route('tenant.settings.index', ['tenant' => $tenant->slug])); ?>">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
-                    <form action="<?php echo e(route('logout')); ?>" method="POST">
+                    <form action="<?php echo e(route('logout', ['tenant' => $tenant->slug])); ?>" method="POST">
                         <?php echo csrf_field(); ?>
                         <button type="submit" class="w-full text-left">Logout</button>
                     </form>

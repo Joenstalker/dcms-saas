@@ -4,6 +4,8 @@
     'sidebarComponent' => 'tenant.assistant.components.sidebar'
 ])
 
+@section('page-title', 'Assistant Dashboard')
+
 @section('content')
 <div class="p-6">
     @include('tenant.assistant.tabs.home')

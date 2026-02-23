@@ -30,6 +30,9 @@ class TenantSetting extends Model
         'logo_path',
         'favicon_path',
         'dark_logo_path',
+        'logo_data',
+        'favicon_data',
+        'dark_logo_data',
         'login_bg_path',
         'custom_brand_name',
         'dashboard_widgets',
@@ -135,14 +138,31 @@ class TenantSetting extends Model
 
     public function getLogoUrl(): ?string
     {
+        if ($this->logo_data) {
+            return $this->logo_data;
+        }
         if ($this->logo_path) {
             return asset('storage/' . $this->logo_path);
         }
         return null;
     }
 
+    public function getDarkLogoUrl(): ?string
+    {
+        if ($this->dark_logo_data) {
+            return $this->dark_logo_data;
+        }
+        if ($this->dark_logo_path) {
+            return asset('storage/' . $this->dark_logo_path);
+        }
+        return null;
+    }
+
     public function getFaviconUrl(): ?string
     {
+        if ($this->favicon_data) {
+            return $this->favicon_data;
+        }
         if ($this->favicon_path) {
             return asset('storage/' . $this->favicon_path);
         }
@@ -186,6 +206,7 @@ class TenantSetting extends Model
             'warning_color' => $this->theme_color_warning ?? '#f59e0b',
             'error_color' => $this->theme_color_error ?? '#ef4444',
             'logo_url' => $this->getLogoUrl(),
+            'dark_logo_url' => $this->getDarkLogoUrl(),
             'favicon_url' => $this->getFaviconUrl(),
             'custom_brand_name' => $this->custom_brand_name,
         ];

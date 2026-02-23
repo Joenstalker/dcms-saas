@@ -76,7 +76,7 @@ unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendB
                         <option value="" disabled selected>Select a plan</option>
                         <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $pricingPlans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option value="<?php echo e($plan->id); ?>" <?php echo e(old('pricing_plan_id') == $plan->id ? 'selected' : ''); ?>>
-                                <?php echo e($plan->name); ?> (₱<?php echo e(number_format((float) $plan->price, 2)); ?>/<?php echo e($plan->billing_cycle); ?>)
+                                <?php echo e($plan->name); ?> (₱<?php echo e(number_format((float) (string) $plan->price, 2)); ?>/<?php echo e($plan->billing_cycle); ?>)
                             </option>
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </select>

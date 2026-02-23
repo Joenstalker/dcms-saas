@@ -47,7 +47,7 @@
                 <li><a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
-                    <form action="{{ route('logout') }}" method="POST">
+                    <form action="{{ route('logout', ['tenant' => $tenant->slug]) }}" method="POST">
                         @csrf
                         <button type="submit" class="w-full text-left text-error">Logout</button>
                     </form>

@@ -13,8 +13,11 @@
                 <li><a href="#">About</a></li>
                 @auth
                     @if(!auth()->user()->is_system_admin)
-                        <li><a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">Logout</a></li>
-                        <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
+                        @php
+                            $userTenantSlug = auth()->user()->tenant->slug ?? null;
+                        @endphp
+                        <li><a href="{{ route('logout', ['tenant' => $userTenantSlug]) }}" onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">Logout</a></li>
+                        <form id="logout-form-mobile" action="{{ route('logout', ['tenant' => $userTenantSlug]) }}" method="POST" style="display:none;">@csrf</form>
                     @endif
                 @else
                     <li><a href="{{ route('admin.login') }}">Login</a></li>
@@ -45,9 +48,12 @@
         @include('admin.components.theme-switcher')
 
          @auth
-            @if(!auth()->user()->is_system_admin)
-                <a href="{{ route('logout') }}" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">@csrf</form>
+             @if(!auth()->user()->is_system_admin)
+                @php
+                    $userTenantSlug = auth()->user()->tenant->slug ?? null;
+                @endphp
+                <a href="{{ route('logout', ['tenant' => $userTenantSlug]) }}" class="btn btn-ghost" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                <form id="logout-form" action="{{ route('logout', ['tenant' => $userTenantSlug]) }}" method="POST" style="display:none;">@csrf</form>
             @else
                  <a href="{{ route('admin.dashboard') }}" class="btn btn-primary">Dashboard</a>
             @endif

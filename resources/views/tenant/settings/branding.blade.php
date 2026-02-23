@@ -191,42 +191,57 @@
 
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-bold">Logo (Light)</span></label>
-                                <input type="file" name="logo_path" class="file-input file-input-bordered w-full" accept="image/png,image/jpeg,image/svg+xml">
-                                @if($currentSettings?->logo_path)
+                                <input type="file" name="logo_path_upload" class="file-input file-input-bordered w-full" accept="image/png,image/jpeg,image/svg+xml" onchange="handleImageUpload(this, 'logo_data', 'logo_preview')">
+                                <input type="hidden" name="logo_data" id="logo_data">
+                                @if($currentSettings?->getLogoUrl())
                                     <div class="mt-2 flex items-center gap-3">
-                                        <img src="{{ asset('storage/' . $currentSettings->logo_path) }}" class="h-12 rounded border border-base-300" alt="Current Logo">
+                                        <img src="{{ $currentSettings->getLogoUrl() }}" id="logo_preview" class="h-12 rounded border border-base-300" alt="Current Logo">
                                         <label class="cursor-pointer">
                                             <input type="checkbox" name="remove_logo" value="1" class="checkbox checkbox-sm">
                                             <span class="text-sm">Remove</span>
                                         </label>
+                                    </div>
+                                @else
+                                    <div class="mt-2 hidden" id="logo_preview_container">
+                                        <img src="" id="logo_preview" class="h-12 rounded border border-base-300" alt="New Logo">
                                     </div>
                                 @endif
                             </div>
 
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-bold">Logo (Dark Mode)</span></label>
-                                <input type="file" name="dark_logo_path" class="file-input file-input-bordered w-full" accept="image/png,image/jpeg,image/svg+xml">
-                                @if($currentSettings?->dark_logo_path)
+                                <input type="file" name="dark_logo_path_upload" class="file-input file-input-bordered w-full" accept="image/png,image/jpeg,image/svg+xml" onchange="handleImageUpload(this, 'dark_logo_data', 'dark_logo_preview')">
+                                <input type="hidden" name="dark_logo_data" id="dark_logo_data">
+                                @if($currentSettings?->getDarkLogoUrl())
                                     <div class="mt-2 flex items-center gap-3">
-                                        <img src="{{ asset('storage/' . $currentSettings->dark_logo_path) }}" class="h-12 rounded border border-base-300" alt="Current Dark Logo">
+                                        <img src="{{ $currentSettings->getDarkLogoUrl() }}" id="dark_logo_preview" class="h-12 rounded border border-base-300" alt="Current Dark Logo">
                                         <label class="cursor-pointer">
                                             <input type="checkbox" name="remove_dark_logo" value="1" class="checkbox checkbox-sm">
                                             <span class="text-sm">Remove</span>
                                         </label>
+                                    </div>
+                                @else
+                                    <div class="mt-2 hidden" id="dark_logo_preview_container">
+                                        <img src="" id="dark_logo_preview" class="h-12 rounded border border-base-300" alt="New Dark Logo">
                                     </div>
                                 @endif
                             </div>
 
                             <div class="form-control">
                                 <label class="label"><span class="label-text font-bold">Favicon</span></label>
-                                <input type="file" name="favicon_path" class="file-input file-input-bordered w-full" accept="image/png,image/x-icon,image/svg+xml">
-                                @if($currentSettings?->favicon_path)
+                                <input type="file" name="favicon_path_upload" class="file-input file-input-bordered w-full" accept="image/png,image/x-icon,image/svg+xml" onchange="handleImageUpload(this, 'favicon_data', 'favicon_preview')">
+                                <input type="hidden" name="favicon_data" id="favicon_data">
+                                @if($currentSettings?->getFaviconUrl())
                                     <div class="mt-2 flex items-center gap-3">
-                                        <img src="{{ asset('storage/' . $currentSettings->favicon_path) }}" class="h-8 w-8 rounded" alt="Current Favicon">
+                                        <img src="{{ $currentSettings->getFaviconUrl() }}" id="favicon_preview" class="h-8 w-8 rounded" alt="Current Favicon">
                                         <label class="cursor-pointer">
                                             <input type="checkbox" name="remove_favicon" value="1" class="checkbox checkbox-sm">
                                             <span class="text-sm">Remove</span>
                                         </label>
+                                    </div>
+                                @else
+                                    <div class="mt-2 hidden" id="favicon_preview_container">
+                                        <img src="" id="favicon_preview" class="h-8 w-8 rounded" alt="New Favicon">
                                     </div>
                                 @endif
                             </div>
@@ -317,5 +332,32 @@
             });
         }
     });
+
+    function handleImageUpload(input, dataFieldId, previewId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // Check file size (max 2MB for logos, 512KB for favicon)
+        const maxSize = dataFieldId === 'favicon_data' ? 512 * 1024 : 2048 * 1024;
+        if (file.size > maxSize) {
+            alert(`File is too large. Max size is ${maxSize / 1024}KB.`);
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const base64Data = e.target.result;
+            document.getElementById(dataFieldId).value = base64Data;
+            
+            const previewImg = document.getElementById(previewId);
+            if (previewImg) {
+                previewImg.src = base64Data;
+                const container = document.getElementById(previewId + '_container');
+                if (container) container.classList.remove('hidden');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
 </script>
 @endsection
