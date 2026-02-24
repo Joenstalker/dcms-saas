@@ -14,6 +14,8 @@ class Role extends Model implements RoleContract
     use HasPermissions;
     use RefreshesPermissionCache;
 
+    protected $connection = 'mongodb_central';
+
     public $guarded = ['id'];
 
     protected $fillable = [

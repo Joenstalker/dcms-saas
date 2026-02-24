@@ -5,9 +5,17 @@
         </svg>
         Payment & Billing History
     </h3>
-    <div class="text-right">
-        <div class="text-[10px] uppercase opacity-50 font-bold tracking-wider">Current Balance</div>
-        <div class="text-xl font-black text-error" id="profile-balance-display">Php {{ number_format($patient->balance ?? 0, 2) }}</div>
+    <div class="flex items-center gap-4">
+        <button class="btn btn-primary btn-xs rounded-lg px-4 h-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Add Procedure
+        </button>
+        <div class="text-right">
+            <div class="text-[10px] uppercase opacity-50 font-bold tracking-wider">Current Balance</div>
+            <div class="text-xl font-black text-error" id="profile-balance-display">Php {{ number_format($patient->balance ?? 0, 2) }}</div>
+        </div>
     </div>
 </div>
 

@@ -59682,3 +59682,17 @@ Did you mean one of these?
 #67 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('D://dentistmng//d...')
 #68 {main}
 "} 
+[2026-02-24 13:53:03] local.ERROR: Cannot declare class App\Console\Commands\MigrateTenantsToSeparateDatabases, because the name is already in use {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot declare class App\\Console\\Commands\\MigrateTenantsToSeparateDatabases, because the name is already in use at D:/dentistmng/dcms-saas/app/Console/Commands/MigrateTenantsToSeparateDatabases.php:179)
+[stacktrace]
+#0 {main}
+"} 
+[2026-02-24 13:56:44] local.DEBUG: Cache miss: loading active custom themes from DB  
+[2026-02-24 14:04:03] local.DEBUG: Cache miss: loading active custom themes from DB  
+[2026-02-24 14:18:42] local.DEBUG: Cache miss: loading active custom themes from DB  
+[2026-02-24 14:20:05] local.DEBUG: Fortify authenticateUsing {"email":"joenilpanal@gmail.com","session_tenant_id":"69842a76be39527ddf08c722"} 
+[2026-02-24 14:20:06] local.DEBUG: Fortify: User lookup result {"email":"joenilpanal@gmail.com","tenant_id":"69842a76be39527ddf08c722","user_found":"yes","user_id":"69842a77be39527ddf08c723"} 
+[2026-02-24 14:20:06] local.DEBUG: LoginResponse called {"user_id":"69842a77be39527ddf08c723","user_email":"joenilpanal@gmail.com","session_tenant_id":"69842a76be39527ddf08c722","session_tenant_slug":"cudalblanco","has_password_reset":false} 
+[2026-02-24 14:20:06] local.DEBUG: LoginResponse: Retrieved tenant from user relationship {"tenant_id":"69842a76be39527ddf08c722","tenant_slug":"cudalblanco"} 
+[2026-02-24 14:20:06] local.DEBUG: LoginResponse redirecting to {"dashboardUrl":"http://cudalblanco.lvh.me:8000/dashboard","user_role":"tenant"} 
+[2026-02-24 14:20:09] local.DEBUG: Cache miss: loading tenant settings from DB {"tenant_id":"69842a76be39527ddf08c722"} 
+[2026-02-24 14:20:10] local.DEBUG: Cache miss: compiling branding CSS {"tenant_id":"69842a76be39527ddf08c722"} 

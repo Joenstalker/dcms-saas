@@ -15,7 +15,30 @@ use MongoDB\Laravel\Eloquent\SoftDeletes;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles, BelongsToTenant, SoftDeletes;
- 
+
+    /**
+     * Dynamically resolve which database connection to use.
+     *
+     * - System admins and tenant owners → mongodb_central (platform data)
+     * - Dentists and assistants         → mongodb (already switched to db_{slug} by TenantMiddleware)
+     */
+    public function getConnectionName(): string
+    {
+        $role = $this->attributes['role'] ?? null;
+        $isSystemAdmin = $this->attributes['is_system_admin'] ?? false;
+
+        // Keep platform-level users in central
+        if ($isSystemAdmin || in_array($role, [self::ROLE_SYSTEM_ADMIN, self::ROLE_TENANT, null])) {
+            return 'mongodb_central';
+        }
+
+        // Staff users (dentist, assistant) live in the tenant's own database.
+        // TenantMiddleware has already pointed the 'mongodb' connection to db_{slug}
+        // before auth fires, so this correctly resolves to the right tenant DB.
+        return 'mongodb';
+    }
+
+
     public $incrementing = false;
     protected $keyType = 'string';
 

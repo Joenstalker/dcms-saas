@@ -12,6 +12,8 @@ class PricingPlan extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mongodb_central';
+
     public $incrementing = false;
     protected $keyType = 'string';
     protected $fillable = [

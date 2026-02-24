@@ -1,6 +1,7 @@
 
 
 <?php $__env->startSection('title', 'Patient Management'); ?>
+<?php $__env->startSection('page-title', 'Patient Management'); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="space-y-6">

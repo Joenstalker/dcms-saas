@@ -9,6 +9,8 @@ class Payment extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mongodb_central';
+
     protected $fillable = [
         'tenant_id',
         'pricing_plan_id',

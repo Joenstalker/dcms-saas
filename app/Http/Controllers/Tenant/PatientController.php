@@ -149,8 +149,7 @@ class PatientController extends Controller
 
         $patient->update($validated);
 
-        return redirect()->route('tenant.patients.index', $tenant->slug)
-            ->with('success', 'Patient updated successfully.');
+        return back()->with('success', 'Patient updated successfully.');
     }
 
     public function updateBalance(Request $request, Tenant $tenant, Patient $patient)

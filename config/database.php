@@ -56,6 +56,12 @@ return [
             'database' => env('MONGODB_DATABASE', 'dcms_saas_new'),
         ],
 
+        'mongodb_central' => [
+            'driver' => 'mongodb',
+            'dsn' => env('MONGODB_URL'),
+            'database' => env('MONGODB_CENTRAL_DATABASE', 'dcms_central'),
+        ],
+
     ],
 
     /*

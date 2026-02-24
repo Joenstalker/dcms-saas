@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PlatformSetting extends Model
 {
+    protected $connection = 'mongodb_central';
     use HasFactory;
     protected $fillable = [
         'default_theme_primary',

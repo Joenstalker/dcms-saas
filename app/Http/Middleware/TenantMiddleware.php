@@ -40,13 +40,16 @@ class TenantMiddleware
             return $next($request);
         }
 
-        // Find tenant by slug (subdomain) or custom domain
-        $tenant = Tenant::where(function ($query) use ($subdomain, $host) {
-                $query->where('slug', $subdomain)
-                      ->orWhere('domain', $host);
-            })
-            ->where('is_active', true)
-            ->first();
+        // Cache tenant lookup by subdomain to avoid MongoDB Atlas query on every request
+        $cacheKey = "tenant_by_host_{$host}";
+        $tenant = \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($subdomain, $host) {
+            return Tenant::where(function ($query) use ($subdomain, $host) {
+                    $query->where('slug', $subdomain)
+                          ->orWhere('domain', $host);
+                })
+                ->where('is_active', true)
+                ->first();
+        });
 
         if (! $tenant) {
             abort(404, 'Clinic not found');
@@ -61,7 +64,16 @@ class TenantMiddleware
         // Set default URL parameter for route generation
         \Illuminate\Support\Facades\URL::defaults(['tenant' => $tenant->slug]);
 
-        // Cache platform settings (rarely changes)
+        // Only reconnect MongoDB if the tenant database has changed
+        // This avoids re-establishing a cloud Atlas connection on every single request
+        $dbName = 'db_' . $tenant->slug;
+        $currentDb = config('database.connections.mongodb.database');
+        if ($currentDb !== $dbName) {
+            config(['database.connections.mongodb.database' => $dbName]);
+            \Illuminate\Support\Facades\DB::purge('mongodb');
+            \Illuminate\Support\Facades\DB::reconnect('mongodb');
+        }
+
         $platformSettings = \Illuminate\Support\Facades\Cache::remember('platform_settings', 300, function () {
             return PlatformSetting::first();
         });

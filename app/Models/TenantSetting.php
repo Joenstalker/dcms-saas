@@ -12,6 +12,8 @@ class TenantSetting extends Model
 {
     use HasFactory;
 
+    protected $connection = 'mongodb_central';
+
     protected $fillable = [
         'tenant_id',
         'theme_mode',

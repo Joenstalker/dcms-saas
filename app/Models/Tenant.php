@@ -14,6 +14,8 @@ class Tenant extends Model
 {
     use SoftDeletes;
 
+    protected $connection = 'mongodb_central';
+
     public $incrementing = false;
     protected $keyType = 'string';
 
