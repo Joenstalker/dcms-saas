@@ -13,17 +13,18 @@ class MedicalConditionSeeder extends Seeder
      */
     public function run(): void
     {
-        // Get the first tenant to seed data for
-        // In a real multi-tenant app, you might want to loop through all tenants
-        // or accept a specific tenant ID. For this request, we'll seed for the first one found.
-        $tenant = Tenant::first();
+        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
 
         if (!$tenant) {
-            $this->command->error('No tenant found. Please create a tenant first.');
+            if ($this->command) {
+                $this->command->error('No tenant found. Please create a tenant first or bind one to the container.');
+            }
             return;
         }
 
-        $this->command->info("Seeding medical conditions for tenant: {$tenant->name} ({$tenant->slug})");
+        if ($this->command) {
+            $this->command->info("Seeding medical conditions for tenant: {$tenant->name} ({$tenant->slug})");
+        }
 
         $conditions = [
             ['name' => 'Dental Caries', 'icd_code' => 'K02.9', 'remarks' => 'Tooth decay requiring restorative treatment', 'is_active' => true],
@@ -57,6 +58,8 @@ class MedicalConditionSeeder extends Seeder
             );
         }
 
-        $this->command->info('Medical conditions seeded successfully.');
+        if ($this->command) {
+            $this->command->info('Medical conditions seeded successfully.');
+        }
     }
 }

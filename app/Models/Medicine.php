@@ -6,6 +6,8 @@ use MongoDB\Laravel\Eloquent\Model;
 
 class Medicine extends Model
 {
+    protected $connection = 'mongodb';
+
     protected $fillable = [
         'tenant_id',
         'name',

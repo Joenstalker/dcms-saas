@@ -13,6 +13,8 @@ class Patient extends Model
 {
     use HasFactory, BelongsToTenant;
 
+    protected $connection = 'mongodb';
+
     protected $fillable = [
         'first_name',
         'last_name',

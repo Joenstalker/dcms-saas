@@ -1,0 +1,13 @@
+Tenant Found:
+ID: 69842a76be39527ddf08c722
+Slug: cudalblanco
+Name: CUDAL-BLANCO DENTAL CLINIC
+
+Patients in Central DB for this tenant: 1
+- joemar acero (ID: 69843bf4ffafc307a90c74a2, tenant_id: 69842a76be39527ddf08c722)
+
+Switching to Tenant DB: db_cudalblanco
+Current DB Connection: db_cudalblanco
+Total Patients in db_cudalblanco: 1
+- joemar acero (ID: 699d56c25fd555c5fd033964, tenant_id: 69842a76be39527ddf08c722)
+Patients in db_cudalblanco with tenant_id filter (69842a76be39527ddf08c722): 1

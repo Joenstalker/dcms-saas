@@ -13,14 +13,18 @@ class MedicineSeeder extends Seeder
      */
     public function run(): void
     {
-        $tenant = Tenant::first();
+        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
 
         if (!$tenant) {
-            $this->command->error('No tenant found. Please create a tenant first.');
+            if ($this->command) {
+                $this->command->error('No tenant found. Please create a tenant first or bind one to the container.');
+            }
             return;
         }
 
-        $this->command->info("Seeding medicines for tenant: {$tenant->name} ({$tenant->slug})");
+        if ($this->command) {
+            $this->command->info("Seeding medicines for tenant: {$tenant->name} ({$tenant->slug})");
+        }
 
         $medicines = [
             ['name' => 'Amoxicillin 500mg', 'generic_name' => 'Amoxicillin', 'dosage' => '500 mg Capsule', 'is_active' => true],
@@ -54,6 +58,8 @@ class MedicineSeeder extends Seeder
             );
         }
 
-        $this->command->info('Medicines seeded successfully.');
+        if ($this->command) {
+            $this->command->info('Medicines seeded successfully.');
+        }
     }
 }

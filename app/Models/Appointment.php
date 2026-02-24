@@ -13,6 +13,8 @@ class Appointment extends Model
 {
     use HasFactory, BelongsToTenant;
 
+    protected $connection = 'mongodb';
+
     protected $fillable = [
         'patient_id',
         'dentist_id',

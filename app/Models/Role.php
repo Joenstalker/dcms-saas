@@ -14,7 +14,20 @@ class Role extends Model implements RoleContract
     use HasPermissions;
     use RefreshesPermissionCache;
 
-    protected $connection = 'mongodb_central';
+    /**
+     * Dynamically resolve which database connection to use.
+     */
+    public function getConnectionName(): string
+    {
+        // If we have a tenant context bound, the roles for clinicians/staff
+        // live in the tenant's dedicated database.
+        if (app()->bound('tenant')) {
+            return 'mongodb';
+        }
+
+        // Platform roles (system admin, tenant owners) live in central database.
+        return 'mongodb_central';
+    }
 
     public $guarded = ['id'];
 

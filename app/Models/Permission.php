@@ -14,7 +14,20 @@ class Permission extends Model implements PermissionContract
     use HasRoles;
     use RefreshesPermissionCache;
 
-    protected $connection = 'mongodb_central';
+    /**
+     * Dynamically resolve which database connection to use.
+     */
+    public function getConnectionName(): string
+    {
+        // If we have a tenant context bound, the permissions for clinicians/staff
+        // live in the tenant's dedicated database.
+        if (app()->bound('tenant')) {
+            return 'mongodb';
+        }
+
+        // Platform permissions live in central database.
+        return 'mongodb_central';
+    }
 
     public $guarded = ['id'];
 

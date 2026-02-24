@@ -13,14 +13,18 @@ class ServiceSeeder extends Seeder
      */
     public function run(): void
     {
-        $tenant = Tenant::first();
+        $tenant = app()->bound('tenant') ? app('tenant') : Tenant::first();
 
         if (!$tenant) {
-            $this->command->error('No tenant found. Please create a tenant first.');
+            if ($this->command) {
+                $this->command->error('No tenant found. Please create a tenant first or bind one to the container.');
+            }
             return;
         }
 
-        $this->command->info("Seeding services for tenant: {$tenant->name} ({$tenant->slug})");
+        if ($this->command) {
+            $this->command->info("Seeding services for tenant: {$tenant->name} ({$tenant->slug})");
+        }
 
         $services = [
             ['name' => 'Dental Consultation', 'category' => 'Consultation', 'amount' => 500, 'duration' => 15, 'auto' => true, 'status' => true],
@@ -111,6 +115,8 @@ class ServiceSeeder extends Seeder
             );
         }
 
-        $this->command->info('Services seeded successfully.');
+        if ($this->command) {
+            $this->command->info('Services seeded successfully.');
+        }
     }
 }
