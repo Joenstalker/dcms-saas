@@ -340,50 +340,9 @@
     </script>
     @endif
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Global SweetAlert2 Toast/Popup handling
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
-        });
-
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: 'var(--p, #0ea5e9)',
-                timer: 3000
-            });
-        @endif
-
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: "{{ session('error') }}",
-                confirmButtonColor: 'var(--p, #0ea5e9)'
-            });
-        @endif
-
-        @if(session('info'))
-            Swal.fire({
-                icon: 'info',
-                title: 'Info',
-                text: "{{ session('info') }}",
-                confirmButtonColor: 'var(--p, #0ea5e9)'
-            });
-        @endif
-
-        // Global Delete Confirmation
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" data-turbo-eval="false"></script>
+    <script data-turbo-eval="false">
+        // Global Delete Confirmation — registered once, works across all Turbo navigations
         document.addEventListener('submit', function(e) {
             const form = e.target;
             if (form.hasAttribute('data-confirm-delete')) {
@@ -442,6 +401,43 @@
                 }
             });
         };
+    </script>
+
+    {{-- Flash messages: fired on both initial load and Turbo Drive navigations --}}
+    <script>
+        function dcmsTenantShowFlash() {
+            @if(session('success'))
+                Swal && Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: @json(session('success')),
+                    confirmButtonColor: 'var(--p, #0ea5e9)',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true,
+                });
+            @endif
+            @if(session('error'))
+                Swal && Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: @json(session('error')),
+                    confirmButtonColor: 'var(--p, #0ea5e9)'
+                });
+            @endif
+            @if(session('info'))
+                Swal && Swal.fire({
+                    icon: 'info',
+                    title: 'Info',
+                    text: @json(session('info')),
+                    confirmButtonColor: 'var(--p, #0ea5e9)'
+                });
+            @endif
+        }
+        document.addEventListener('turbo:load', dcmsTenantShowFlash);
+        document.addEventListener('DOMContentLoaded', dcmsTenantShowFlash);
     </script>
 </body>
 </html>

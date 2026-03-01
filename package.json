@@ -19,6 +19,7 @@
     "dependencies": {
         "@alpinejs/collapse": "^3.15.4",
         "@alpinejs/focus": "^3.15.4",
+        "@hotwired/turbo": "^8.0.23",
         "chart.js": "^4.5.1",
         "croppie": "^2.6.5",
         "flatpickr": "^4.6.13",

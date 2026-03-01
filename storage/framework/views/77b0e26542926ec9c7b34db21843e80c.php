@@ -1,4 +1,4 @@
-<div class="sticky top-0 z-40 flex items-center justify-between h-20 px-6 bg-base-100/80 backdrop-blur-md shadow-md border-b border-base-300">
+<div id="admin-navbar" data-turbo-permanent class="sticky top-0 z-40 flex items-center justify-between h-20 px-6 bg-base-100/80 backdrop-blur-md shadow-md border-b border-base-300">
     <div class="flex items-center gap-4">
         <!-- Mobile menu button -->
         <button class="lg:hidden btn btn-ghost btn-sm" onclick="document.getElementById('mobile-sidebar').classList.toggle('hidden'); document.getElementById('mobile-overlay').classList.toggle('hidden');">

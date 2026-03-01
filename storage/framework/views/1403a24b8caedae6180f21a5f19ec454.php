@@ -26,13 +26,13 @@
 <body class="font-sans antialiased text-base-content">
     <div class="min-h-screen bg-base-200 transition-colors duration-300">
         <!-- Mobile Sidebar Overlay -->
-        <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="document.getElementById('mobile-sidebar').classList.add('hidden'); document.getElementById('mobile-overlay').classList.add('hidden');"></div>
+        <div id="mobile-overlay" data-turbo-permanent class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden" onclick="document.getElementById('mobile-sidebar').classList.add('hidden'); document.getElementById('mobile-overlay').classList.add('hidden');"></div>
 
         <!-- Sidebar -->
         <?php echo $__env->make('admin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <!-- Mobile Sidebar -->
-        <div id="mobile-sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-base-100 shadow-xl lg:hidden hidden transform transition-transform">
+        <div id="mobile-sidebar" data-turbo-permanent class="fixed inset-y-0 left-0 z-50 w-64 bg-base-100 shadow-xl lg:hidden hidden transform transition-transform">
             <?php echo $__env->make('admin.components.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
 
@@ -70,9 +70,24 @@
     </div>
     <?php echo $__env->yieldPushContent('scripts'); ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Global Delete Confirmation
+    <script data-turbo-eval="false">
+        // Re-run SweetAlert flash messages on Turbo navigations
+        document.addEventListener('turbo:load', function() {
+            // Update active sidebar link highlight after navigation
+            document.querySelectorAll('[data-turbo-permanent] a').forEach(link => {
+                const isActive = link.href === window.location.href ||
+                    (link.href !== window.location.origin + '/admin' && window.location.href.startsWith(link.href));
+                link.classList.toggle('bg-primary', isActive);
+                link.classList.toggle('text-primary-content', isActive);
+                link.classList.toggle('shadow-lg', isActive);
+                link.classList.toggle('hover:bg-base-200', !isActive);
+            });
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" data-turbo-eval="false"></script>
+    <script data-turbo-eval="false">
+        // Global Delete Confirmation — registered once, works across all Turbo navigations
         document.addEventListener('submit', function(e) {
             const form = e.target;
             if (form.hasAttribute('data-confirm-delete')) {
@@ -101,6 +116,33 @@
                 });
             }
         });
+    </script>
+
+    
+    <script>
+        function dcmsShowFlash() {
+            <?php if(session('success')): ?>
+                Swal && Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: <?php echo json_encode(session('success'), 15, 512) ?>,
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true,
+                });
+            <?php endif; ?>
+            <?php if(session('error')): ?>
+                Swal && Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: <?php echo json_encode(session('error'), 15, 512) ?>,
+                });
+            <?php endif; ?>
+        }
+        document.addEventListener('turbo:load', dcmsShowFlash);
+        document.addEventListener('DOMContentLoaded', dcmsShowFlash);
     </script>
 </body>
 </html>

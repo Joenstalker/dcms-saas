@@ -1,4 +1,4 @@
-<div class="drawer-side">
+<div id="tenant-sidebar" data-turbo-permanent class="drawer-side">
     <label for="drawer-toggle" class="drawer-overlay lg:hidden"></label>
     @php
         $widgets = $tenantCustomization['dashboard_widgets'] ?? [];

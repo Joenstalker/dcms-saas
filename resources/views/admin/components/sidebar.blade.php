@@ -1,4 +1,4 @@
-<div class="fixed inset-y-0 left-0 z-50 w-64 bg-base-100 shadow-xl border-r border-base-300 lg:block hidden">
+<div id="admin-sidebar" data-turbo-permanent class="fixed inset-y-0 left-0 z-50 w-64 bg-base-100 shadow-xl border-r border-base-300 lg:block hidden">
     <div class="flex flex-col h-full">
         <!-- Logo -->
         <div class="flex items-center justify-center h-20 border-b border-base-300 bg-gradient-to-r from-primary/5 to-secondary/5">

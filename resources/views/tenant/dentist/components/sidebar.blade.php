@@ -1,4 +1,4 @@
-<div class="drawer-side">
+<div id="dentist-sidebar" data-turbo-permanent class="drawer-side">
     <label for="drawer-toggle" class="drawer-overlay lg:hidden"></label>
     @php
         $logoPath = $tenantCustomization['logo_path'] ?? $tenant->logo;

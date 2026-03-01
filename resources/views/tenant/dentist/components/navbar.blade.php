@@ -1,4 +1,4 @@
-<div class="navbar bg-base-100 border-b border-base-300 px-6 sticky top-0 z-30">
+<div id="dentist-navbar" data-turbo-permanent class="navbar bg-base-100 border-b border-base-300 px-6 sticky top-0 z-30">
     <div class="flex-none lg:hidden">
         <label for="drawer-toggle" class="btn btn-square btn-ghost">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
