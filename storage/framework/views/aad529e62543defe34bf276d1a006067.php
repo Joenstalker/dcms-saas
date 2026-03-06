@@ -75,9 +75,7 @@
             </div>
 
             <!-- Login Form -->
-            <form method="POST" action="<?php echo e(route('login')); ?>" 
-                  class="space-y-4" 
-                  onsubmit="const btn=document.getElementById('submit-btn'); const spinner=document.getElementById('spinner'); const text=document.getElementById('btn-text'); if(btn){btn.disabled=true;} if(spinner){spinner.classList.remove('hidden');} if(text){text.classList.add('hidden');}">
+            <form id="tenantLoginForm" method="POST" action="<?php echo e(route('tenant.login.submit', ['tenant' => $tenant->slug])); ?>" class="space-y-4">
                 <?php echo csrf_field(); ?>
 
                 <!-- Email -->
@@ -89,14 +87,7 @@
                             value="<?php echo e(old('email')); ?>"
                             required
                             autofocus
-                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl <?php $__errorArgs = ['email'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>"
+                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl"
                             placeholder="Email Address"
                         >
                         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors">
@@ -114,14 +105,7 @@ unset($__errorArgs, $__bag); ?>"
                             type="password" 
                             name="password" 
                             required
-                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl <?php $__errorArgs = ['password'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>"
+                            class="input input-bordered w-full pl-12 bg-gray-50 border-gray-100 focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition-all duration-300 rounded-2xl"
                             placeholder="Password"
                         >
                         <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-sky-500 transition-colors">
@@ -135,7 +119,7 @@ unset($__errorArgs, $__bag); ?>"
                 <!-- Privacy Policy Checkbox -->
                 <div class="form-control mt-4 bg-sky-50/50 p-4 rounded-2xl border border-sky-100/50">
                     <label class="label cursor-pointer justify-start gap-3 items-center">
-                        <input type="checkbox" class="checkbox checkbox-primary checkbox-sm rounded-lg" />
+                        <input type="checkbox" required class="checkbox checkbox-primary checkbox-sm rounded-lg" />
                         <span class="label-text text-[10px] font-black uppercase tracking-[0.1em] text-sky-900/60 leading-tight">
                             I agree to the <a href="#" class="text-sky-600 no-underline hover:underline font-black">DCMS Privacy Policy</a>
                         </span>
@@ -148,10 +132,98 @@ unset($__errorArgs, $__bag); ?>"
                     id="submit-btn"
                     class="btn btn-primary w-full bg-sky-500 hover:bg-sky-600 border-sky-500 hover:border-sky-600 shadow-xl shadow-sky-500/20 active:scale-95 transition-all text-white font-black uppercase tracking-widest rounded-2xl h-14"
                 >
-                    <span class="loading-spinner loading-sm hidden" id="spinner"></span>
                     <span id="btn-text">Secure Access</span>
                 </button>
             </form>
+
+            <?php $__env->startPush('scripts'); ?>
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const loginForm = document.getElementById('tenantLoginForm');
+                
+                if (loginForm) {
+                    loginForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        // Open reCAPTCHA modal first
+                        openRecaptchaModal(function(token) {
+                            // Show loading
+                            Swal.fire({
+                                title: 'Logging in...',
+                                html: 'Please wait while we verify your credentials',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Submit form via AJAX
+                            const formData = new FormData(loginForm);
+                            formData.append('g-recaptcha-response', token);
+                            
+                            fetch(loginForm.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(async response => {
+                                const data = await response.json();
+                                
+                                if (response.ok) {
+                                    // Login successful, show success then redirect
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Welcome!',
+                                        text: data.message || 'Redirecting to dashboard...',
+                                        timer: 1500,
+                                        showConfirmButton: false,
+                                        allowOutsideClick: false
+                                    }).then(() => {
+                                        window.location.href = data.redirect;
+                                    });
+                                } else {
+                                    // Handle different error statuses
+                                    let title = 'Login Failed';
+                                    let text = data.message || 'An unexpected error occurred.';
+                
+                                    if (response.status === 422) {
+                                        // Validation errors
+                                        if (data.errors) {
+                                            text = Object.values(data.errors).flat()[0];
+                                        }
+                                    } else if (response.status === 403) {
+                                        title = 'Access Denied';
+                                    }
+                
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: title,
+                                        text: text,
+                                        confirmButtonColor: '#0ea5e9'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Login Error:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Request Failed',
+                                    text: 'Could not connect to the server. Please check your internet connection.',
+                                    confirmButtonColor: '#0ea5e9'
+                                });
+                            });
+                        });
+                    });
+                }
+            });
+            </script>
+            <?php $__env->stopPush(); ?>
 
             <!-- Recover Password Link -->
             <div class="mt-6 text-center">

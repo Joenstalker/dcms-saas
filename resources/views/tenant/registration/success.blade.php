@@ -61,7 +61,7 @@
                 </div>
 
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="{{ route('login') }}" class="btn btn-primary">
+                    <a href="{{ route('tenant.login') }}" class="btn btn-primary">
                         Go to Login
                     </a>
                     <a href="{{ route('home') }}" class="btn btn-outline">

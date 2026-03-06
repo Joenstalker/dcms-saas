@@ -127,73 +127,77 @@ document.addEventListener('DOMContentLoaded', function() {
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Show loading
-        Swal.fire({
-            title: 'Logging in...',
-            html: 'Please wait while we verify your credentials',
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-        
-        // Submit form via AJAX
-        const formData = new FormData(loginForm);
-        
-        fetch(loginForm.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        })
-        .then(async response => {
-            const data = await response.json();
-            
-            if (response.ok) {
-                // Login successful, show success then redirect
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Welcome!',
-                    text: data.message || 'Redirecting to dashboard...',
-                    timer: 1500,
-                    showConfirmButton: false,
-                    allowOutsideClick: false
-                }).then(() => {
-                    window.location.href = data.redirect;
-                });
-            } else {
-                // Handle different error statuses
-                let title = 'Login Failed';
-                let text = data.message || 'An unexpected error occurred.';
-
-                if (response.status === 422) {
-                    // Validation errors
-                    if (data.errors) {
-                        text = Object.values(data.errors).flat()[0];
-                    }
-                } else if (response.status === 403) {
-                    title = 'Access Denied';
+        // Open reCAPTCHA modal first
+        openRecaptchaModal(function(token) {
+            // Show loading
+            Swal.fire({
+                title: 'Logging in...',
+                html: 'Please wait while we verify your credentials',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
-
+            });
+            
+            // Submit form via AJAX
+            const formData = new FormData(loginForm);
+            formData.append('g-recaptcha-response', token);
+            
+            fetch(loginForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(async response => {
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Login successful, show success then redirect
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Welcome!',
+                        text: data.message || 'Redirecting to dashboard...',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
+                    }).then(() => {
+                        window.location.href = data.redirect;
+                    });
+                } else {
+                    // Handle different error statuses
+                    let title = 'Login Failed';
+                    let text = data.message || 'An unexpected error occurred.';
+    
+                    if (response.status === 422) {
+                        // Validation errors
+                        if (data.errors) {
+                            text = Object.values(data.errors).flat()[0];
+                        }
+                    } else if (response.status === 403) {
+                        title = 'Access Denied';
+                    }
+    
+                    Swal.fire({
+                        icon: 'error',
+                        title: title,
+                        text: text,
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Login Error:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: title,
-                    text: text,
+                    title: 'Request Failed',
+                    text: 'Could not connect to the server. Please check your internet connection.',
                     confirmButtonColor: '#3085d6'
                 });
-            }
-        })
-        .catch(error => {
-            console.error('Login Error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Request Failed',
-                text: 'Could not connect to the server. Please check your internet connection.',
-                confirmButtonColor: '#3085d6'
             });
         });
     });

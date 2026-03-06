@@ -102,7 +102,8 @@ class TenantMiddleware
         view()->share('tenantCustomization', $customization);
 
         // 1. Allow public routes (login, register, verification) even on tenant subdomains
-        if ($request->routeIs('login') 
+        if ($request->routeIs('tenant.login') 
+            || $request->routeIs('tenant.login.submit')
             || $request->routeIs('register')
             || $request->routeIs('tenant.registration.*') 
             || $request->routeIs('tenant.verification.*')
@@ -142,7 +143,7 @@ class TenantMiddleware
 
                 // Fallback: Logout and redirect to this clinic's login
                 auth()->logout();
-                return redirect()->route('login')
+                return redirect()->route('tenant.login')
                     ->with('tenant_access_error', 'Unauthorized access attempt.');
             }
         }

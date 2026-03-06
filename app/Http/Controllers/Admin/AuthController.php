@@ -25,13 +25,23 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        // Validate input
+        $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string|min:6',
+            'password' => 'required',
+            'g-recaptcha-response' => ['required', new \App\Rules\Recaptcha],
+        ], [
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'Password is required.',
+            'g-recaptcha-response.required' => 'Please complete the reCAPTCHA challenge.',
         ]);
 
-        // Check if user exists
-        $user = \App\Models\User::where('email', $credentials['email'])->first();
+        $credentials = $request->only('email', 'password');
+        $normalizedEmail = strtolower(trim($credentials['email']));
+
+        // Check if user exists using robust matching for MongoDB
+        $user = \App\Models\User::where('email', 'regex', '/^' . preg_quote($normalizedEmail, '/') . '$/i')->first();
 
         if (!$user) {
             $message = 'The provided credentials do not match our records.';
@@ -50,33 +60,34 @@ class AuthController extends Controller
             return back()->withErrors(['email' => $message])->onlyInput('email');
         }
 
-        // Attempt authentication
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-
-            \Illuminate\Support\Facades\Log::debug('Admin login successful', [
-                'user_id' => Auth::id(),
-                'user_email' => Auth::user()->email,
-                'is_system_admin' => Auth::user()->isSystemAdmin(),
-                'session_id' => session()->getId(),
-            ]);
-
+        // Check if user exists and password is correct
+        if (!$user || !\Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {
+            $message = 'The provided credentials do not match our records.';
             if ($request->expectsJson()) {
-                return response()->json([
-                    'message' => 'Login successful',
-                    'redirect' => route('admin.dashboard')
-                ]);
+                return response()->json(['message' => $message], 401);
             }
-
-            return redirect()->route('admin.dashboard');
+            return back()->withErrors(['email' => $message])->onlyInput('email');
         }
 
-        $message = 'The provided credentials do not match our records.';
+        // Login the user
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        \Illuminate\Support\Facades\Log::debug('Admin login successful', [
+            'user_id' => Auth::id(),
+            'user_email' => Auth::user()->email,
+            'is_system_admin' => Auth::user()->isSystemAdmin(),
+            'session_id' => session()->getId(),
+        ]);
+
         if ($request->expectsJson()) {
-            return response()->json(['message' => $message], 401);
+            return response()->json([
+                'message' => 'Login successful',
+                'redirect' => route('admin.dashboard')
+            ]);
         }
 
-        return back()->withErrors(['email' => $message])->onlyInput('email');
+        return redirect()->route('admin.dashboard');
     }
 
     /**

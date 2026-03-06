@@ -341,50 +341,9 @@
     </script>
     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        // Global SweetAlert2 Toast/Popup handling
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener('mouseenter', Swal.stopTimer)
-                toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
-        });
-
-        <?php if(session('success')): ?>
-            Swal.fire({
-                icon: 'success',
-                title: 'Success!',
-                text: "<?php echo e(session('success')); ?>",
-                confirmButtonColor: 'var(--p, #0ea5e9)',
-                timer: 3000
-            });
-        <?php endif; ?>
-
-        <?php if(session('error')): ?>
-            Swal.fire({
-                icon: 'error',
-                title: 'Error!',
-                text: "<?php echo e(session('error')); ?>",
-                confirmButtonColor: 'var(--p, #0ea5e9)'
-            });
-        <?php endif; ?>
-
-        <?php if(session('info')): ?>
-            Swal.fire({
-                icon: 'info',
-                title: 'Info',
-                text: "<?php echo e(session('info')); ?>",
-                confirmButtonColor: 'var(--p, #0ea5e9)'
-            });
-        <?php endif; ?>
-
-        // Global Delete Confirmation
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" data-turbo-eval="false"></script>
+    <script data-turbo-eval="false">
+        // Global Delete Confirmation — registered once, works across all Turbo navigations
         document.addEventListener('submit', function(e) {
             const form = e.target;
             if (form.hasAttribute('data-confirm-delete')) {
@@ -443,6 +402,43 @@
                 }
             });
         };
+    </script>
+
+    
+    <script>
+        function dcmsTenantShowFlash() {
+            <?php if(session('success')): ?>
+                Swal && Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: <?php echo json_encode(session('success'), 15, 512) ?>,
+                    confirmButtonColor: 'var(--p, #0ea5e9)',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    toast: true,
+                    position: 'top-end',
+                    timerProgressBar: true,
+                });
+            <?php endif; ?>
+            <?php if(session('error')): ?>
+                Swal && Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: <?php echo json_encode(session('error'), 15, 512) ?>,
+                    confirmButtonColor: 'var(--p, #0ea5e9)'
+                });
+            <?php endif; ?>
+            <?php if(session('info')): ?>
+                Swal && Swal.fire({
+                    icon: 'info',
+                    title: 'Info',
+                    text: <?php echo json_encode(session('info'), 15, 512) ?>,
+                    confirmButtonColor: 'var(--p, #0ea5e9)'
+                });
+            <?php endif; ?>
+        }
+        document.addEventListener('turbo:load', dcmsTenantShowFlash);
+        document.addEventListener('DOMContentLoaded', dcmsTenantShowFlash);
     </script>
 </body>
 </html>

@@ -27,12 +27,12 @@
                 <div class="flex flex-col md:flex-row items-center gap-6">
                     <div class="bg-white p-2 rounded-lg border border-base-200">
                         <!-- QR Code using API for demo -->
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ urlencode(route('login')) }}" alt="Booking QR Code" class="w-32 h-32">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ urlencode(route('tenant.login')) }}" alt="Booking QR Code" class="w-32 h-32">
                     </div>
                     <div>
                         <p class="mb-2">Share this QR code or link with your patients to book appointments online.</p>
                         <div class="join w-full max-w-md">
-                            <input type="text" value="{{ route('login') }}" class="input input-bordered join-item w-full" readonly>
+                            <input type="text" value="{{ route('tenant.login') }}" class="input input-bordered join-item w-full" readonly>
                             <button class="btn btn-primary join-item" onclick="navigator.clipboard.writeText('{{ route('login') }}'); alert('Link copied!')">Copy</button>
                         </div>
                     </div>

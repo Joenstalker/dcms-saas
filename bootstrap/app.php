@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 // Extract tenant slug from subdomain
                 $tenantSlug = str_replace('.' . $baseDomain, '', $host);
                 // For tenant subdomains, redirect to Fortify's login route
-                return route('login', ['tenant' => $tenantSlug]);
+                return route('tenant.login', ['tenant' => $tenantSlug]);
             }
             
             // For main domain (admin), redirect to admin login

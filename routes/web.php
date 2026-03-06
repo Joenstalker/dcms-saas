@@ -12,12 +12,12 @@ $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
  */
 Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function () {
     Route::get('/', function (\App\Models\Tenant $tenant) {
-        return redirect()->route('login');
+        return redirect()->route('tenant.login');
     });
 
-    // Tenant login (Handled by Fortify)
-    // Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
-    // Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
+    // Tenant login
+    Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
+    Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
 
     // Tenant Authentication routes
     // Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout'); (Handled by Fortify)

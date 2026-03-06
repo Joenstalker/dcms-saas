@@ -13,6 +13,7 @@
 
     <!-- Scripts -->
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-base-200">
@@ -23,6 +24,8 @@
     </div>
 
     <?php echo $__env->make('tenant.components.security-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('components.recaptcha-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>
 <?php /**PATH D:\dentistmng\dcms-saas\resources\views/layouts/guest.blade.php ENDPATH**/ ?>

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +38,7 @@ class TenantLoginController extends Controller
     /**
      * Handle tenant login
      */
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request): JsonResponse|RedirectResponse
     {
         // Get tenant from middleware session
         $tenantId = session('tenant_id');
@@ -65,14 +66,18 @@ class TenantLoginController extends Controller
         }
         
         // Validate input
-        $credentials = $request->validate([
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+            'g-recaptcha-response' => ['required', new \App\Rules\Recaptcha],
         ], [
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
             'password.required' => 'Password is required.',
+            'g-recaptcha-response.required' => 'Please complete the reCAPTCHA challenge.',
         ]);
+
+        $credentials = $request->only('email', 'password');
 
         $normalizedEmail = strtolower(trim($credentials['email']));
         // Use MongoDB-compatible case-insensitive regex for email matching
@@ -88,9 +93,13 @@ class TenantLoginController extends Controller
                 'tenant_slug' => $tenant->slug,
                 'reason' => $user ? 'password_mismatch' : 'user_not_found',
             ]);
+            $message = 'Invalid email or password for this clinic.';
+            if ($request->expectsJson()) {
+                return response()->json(['message' => $message], 401);
+            }
             return redirect()->back()
                 ->withInput()
-                ->withErrors(['auth_failed' => 'Invalid email or password for this clinic.']);
+                ->withErrors(['auth_failed' => $message]);
         }
 
         // Login the user
@@ -101,6 +110,13 @@ class TenantLoginController extends Controller
         
         // Ensure tenant identity is locked in session
         session(['tenant_id' => $tenant->id, 'tenant_slug' => $tenant->slug]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Welcome back! ' . $tenant->name,
+                'redirect' => route('tenant.dashboard', ['tenant' => $tenant->slug])
+            ]);
+        }
 
         return redirect()->route('tenant.dashboard', ['tenant' => $tenant->slug])
             ->with('success', 'Welcome back! ' . $tenant->name);

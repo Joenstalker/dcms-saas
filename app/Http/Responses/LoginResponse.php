@@ -86,6 +86,6 @@ class LoginResponse implements LoginResponseContract
         
         return $request->wantsJson()
             ? response()->json(['two_factor' => false])
-            : redirect()->route('login')->with('error', 'Unable to determine tenant.');
+            : redirect()->route('tenant.login')->with('error', 'Unable to determine tenant.');
     }
 }

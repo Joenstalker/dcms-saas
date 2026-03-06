@@ -13,6 +13,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-base-200">
@@ -23,5 +24,7 @@
     </div>
 
     @include('tenant.components.security-modal')
+    @include('components.recaptcha-modal')
+    @stack('scripts')
 </body>
 </html>

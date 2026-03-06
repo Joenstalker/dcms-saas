@@ -22,6 +22,7 @@
     <!-- Scripts -->
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     <?php echo $__env->make('components.custom-theme-styles', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body class="font-sans antialiased bg-base-100 transition-colors duration-300">
     <div class="min-h-screen">
@@ -36,6 +37,8 @@
         <!-- Footer -->
         <?php echo $__env->make('components.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     </div>
+    <?php echo $__env->make('tenant.components.security-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+    <?php echo $__env->make('components.recaptcha-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html>

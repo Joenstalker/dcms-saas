@@ -59879,3 +59879,146 @@ Did you mean one of these?
 [2026-03-01 04:35:52] local.DEBUG: Admin login successful {"user_id":"69843ae6e6d1a3b08305c382","user_email":"admin@dcms.com","is_system_admin":true,"session_id":"KutxtLRJ3gcy9fH7xUk6oLZHMUR672Pmlw0dSm5I"} 
 [2026-03-01 04:35:54] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"KutxtLRJ3gcy9fH7xUk6oLZHMUR672Pmlw0dSm5I","request_path":"admin/dashboard"} 
 [2026-03-01 04:36:05] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"KutxtLRJ3gcy9fH7xUk6oLZHMUR672Pmlw0dSm5I","request_path":"admin/settings"} 
+[2026-03-06 12:02:23] local.DEBUG: Cache miss: loading active custom themes from DB  
+[2026-03-06 12:08:36] local.DEBUG: Fortify authenticateUsing {"email":"joenilpanal@gmail.com","session_tenant_id":"69842a76be39527ddf08c722"} 
+[2026-03-06 12:08:36] local.DEBUG: Fortify: User lookup result {"email":"joenilpanal@gmail.com","tenant_id":"69842a76be39527ddf08c722","user_found":"yes","user_id":"69842a77be39527ddf08c723"} 
+[2026-03-06 12:08:38] local.DEBUG: LoginResponse called {"user_id":"69842a77be39527ddf08c723","user_email":"joenilpanal@gmail.com","session_tenant_id":"69842a76be39527ddf08c722","session_tenant_slug":"cudalblanco","has_password_reset":false} 
+[2026-03-06 12:08:38] local.DEBUG: LoginResponse: Retrieved tenant from user relationship {"tenant_id":"69842a76be39527ddf08c722","tenant_slug":"cudalblanco"} 
+[2026-03-06 12:08:39] local.DEBUG: LoginResponse redirecting to {"dashboardUrl":"http://cudalblanco.lvh.me:8000/dashboard","user_role":"tenant"} 
+[2026-03-06 12:08:46] local.DEBUG: Cache miss: loading tenant settings from DB {"tenant_id":"69842a76be39527ddf08c722"} 
+[2026-03-06 12:08:46] local.DEBUG: Cache miss: compiling branding CSS {"tenant_id":"69842a76be39527ddf08c722"} 
+[2026-03-06 12:11:10] local.DEBUG: Admin login successful {"user_id":"69843ae6e6d1a3b08305c382","user_email":"admin@dcms.com","is_system_admin":true,"session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO"} 
+[2026-03-06 12:11:14] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:11:44] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:12:49] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:13:23] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/tenants"} 
+[2026-03-06 12:13:49] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/role-permission"} 
+[2026-03-06 12:18:36] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:18:39] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:18:40] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:18:47] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:18:53] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:19:13] local.ERROR: App\Http\Controllers\Tenant\TenantLoginController::login(): Return value must be of type Illuminate\Http\RedirectResponse, Illuminate\Http\JsonResponse returned {"userId":"69842a77be39527ddf08c723","exception":"[object] (TypeError(code: 0): App\\Http\\Controllers\\Tenant\\TenantLoginController::login(): Return value must be of type Illuminate\\Http\\RedirectResponse, Illuminate\\Http\\JsonResponse returned at D:/dentistmng/dcms-saas/app/Http/Controllers/Tenant/TenantLoginController.php:116)
+[stacktrace]
+#0 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): App/Http/Controllers/Tenant/TenantLoginController->login(Object(Illuminate/Http/Request), 'cudalblanco')
+#1 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate/Routing/Controller->callAction('login', Array)
+#2 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Route.php(265): Illuminate/Routing/ControllerDispatcher->dispatch(Object(Illuminate/Routing/Route), Object(App/Http/Controllers/Tenant/TenantLoginController), 'login')
+#3 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Route.php(211): Illuminate/Routing/Route->runController()
+#4 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Router.php(822): Illuminate/Routing/Route->run()
+#5 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Routing/Router->Illuminate/Routing/{closure}(Object(Illuminate/Http/Request))
+#6 D:/dentistmng/dcms-saas/app/Http/Middleware/TenantMiddleware.php(172): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#7 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App/Http/Middleware/TenantMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#8 D:/dentistmng/dcms-saas/vendor/laravel/boost/src/Middleware/InjectBoost.php(22): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#9 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel/Boost/Middleware/InjectBoost->handle(Object(Illuminate/Http/Request), Object(Closure))
+#10 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#11 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Routing/Middleware/SubstituteBindings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#12 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(87): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#13 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/VerifyCsrfToken->handle(Object(Illuminate/Http/Request), Object(Closure))
+#14 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(48): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#15 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/View/Middleware/ShareErrorsFromSession->handle(Object(Illuminate/Http/Request), Object(Closure))
+#16 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(120): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#17 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(63): Illuminate/Session/Middleware/StartSession->handleStatefulRequest(Object(Illuminate/Http/Request), Object(Illuminate/Session/Store), Object(Closure))
+#18 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Session/Middleware/StartSession->handle(Object(Illuminate/Http/Request), Object(Closure))
+#19 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(36): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#20 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse->handle(Object(Illuminate/Http/Request), Object(Closure))
+#21 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(74): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#22 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Cookie/Middleware/EncryptCookies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#23 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#24 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Router.php(821): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#25 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Router.php(800): Illuminate/Routing/Router->runRouteWithinStack(Object(Illuminate/Routing/Route), Object(Illuminate/Http/Request))
+#26 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Router.php(764): Illuminate/Routing/Router->runRoute(Object(Illuminate/Http/Request), Object(Illuminate/Routing/Route))
+#27 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Routing/Router.php(753): Illuminate/Routing/Router->dispatchToRoute(Object(Illuminate/Http/Request))
+#28 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate/Routing/Router->dispatch(Object(Illuminate/Http/Request))
+#29 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Foundation/Http/Kernel->Illuminate/Foundation/Http/{closure}(Object(Illuminate/Http/Request))
+#30 D:/dentistmng/dcms-saas/vendor/livewire/livewire/src/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware.php(19): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#31 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Livewire/Features/SupportDisablingBackButtonCache/DisableBackButtonCacheMiddleware->handle(Object(Illuminate/Http/Request), Object(Closure))
+#32 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#33 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#34 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull->handle(Object(Illuminate/Http/Request), Object(Closure))
+#35 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#36 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate/Foundation/Http/Middleware/TransformsRequest->handle(Object(Illuminate/Http/Request), Object(Closure))
+#37 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/TrimStrings->handle(Object(Illuminate/Http/Request), Object(Closure))
+#38 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#39 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/ValidatePostSize->handle(Object(Illuminate/Http/Request), Object(Closure))
+#40 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(109): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#41 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance->handle(Object(Illuminate/Http/Request), Object(Closure))
+#42 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#43 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/HandleCors->handle(Object(Illuminate/Http/Request), Object(Closure))
+#44 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#45 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/TrustProxies->handle(Object(Illuminate/Http/Request), Object(Closure))
+#46 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#47 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks->handle(Object(Illuminate/Http/Request), Object(Closure))
+#48 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(26): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#49 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate/Http/Middleware/ValidatePathEncoding->handle(Object(Illuminate/Http/Request), Object(Closure))
+#50 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(Illuminate/Http/Request))
+#51 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#52 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate/Foundation/Http/Kernel->sendRequestThroughRouter(Object(Illuminate/Http/Request))
+#53 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1220): Illuminate/Foundation/Http/Kernel->handle(Object(Illuminate/Http/Request))
+#54 D:/dentistmng/dcms-saas/public/index.php(17): Illuminate/Foundation/Application->handleRequest(Object(Illuminate/Http/Request))
+#55 D:/dentistmng/dcms-saas/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('D://dentistmng//d...')
+#56 {main}
+"} 
+[2026-03-06 12:23:21] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:23:28] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/users"} 
+[2026-03-06 12:23:31] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/tenants"} 
+[2026-03-06 12:23:33] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/users"} 
+[2026-03-06 12:23:37] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/users"} 
+[2026-03-06 12:23:41] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/pricing-plans"} 
+[2026-03-06 12:23:44] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/tenants"} 
+[2026-03-06 12:23:48] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/users"} 
+[2026-03-06 12:23:56] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/users"} 
+[2026-03-06 12:23:58] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/pricing-plans"} 
+[2026-03-06 12:24:00] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/pricing-plans"} 
+[2026-03-06 12:24:04] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/role-permission"} 
+[2026-03-06 12:24:07] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/themes"} 
+[2026-03-06 12:24:10] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/role-permission"} 
+[2026-03-06 12:24:11] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/pricing-plans"} 
+[2026-03-06 12:24:13] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:24:15] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/role-permission"} 
+[2026-03-06 12:26:22] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:26:27] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:26:28] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:26:41] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:27:05] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/role-permission"} 
+[2026-03-06 12:27:07] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/themes"} 
+[2026-03-06 12:27:15] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:27:21] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:28:11] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:30] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:31] local.DEBUG: Cache miss: loading active custom themes from DB  
+[2026-03-06 12:29:37] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:41] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:42] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:45] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:47] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:48] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:52] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:29:53] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:07] local.DEBUG: Cache miss: loading tenant settings from DB {"tenant_id":"69842a76be39527ddf08c722"} 
+[2026-03-06 12:30:07] local.DEBUG: Cache miss: compiling branding CSS {"tenant_id":"69842a76be39527ddf08c722"} 
+[2026-03-06 12:30:10] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:13] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:15] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:18] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:22] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:33] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/dashboard"} 
+[2026-03-06 12:30:36] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/pricing-plans"} 
+[2026-03-06 12:30:39] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/role-permission"} 
+[2026-03-06 12:30:41] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:46] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:30:50] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:31:09] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:31:20] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:31:30] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"JTaB0mBGGisSlmBNzgSDkvJiCkEhzT5h38ZQMxBO","request_path":"admin/settings"} 
+[2026-03-06 12:42:31] local.DEBUG: Admin login successful {"user_id":"69843ae6e6d1a3b08305c382","user_email":"admin@dcms.com","is_system_admin":true,"session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs"} 
+[2026-03-06 12:42:34] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
+[2026-03-06 12:44:02] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/profile/photo"} 
+[2026-03-06 12:44:20] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
+[2026-03-06 12:44:50] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/profile/photo"} 
+[2026-03-06 12:44:56] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/themes"} 
+[2026-03-06 12:44:57] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
+[2026-03-06 12:45:39] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/themes"} 
+[2026-03-06 12:49:10] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
+[2026-03-06 12:49:16] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
+[2026-03-06 12:51:58] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
+[2026-03-06 12:52:08] local.DEBUG: AdminMiddleware check {"is_authenticated":true,"user_id":"69843ae6e6d1a3b08305c382","session_id":"6wOvoeCTkexrNWKVQCZnXTYX8TFvY73RR6R4MZfs","request_path":"admin/dashboard"} 
