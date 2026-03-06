@@ -54,92 +54,94 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
     });
 
     // Tenant Dashboard & Modules (Protected)
-    Route::middleware(['auth'])->name('tenant.')->group(function () {
-        // Role-specific dashboards
+    Route::middleware(['auth'])->name('tenant.')->group(function () {       
+        // Unified Entry Point: Redirects to appropriate route based on role
         Route::get('/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/dentist/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'dentist'])->name('dentist.dashboard');
-        Route::get('/assistant/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'assistant'])->name('assistant.dashboard');
-        
-        // Dentist-specific routes
-        Route::prefix('dentist')->name('dentist.')->group(function () {
+
+        // OWNER ONLY: Analytics & Management
+        Route::middleware(['role:owner'])->group(function () {
+            Route::get('/analytics', [\App\Http\Controllers\Tenant\AnalyticsController::class, 'index'])->name('analytics');
+            Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
+            Route::get('/expenses', function(\App\Models\Tenant $tenant) {      
+                return view('tenant.expenses.index', compact('tenant'));        
+            })->name('expenses.index');
+            Route::get('/settings/branding', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.branding');
+        });
+
+        // DENTIST ONLY: Clinical View
+        Route::middleware(['role:dentist'])->group(function () {
+            Route::get('/dentist/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'dentist'])->name('dentist.dashboard');
+        });
+
+        // ASSISTANT ONLY: Reception View
+        Route::middleware(['role:assistant'])->group(function () {
+            Route::get('/reception', [\App\Http\Controllers\Tenant\ReceptionController::class, 'index'])->name('reception');
+            Route::get('/assistant/dashboard', [\App\Http\Controllers\Tenant\DashboardController::class, 'assistant'])->name('assistant.dashboard');
+        });
+
+        // SHARED MODULES: Accessible by all authenticated roles
+        Route::middleware(['role:owner,dentist,assistant'])->group(function () {
+            // Patients
             Route::get('/patients', [\App\Http\Controllers\Tenant\PatientController::class, 'index'])->name('patients.index');
             Route::get('/patients/{patient}', [\App\Http\Controllers\Tenant\PatientController::class, 'show'])->name('patients.show');
+            Route::patch('patients/{patient}/update-balance', [\App\Http\Controllers\Tenant\PatientController::class, 'updateBalance'])->name('patients.update-balance');
+            Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class)->except(['index', 'show']);
+
+            // Appointments
             Route::get('/appointments', [\App\Http\Controllers\Tenant\AppointmentController::class, 'index'])->name('appointments.index');
-            Route::get('/appointments/{appointment}', [\App\Http\Controllers\Tenant\AppointmentController::class, 'show'])->name('appointments.show');
-            Route::get('/services', [\App\Http\Controllers\Tenant\CatalogController::class, 'index'])->name('services.index');
+            Route::get('/appointments/{appointment}', [\App\Http\Controllers\Tenant\AppointmentController::class, 'show'])->name('appointments.show');  
+            Route::resource('appointments', \App\Http\Controllers\Tenant\AppointmentController::class)->except(['index', 'show']);
+            Route::patch('/appointments/{appointment}/status', [\App\Http\Controllers\Tenant\AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
+
+            // Catalog & Services
+            Route::controller(\App\Http\Controllers\Tenant\CatalogController::class)->prefix('services')->name('services.')->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/data/services', 'getServices')->name('data.services');
+                Route::post('/data/services', 'storeService')->name('store.service');
+                Route::put('/data/services/{service}', 'updateService')->name('update.service');
+                Route::delete('/data/services/{service}', 'destroyService')->name('destroy.service');
+                Route::get('/data/medicines', 'getMedicines')->name('data.medicines');
+                Route::post('/data/medicines', 'storeMedicine')->name('store.medicine');
+                Route::put('/data/medicines/{medicine}', 'updateMedicine')->name('update.medicine');
+                Route::delete('/data/medicines/{medicine}', 'destroyMedicine')->name('destroy.medicine');
+                Route::get('/data/conditions', 'getConditions')->name('data.conditions');
+                Route::post('/data/conditions', 'storeCondition')->name('store.condition');
+                Route::put('/data/conditions/{condition}', 'updateCondition')->name('update.condition');
+                Route::delete('/data/conditions/{condition}', 'destroyCondition')->name('destroy.condition');
+                Route::get('/data/consent-templates', 'getConsentTemplates')->name('data.consent');
+                Route::post('/data/consent-templates', 'storeConsentTemplate')->name('store.consent');
+                Route::put('/data/consent-templates/{template}', 'updateConsentTemplate')->name('update.consent');
+                Route::delete('/data/consent-templates/{template}', 'destroyConsentTemplate')->name('destroy.consent');
+                Route::get('/data/certificate-templates', 'getCertificateTemplates')->name('data.certificate');
+                Route::post('/data/certificate-templates', 'storeCertificateTemplate')->name('store.certificate');
+                Route::put('/data/certificate-templates/{template}', 'updateCertificateTemplate')->name('update.certificate');
+                Route::delete('/data/certificate-templates/{template}', 'destroyCertificateTemplate')->name('destroy.certificate');
+                Route::get('/data/prescription-templates', 'getPrescriptionTemplates')->name('data.prescription');
+                Route::post('/data/prescription-templates', 'storePrescriptionTemplate')->name('store.prescription');
+                Route::put('/data/prescription-templates/{template}', 'updatePrescriptionTemplate')->name('update.prescription');
+                Route::delete('/data/prescription-templates/{template}', 'destroyPrescriptionTemplate')->name('destroy.prescription');
+                Route::post('/preview-template', 'previewTemplate')->name('preview');
+            });
+
+            // Role & Permissions (Shared for viewing, logic handles restrictions)
+            Route::get('/role-permission', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'index'])->name('role-permission.index');
+            Route::post('/role-permission', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'store'])->name('role-permission.store');        
+            Route::put('/role-permission/{role}', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'update'])->name('role-permission.update');
+            Route::delete('/role-permission/{role}', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'destroy'])->name('role-permission.destroy');
+            Route::post('/role-permission/{role}/permissions', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignPermissions'])->name('role-permission.permissions');
+            Route::post('/role-permission/users/{user}/roles', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignUserRole'])->name('role-permission.user-roles');
+
+            // Settings
             Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
+            Route::post('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'update'])->name('settings.update');
+            Route::put('/settings/profile-photo', [\App\Http\Controllers\Tenant\SettingsController::class, 'updateProfilePhoto'])->name('settings.profile-photo.update');
+            Route::get('/settings/theme-builder', [\App\Http\Controllers\Admin\ThemeController::class, 'builder'])->name('settings.theme-builder');
+            Route::post('/settings/theme', [\App\Http\Controllers\Admin\ThemeController::class, 'storeTenantTheme'])->name('settings.theme.store');
         });
-        
-        // Assistant-specific routes
-        Route::prefix('assistant')->name('assistant.')->group(function () {
-            Route::get('/patients', [\App\Http\Controllers\Tenant\PatientController::class, 'index'])->name('patients.index');
-            Route::get('/patients/{patient}', [\App\Http\Controllers\Tenant\PatientController::class, 'show'])->name('patients.show');
-            Route::get('/appointments', [\App\Http\Controllers\Tenant\AppointmentController::class, 'index'])->name('appointments.index');
-            Route::get('/appointments/{appointment}', [\App\Http\Controllers\Tenant\AppointmentController::class, 'show'])->name('appointments.show');
-            Route::get('/services', [\App\Http\Controllers\Tenant\CatalogController::class, 'index'])->name('services.index');
-            Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
-        });
-        
-        // User Management (Owner only)
+
+        // User Management (Specific view portal)
         Route::get('/users/{user}/view-portal', [\App\Http\Controllers\Tenant\UserController::class, 'viewPortal'])->name('users.view-portal');
-        Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
-        
-        // Module routes
-        Route::patch('patients/{patient}/update-balance', [\App\Http\Controllers\Tenant\PatientController::class, 'updateBalance'])->name('patients.update-balance');
-        Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class);
-        
-        Route::resource('appointments', \App\Http\Controllers\Tenant\AppointmentController::class);
-        Route::patch('/appointments/{appointment}/status', [\App\Http\Controllers\Tenant\AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
-        
-        Route::controller(\App\Http\Controllers\Tenant\CatalogController::class)->prefix('services')->name('services.')->group(function () {
-            Route::get('/', 'index')->name('index');
-            Route::get('/data/services', 'getServices')->name('data.services');
-            Route::post('/data/services', 'storeService')->name('store.service');
-            Route::put('/data/services/{service}', 'updateService')->name('update.service');
-            Route::delete('/data/services/{service}', 'destroyService')->name('destroy.service');
-            Route::get('/data/medicines', 'getMedicines')->name('data.medicines');
-            Route::post('/data/medicines', 'storeMedicine')->name('store.medicine');
-            Route::put('/data/medicines/{medicine}', 'updateMedicine')->name('update.medicine');
-            Route::delete('/data/medicines/{medicine}', 'destroyMedicine')->name('destroy.medicine');
-            Route::get('/data/conditions', 'getConditions')->name('data.conditions');
-            Route::post('/data/conditions', 'storeCondition')->name('store.condition');
-            Route::put('/data/conditions/{condition}', 'updateCondition')->name('update.condition');
-            Route::delete('/data/conditions/{condition}', 'destroyCondition')->name('destroy.condition');
-            Route::get('/data/consent-templates', 'getConsentTemplates')->name('data.consent');
-            Route::post('/data/consent-templates', 'storeConsentTemplate')->name('store.consent');
-            Route::put('/data/consent-templates/{template}', 'updateConsentTemplate')->name('update.consent');
-            Route::delete('/data/consent-templates/{template}', 'destroyConsentTemplate')->name('destroy.consent');
-            Route::get('/data/certificate-templates', 'getCertificateTemplates')->name('data.certificate');
-            Route::post('/data/certificate-templates', 'storeCertificateTemplate')->name('store.certificate');
-            Route::put('/data/certificate-templates/{template}', 'updateCertificateTemplate')->name('update.certificate');
-            Route::delete('/data/certificate-templates/{template}', 'destroyCertificateTemplate')->name('destroy.certificate');
-            Route::get('/data/prescription-templates', 'getPrescriptionTemplates')->name('data.prescription');
-            Route::post('/data/prescription-templates', 'storePrescriptionTemplate')->name('store.prescription');
-            Route::put('/data/prescription-templates/{template}', 'updatePrescriptionTemplate')->name('update.prescription');
-            Route::delete('/data/prescription-templates/{template}', 'destroyPrescriptionTemplate')->name('destroy.prescription');
-            
-            // Preview Route
-            Route::post('/preview-template', 'previewTemplate')->name('preview');
-        });
-        
-        Route::get('/role-permission', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'index'])->name('role-permission.index');
-        Route::post('/role-permission', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'store'])->name('role-permission.store');
-        Route::put('/role-permission/{role}', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'update'])->name('role-permission.update');
-        Route::delete('/role-permission/{role}', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'destroy'])->name('role-permission.destroy');
-        Route::post('/role-permission/{role}/permissions', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignPermissions'])->name('role-permission.permissions');
-        Route::post('/role-permission/users/{user}/roles', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignUserRole'])->name('role-permission.user-roles');
-        
-        Route::get('/expenses', function(\App\Models\Tenant $tenant) { 
-            return view('tenant.expenses.index', compact('tenant')); 
-        })->name('expenses.index');
-        Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
-        Route::get('/settings/branding', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.branding');
-        Route::post('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'update'])->name('settings.update');
-        Route::put('/settings/profile-photo', [\App\Http\Controllers\Tenant\SettingsController::class, 'updateProfilePhoto'])->name('settings.profile-photo.update');
-        Route::get('/settings/theme-builder', [\App\Http\Controllers\Admin\ThemeController::class, 'builder'])->name('settings.theme-builder');
-        Route::post('/settings/theme', [\App\Http\Controllers\Admin\ThemeController::class, 'storeTenantTheme'])->name('settings.theme.store');
-    });
-});
+    });});
 
 /**
  * 🏠 CENTRAL ROUTES (dcmsapp.local, 127.0.0.1, localhost)

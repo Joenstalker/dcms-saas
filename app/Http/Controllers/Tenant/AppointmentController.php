@@ -22,7 +22,7 @@ class AppointmentController extends Controller
     public function index(Tenant $tenant): View
     {
         // Don't cache appointments - they change frequently
-        $appointments = Appointment::where('tenant_id', $tenant->id)
+        $appointments = Appointment::where('tenant_id', $tenant->id)        
             ->with(['patient', 'dentist'])
             ->orderBy('scheduled_at')
             ->get();
@@ -40,7 +40,25 @@ class AppointmentController extends Controller
             return Patient::where('tenant_id', $tenant->id)->get();
         });
 
-        return view('tenant.appointments.index', compact('tenant', 'appointments', 'dentists', 'patients'));
+        return view($this->getRoleView('index'), compact('tenant', 'appointments', 'dentists', 'patients'));
+    }
+
+    /**
+     * Get the view path based on the user's role.
+     */
+    protected function getRoleView(string $view): string
+    {
+        $user = auth()->user();
+
+        if ($user->isDentist()) {
+            return "tenant.dentist.appointments.{$view}";
+        }
+
+        if ($user->isAssistant()) {
+            return "tenant.assistant.appointments.{$view}";
+        }
+
+        return "tenant.appointments.{$view}";
     }
 
     public function store(Request $request, Tenant $tenant)

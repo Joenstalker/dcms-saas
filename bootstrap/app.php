@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {

@@ -32,7 +32,7 @@ class TenantLoginController extends Controller
             abort(404, 'Clinic not found or inactive.');
         }
 
-        return view('tenant.TenantLogin', compact('tenant'));
+        return view('tenant.auth.login', compact('tenant'));
     }
 
     /**

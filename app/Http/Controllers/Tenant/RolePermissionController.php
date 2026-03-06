@@ -37,7 +37,7 @@ class RolePermissionController extends Controller
         $allowedPlans = ['pro', 'ultimate'];
 
         if (!in_array($planSlug, $allowedPlans)) {
-            return view('tenant.subscription-required', [
+            return view('tenant.subscription.required', [
                 'feature' => 'Roles & Permissions Management',
                 'message' => 'Upgrade to Pro or Ultimate plan to access role-based access control features.'
             ]);

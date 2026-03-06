@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\Patient;
 use App\Models\Appointment;
 use App\Models\User;
+use App\Models\PricingPlan;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -20,62 +21,52 @@ class DashboardController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Tenant $tenant): View
+    public function index(Tenant $tenant)
     {
         $user = auth()->user();
 
         // Ensure user belongs to this tenant
-        if ($user->tenant_id !== $tenant->id && ! $user->isSystemAdmin()) {
+        if ($user->tenant_id !== $tenant->id && !$user->isSystemAdmin()) { 
             abort(403, 'You do not have access to this clinic.');
         }
 
-        // Redirect based on role to their dedicated dashboard
+        // Dedicated dashboards based on role
+        if ($user->isOwner()) {
+            return $this->ownerDashboard($tenant, $user);
+        }
+
         if ($user->isDentist()) {
-            return redirect()->route('tenant.dentist.dashboard', $tenant);
+            return redirect()->route('tenant.dentist.dashboard', ['tenant' => $tenant->slug]);
         }
 
         if ($user->isAssistant()) {
-            return redirect()->route('tenant.assistant.dashboard', $tenant);
+            return redirect()->route('tenant.assistant.dashboard', ['tenant' => $tenant->slug]);
         }
 
-        $cacheKey = "tenant_dashboard_{$tenant->id}";
-        
+        abort(403, 'Unauthorized role.');
+    }
+
+    /**
+     * Owner/Tenant dashboard
+     */
+    public function ownerDashboard(Tenant $tenant, ?User $user = null): View
+    {
+        $user = $user ?? auth()->user();
+        $cacheKey = "owner_dashboard_{$tenant->id}_{$user->id}";
+
         $data = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($tenant) {
-            // Load pricing plan relationship
-            $tenant->load('pricingPlan');
-
-            // Check if tenant needs to select a plan
-            $needsPlan = ! $tenant->pricing_plan_id;
-            
-            $availablePlans = \App\Models\PricingPlan::where('is_active', true)
-                ->orderBy('sort_order')
-                ->get();
-            
-            // Backward compatibility if view uses $pricingPlans for initial selection
-            $pricingPlans = $availablePlans;
-
-            // Get dashboard statistics
             $stats = [
                 'total_patients' => Patient::count(),
                 'total_appointments' => Appointment::count(),
                 'today_appointments' => Appointment::whereDate('scheduled_at', now()->today())->count(),
-                'total_users' => User::count(),
+                'total_users' => User::where('tenant_id', $tenant->id)->count(),
             ];
 
-            // Get recent appointments
-            $recentAppointments = Appointment::with(['patient', 'dentist'])
-                ->orderBy('scheduled_at', 'asc')
-                ->where('scheduled_at', '>=', now())
-                ->take(5)
-                ->get();
+            $needsPlan = $tenant->pricing_plan_id === null;
+            $plan = PricingPlan::where('is_active', true)->orderBy('sort_order')->first();
+            $modules = []; // This could be dynamically resolved based on plan/settings
 
-            // Get dashboard modules based on plan (if plan exists)
-            $customization = app('tenant_customization') ?? [];
-            $modules = $tenant->pricing_plan_id
-                ? ($customization['dashboard_widgets'] ?? ['patients', 'appointments', 'basic_reports'])
-                : [];
-
-            return compact('tenant', 'stats', 'recentAppointments', 'modules', 'needsPlan', 'pricingPlans');
+            return compact('tenant', 'stats', 'needsPlan', 'plan', 'modules');
         });
 
         return view('tenant.dashboard.index', $data);

@@ -200,15 +200,14 @@ class PatientController extends Controller
     protected function getRoleView(string $view): string
     {
         $user = auth()->user();
-        
+
         if ($user->isDentist()) {
-            return "dentist.patients.{$view}";
+            return "tenant.dentist.patients.{$view}";
         }
-        
+
         if ($user->isAssistant()) {
-            return "assistant.patients.{$view}";
+            return "tenant.assistant.patients.{$view}";
         }
-        
+
         return "tenant.patients.{$view}";
-    }
-}
+    }}

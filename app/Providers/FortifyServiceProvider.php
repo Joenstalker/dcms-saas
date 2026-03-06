@@ -81,7 +81,7 @@ class FortifyServiceProvider extends ServiceProvider
                 abort(404, 'Clinic not found or inactive.');
             }
 
-            return view('tenant.TenantLogin', compact('tenant'));
+            return view('tenant.auth.login', compact('tenant'));
         });
 
         Fortify::requestPasswordResetLinkView(fn () => view('tenant.auth.forgot-password'));
