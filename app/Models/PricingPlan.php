@@ -61,7 +61,22 @@ class PricingPlan extends Model
     {
         $features = $this->features ?? [];
 
-        return in_array($feature, $features);
+        // Map UI human-readable strings to DB slugs
+        $featureMap = [
+            'Online Booking (QR Code)' => 'online_booking',
+            'Customizable Themes' => 'custom_branding',
+            'Custom Clinic Branding' => 'custom_branding',
+            'rbac' => 'manage_roles',
+        ];
+
+        $mappedFeature = $featureMap[$feature] ?? $feature;
+
+        // Hardcoded plan logic for RBAC until DB migrations standardize this
+        if ($mappedFeature === 'manage_roles' && in_array($this->slug, ['pro', 'ultimate'])) {
+            return true;
+        }
+
+        return in_array($mappedFeature, $features) || in_array($feature, $features);
     }
 
     public function canManageRoles(): bool

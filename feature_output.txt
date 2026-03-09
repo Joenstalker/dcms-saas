@@ -1,0 +1,7 @@
+Plan name: Ultimate
+Features: online_booking, appointments, patients, billing_pos, basic_reports, sms_notifications, enhanced_reports, custom_branding, advanced_analytics, priority_support, multi_branch
+Access to Custom Clinic Branding: Yes
+Access to all_features: No
+Access to online_booking: Yes
+Access to billing: No
+Access to inventory: No

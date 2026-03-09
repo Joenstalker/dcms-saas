@@ -30,16 +30,16 @@
     26 => 'Laravel\\Fortify\\FortifyServiceProvider',
     27 => 'Laravel\\Mcp\\Server\\McpServiceProvider',
     28 => 'Laravel\\Roster\\RosterServiceProvider',
-    29 => 'Laravel\\Sail\\SailServiceProvider',
-    30 => 'Laravel\\Sanctum\\SanctumServiceProvider',
-    31 => 'Laravel\\Tinker\\TinkerServiceProvider',
-    32 => 'Livewire\\LivewireServiceProvider',
-    33 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
-    34 => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
-    35 => 'Carbon\\Laravel\\ServiceProvider',
-    36 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    37 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    38 => 'Spatie\\Permission\\PermissionServiceProvider',
+    29 => 'Laravel\\Sanctum\\SanctumServiceProvider',
+    30 => 'Laravel\\Tinker\\TinkerServiceProvider',
+    31 => 'Livewire\\LivewireServiceProvider',
+    32 => 'MongoDB\\Laravel\\MongoDBServiceProvider',
+    33 => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
+    34 => 'Carbon\\Laravel\\ServiceProvider',
+    35 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+    36 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    37 => 'Spatie\\Permission\\PermissionServiceProvider',
+    38 => 'App\\Providers\\AppServiceProvider',
     39 => 'App\\Providers\\FortifyServiceProvider',
   ),
   'eager' => 
@@ -67,7 +67,8 @@
     20 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     21 => 'Termwind\\Laravel\\TermwindServiceProvider',
     22 => 'Spatie\\Permission\\PermissionServiceProvider',
-    23 => 'App\\Providers\\FortifyServiceProvider',
+    23 => 'App\\Providers\\AppServiceProvider',
+    24 => 'App\\Providers\\FortifyServiceProvider',
   ),
   'deferred' => 
   array (
@@ -225,8 +226,6 @@
     'validator' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'Illuminate\\Contracts\\Validation\\UncompromisedVerifier' => 'Illuminate\\Validation\\ValidationServiceProvider',
-    'Laravel\\Sail\\Console\\InstallCommand' => 'Laravel\\Sail\\SailServiceProvider',
-    'Laravel\\Sail\\Console\\PublishCommand' => 'Laravel\\Sail\\SailServiceProvider',
     'command.tinker' => 'Laravel\\Tinker\\TinkerServiceProvider',
     'MongoDB\\Laravel\\Bus\\MongoBatchRepository' => 'MongoDB\\Laravel\\MongoDBBusServiceProvider',
   ),
@@ -269,9 +268,6 @@
     array (
     ),
     'Illuminate\\Validation\\ValidationServiceProvider' => 
-    array (
-    ),
-    'Laravel\\Sail\\SailServiceProvider' => 
     array (
     ),
     'Laravel\\Tinker\\TinkerServiceProvider' => 

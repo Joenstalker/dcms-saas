@@ -1,39 +1,57 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use MongoDB\Laravel\Eloquent\Model;
+use App\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Payment extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToTenant;
 
-    protected $connection = 'mongodb_central';
+    protected $connection = 'mongodb';
 
     protected $fillable = [
         'tenant_id',
-        'pricing_plan_id',
-        'amount',
-        'currency',
-        'transaction_id',
-        'status',
-        'payment_method',
-        'paid_at',
+        'invoice_id',
+        'patient_id',
+        'amount_paid',
+        'payment_method', // Cash, GCash, Card, Check, Bank Transfer
+        'transaction_date',
+        'reference_number',
+        'notes',
     ];
 
     protected $casts = [
-        'paid_at' => 'datetime',
-        'amount' => 'decimal:2',
+        'amount_paid' => 'decimal:2',
+        'transaction_date' => 'datetime',
     ];
 
-    public function tenant()
+    public function invoice()
     {
-        return $this->belongsTo(Tenant::class);
+        return $this->belongsTo(Invoice::class);
     }
 
-    public function pricingPlan()
+    public function patient()
     {
-        return $this->belongsTo(PricingPlan::class);
+        return $this->belongsTo(Patient::class);
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($payment) {
+            if ($payment->invoice) {
+                $payment->invoice->updateStatus();
+            }
+        });
+
+        static::deleted(function ($payment) {
+            if ($payment->invoice) {
+                $payment->invoice->updateStatus();
+            }
+        });
     }
 }

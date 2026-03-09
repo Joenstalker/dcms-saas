@@ -23,9 +23,11 @@ class StoreUserRequest extends FormRequest
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->where(function ($query) {
-                    return $query->where('tenant_id', $this->user()->tenant_id);
-                }),
+                // 1. Ensure email is unique within the tenant's staff (mongodb connection)
+                Rule::unique('mongodb.users', 'email'),
+                // 2. Ensure email is unique within the central database (mongodb_central connection)
+                // This prevents adding the owner or any other central account as staff
+                Rule::unique('mongodb_central.users', 'email'),
             ],
             'role' => 'required|string|in:dentist,assistant',
             'status' => 'required|string|in:active,inactive',

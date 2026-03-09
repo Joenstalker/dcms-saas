@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Tenant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\SelectPlanRequest;
 use App\Models\PricingPlan;
+use App\Models\SubscriptionPayment;
 use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -239,7 +240,7 @@ class SubscriptionController extends Controller
             ]);
 
             // Record Payment
-            \App\Models\Payment::create([
+            SubscriptionPayment::create([
                 'tenant_id' => $tenant->id,
                 'pricing_plan_id' => $plan->id,
                 'amount' => $plan->price,
@@ -315,9 +316,9 @@ class SubscriptionController extends Controller
             ]);
 
             // Handle idempotency: Check if payment already recorded
-            $exists = \App\Models\Payment::where('transaction_id', $paymentIntentId)->exists();
+            $exists = SubscriptionPayment::where('transaction_id', $paymentIntentId)->exists();
             if (!$exists) {
-                \App\Models\Payment::create([
+                SubscriptionPayment::create([
                     'tenant_id' => $tenant->id,
                     'pricing_plan_id' => $pricingPlan->id,
                     'amount' => $pricingPlan->price,

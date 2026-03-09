@@ -24,18 +24,32 @@ class User extends Authenticatable
      */
     public function getConnectionName(): string
     {
-        $role = $this->attributes['role'] ?? null;
-        $isSystemAdmin = $this->attributes['is_system_admin'] ?? false;
+        // 1. If an explicit connection is already set on the instance, use it.
+        if (!empty($this->connection)) {
+            return $this->connection;
+        }
 
-        // Keep platform-level users in central
-        if ($isSystemAdmin || in_array($role, [self::ROLE_SYSTEM_ADMIN, self::ROLE_TENANT, null])) {
+        $role = $this->attributes['role'] ?? null;
+        $isSystemAdmin = (bool)($this->attributes['is_system_admin'] ?? false);
+
+        // 2. Platform-level users stay in central
+        if ($isSystemAdmin || in_array($role, [self::ROLE_SYSTEM_ADMIN, self::ROLE_TENANT])) {
             return 'mongodb_central';
         }
 
-        // Staff users (dentist, assistant) live in the tenant's own database.
-        // TenantMiddleware has already pointed the 'mongodb' connection to db_{slug}
-        // before auth fires, so this correctly resolves to the right tenant DB.
-        return 'mongodb';
+        // 3. Staff members (dentist, assistant) stay in tenant DB
+        if (in_array($role, [self::ROLE_DENTIST, self::ROLE_ASSISTANT])) {
+            return 'mongodb';
+        }
+
+        // 4. Default: If a tenant is bound to the app container, 
+        // we assume we want the tenant-specific connection (mongodb)
+        // for queries or new instances that don't have a role yet.
+        if (app()->bound('tenant')) {
+            return 'mongodb';
+        }
+
+        return 'mongodb_central';
     }
 
 
@@ -199,5 +213,60 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token)
     {
         $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?? $this->getRouteKeyName();
+
+        // 1. Try querying the tenant db (mongodb connection)
+        // If a tenant subdomain is present, ensure the connection is pointing to the right DB
+        $host = request()->getHost();
+        $subdomain = explode('.', $host)[0];
+        $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
+        
+        // Only try tenant DB if we're on a subdomain and it's not a reserved one
+        if ($subdomain !== 'admin' && $host !== $baseDomain && $host !== 'localhost' && $host !== '127.0.0.1') {
+            $dbName = 'db_' . $subdomain;
+            
+            // Re-sync connection if needed (failsafe for early binding)
+            if (config('database.connections.mongodb.database') !== $dbName) {
+                config(['database.connections.mongodb.database' => $dbName]);
+                \Illuminate\Support\Facades\DB::purge('mongodb');
+            }
+
+            $user = $this->setConnection('mongodb')
+                ->newQuery()
+                ->withoutGlobalScope('tenant') // Temporarily bypass to find by ID
+                ->where(function($query) use ($field, $value) {
+                    $query->where($field, $value);
+                    // Also try as ObjectId if it looks like one and we're searching by _id
+                    if ($field === '_id' || $field === 'id') {
+                        try {
+                            $query->orWhere('_id', new \MongoDB\BSON\ObjectId($value));
+                        } catch (\Exception $e) {
+                            // Not a valid ObjectId, ignore
+                        }
+                    }
+                })
+                ->first();
+                
+            if ($user) {
+                return $user;
+            }
+        }
+
+        // 2. Fall back to central database
+        return $this->setConnection('mongodb_central')
+            ->newQuery()
+            ->where($field, $value)
+            ->first();
     }
 }

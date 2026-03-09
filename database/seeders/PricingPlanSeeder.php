@@ -13,45 +13,21 @@ class PricingPlanSeeder extends Seeder
     {
         $plans = [
             [
-                'name' => 'Free Trial',
-                'slug' => 'free-trial',
-                'description' => 'Try the full experience before you commit.',
-                'price' => 0.00,
-                'billing_cycle' => 'monthly',
-                'trial_days' => 7,
-                'trial_duration' => 7,
-                'trial_unit' => 'days',
-                'auto_delete_after_trial' => true,
-                'features' => [
-                    'Calendar View',
-                    'Patient Management (Limited)',
-                    'Invoices',
-                    'Staff Management',
-                ],
-                'max_users' => 3,
-                'max_patients' => 150,
-                'is_active' => true,
-                'is_popular' => false,
-                'badge_text' => 'Risk Free',
-                'badge_color' => 'badge-info',
-                'sort_order' => 0,
-            ],
-            [
                 'name' => 'Basic',
                 'slug' => 'basic',
                 'description' => 'Essential tools for small clinics.',
                 'price' => 999.00,
                 'billing_cycle' => 'monthly',
-                'trial_days' => 0, // Paid plan
+                'trial_days' => 7,
                 'auto_delete_after_trial' => false,
                 'features' => [
-                    'Owner, Dentist & Assistant Portal (Max 3 Users)',
-                    'Patient Management (150 Limit)',
-                    'Appointment Calendar',
-                    'Billing & Invoices',
-                    'Staff Management (Add/Edit/Remove)',
+                    'online_booking',
+                    'appointments',
+                    'patients',
+                    'billing_pos',
+                    'basic_reports',
                 ],
-                'max_users' => 3,
+                'max_users' => 4,
                 'max_patients' => 150,
                 'is_active' => true,
                 'is_popular' => false,
@@ -65,21 +41,20 @@ class PricingPlanSeeder extends Seeder
                 'description' => 'Advanced features for growing practices.',
                 'price' => 2499.00,
                 'billing_cycle' => 'monthly',
-                'trial_days' => 14, // Can offer trial for Pro too, or 0 if immediate pay
+                'trial_days' => 0,
                 'auto_delete_after_trial' => false,
                 'features' => [
-                    'Everything in Basic',
-                    'Up to 4 Users (Flexible Roles)',
-                    'Up to 500 Patients',
-                    'Online Booking (QR Code)',
-                    'Payments & Collections',
-                    'SMS Notifications',
-                    'Enhanced Reports',
-                    'Dashboard & Domain Customization',
-                    'Full Staff Management View',
+                    'online_booking',
+                    'appointments',
+                    'patients',
+                    'billing_pos',
+                    'basic_reports',
+                    'sms_notifications',
+                    'enhanced_reports',
+                    'custom_branding',
                 ],
-                'max_users' => 4,
-                'max_patients' => 500,
+                'max_users' => 6,
+                'max_patients' => 500, // "Higher" limit
                 'is_active' => true,
                 'is_popular' => true,
                 'badge_text' => 'Most Popular',
@@ -92,18 +67,23 @@ class PricingPlanSeeder extends Seeder
                 'description' => 'Maximum power for multi-branch clinics.',
                 'price' => 4999.00,
                 'billing_cycle' => 'monthly',
-                'trial_days' => 14,
+                'trial_days' => 0,
                 'auto_delete_after_trial' => false,
                 'features' => [
-                    'Everything in Pro',
-                    '10 Users & 1000 Patients',
-                    'Advanced Analytics',
-                    'Full Customization',
-                    'Multi-branch Readiness',
-                    'Customizable Themes',
+                    'online_booking',
+                    'appointments',
+                    'patients',
+                    'billing_pos',
+                    'basic_reports',
+                    'sms_notifications',
+                    'enhanced_reports',
+                    'custom_branding',
+                    'advanced_analytics',
+                    'priority_support',
+                    'multi_branch',
                 ],
                 'max_users' => 10,
-                'max_patients' => 1000,
+                'max_patients' => 0, // Unlimited
                 'is_active' => true,
                 'is_popular' => false,
                 'badge_text' => 'Best Value',
@@ -114,8 +94,8 @@ class PricingPlanSeeder extends Seeder
 
         foreach ($plans as $plan) {
             PricingPlan::updateOrCreate(
-                ['slug' => $plan['slug']], // Find by slug
-                $plan // Update or create with these values
+                ['slug' => $plan['slug']],
+                $plan
             );
         }
     }

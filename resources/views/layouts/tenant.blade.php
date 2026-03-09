@@ -435,6 +435,11 @@
                     confirmButtonColor: 'var(--p, #0ea5e9)'
                 });
             @endif
+            @if(session('show_upgrade_modal'))
+                if (typeof window.showUpgradeModal === 'function') {
+                    window.showUpgradeModal();
+                }
+            @endif
         }
         document.addEventListener('turbo:load', dcmsTenantShowFlash);
         document.addEventListener('DOMContentLoaded', dcmsTenantShowFlash);

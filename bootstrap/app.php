@@ -11,13 +11,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withProviders([
+        \App\Providers\AppServiceProvider::class,
         \App\Providers\FortifyServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(prepend: [
+            \App\Http\Middleware\TenantMiddleware::class,
+        ]);
+
         $middleware->alias([
             'tenant' => \App\Http\Middleware\TenantMiddleware::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'check.limits' => \App\Http\Middleware\CheckPlanLimits::class,
+            'check.feature' => \App\Http\Middleware\CheckFeatureAccess::class,
         ]);
 
         $middleware->redirectGuestsTo(function ($request) {

@@ -1,0 +1,7 @@
+Tenant Name: CUDAL-BLANCO DENTAL CLINIC
+Tenant ID: 69842a76be39527ddf08c722
+
+All Users in db_central:
+
+Users in db_cudalblanco (tenant_id = 69842a76be39527ddf08c722):
+- joenilacero (joenilpanal@gmail.com) [tenant_id: 69842a76be39527ddf08c722]

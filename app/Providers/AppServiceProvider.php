@@ -28,6 +28,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Auth::provider('tenant_users', function ($app, array $config) {
+            return new \App\Providers\TenantUserProvider($app['hash'], $config['model']);
+        });
+
+        \Illuminate\Support\Facades\Blade::if('feature', function (string $feature) {
+            $user = auth()->user();
+            if (!$user || !$user->tenant) {
+                return false;
+            }
+            
+            return app(\App\Services\CheckPlanLimits::class)->canAccessFeature($user->tenant, $feature);
+        });
+
         \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
             return $user->isSystemAdmin() ? true : null;
         });

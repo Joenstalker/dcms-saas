@@ -41,6 +41,13 @@ class PatientController extends Controller
 
     public function store(Request $request, Tenant $tenant)
     {
+        $limitService = app(\App\Services\CheckPlanLimits::class);
+        if ($limitService->hasReachedPatientLimit($tenant)) {
+            return redirect()->back()
+                ->with('error', 'Patient limit reached for your current plan. Please upgrade to add more patients.')
+                ->with('show_upgrade_modal', true);
+        }
+
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',

@@ -36,30 +36,34 @@ class TenantStaffSeeder extends Seeder
         $this->command->info("Seeding database: {$databaseName}");
 
         // Create Dentist
-        User::on('mongodb')->updateOrCreate(
-            ['email' => 'dentist@test.com'],
-            [
-                'name' => 'Dr. Cudal',
-                'password' => Hash::make('password'),
-                'role' => 'dentist',
-                'tenant_id' => $tenant->id,
-                'status' => 'active',
-                'must_reset_password' => false,
-            ]
-        );
+        $dentist = User::on('mongodb')->where('email', 'dentist@test.com')->first();
+        if (!$dentist) {
+            $dentist = new User();
+            $dentist->setConnection('mongodb');
+            $dentist->email = 'dentist@test.com';
+        }
+        $dentist->name = 'Dr. Cudal';
+        $dentist->password = Hash::make('password');
+        $dentist->role = 'dentist';
+        $dentist->tenant_id = $tenant->id;
+        $dentist->status = 'active';
+        $dentist->must_reset_password = false;
+        $dentist->save();
 
         // Create Assistant
-        User::on('mongodb')->updateOrCreate(
-            ['email' => 'assistant@test.com'],
-            [
-                'name' => 'Sarah Assistant',
-                'password' => Hash::make('password'),
-                'role' => 'assistant',
-                'tenant_id' => $tenant->id,
-                'status' => 'active',
-                'must_reset_password' => false,
-            ]
-        );
+        $assistant = User::on('mongodb')->where('email', 'assistant@test.com')->first();
+        if (!$assistant) {
+            $assistant = new User();
+            $assistant->setConnection('mongodb');
+            $assistant->email = 'assistant@test.com';
+        }
+        $assistant->name = 'Sarah Assistant';
+        $assistant->password = Hash::make('password');
+        $assistant->role = 'assistant';
+        $assistant->tenant_id = $tenant->id;
+        $assistant->status = 'active';
+        $assistant->must_reset_password = false;
+        $assistant->save();
 
         $this->command->info('Tenant staff seeded successfully.');
     }

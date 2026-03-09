@@ -30,7 +30,20 @@ class SettingsController extends Controller
     {
         $this->brandingService = $brandingService;
     }
-    public function index(Tenant $tenant): View
+    public function account(Tenant $tenant): View
+    {
+        $user = auth()->user();
+
+        if (!$user || $user->tenant_id !== $tenant->id) {
+            abort(403);
+        }
+
+        return view('tenant.settings.account', [
+            'tenant' => $tenant,
+        ]);
+    }
+
+    public function branding(Tenant $tenant): View
     {
         $user = auth()->user();
 
@@ -46,7 +59,8 @@ class SettingsController extends Controller
             return TenantSetting::where('tenant_id', $tenant->id)->first();
         });
 
-        $canCustomize = true;
+        $limitService = app(\App\Services\CheckPlanLimits::class);
+        $canCustomize = $limitService->canAccessFeature($tenant, 'Custom Clinic Branding');
 
         return view('tenant.settings.branding', [
             'tenant' => $tenant,
@@ -191,7 +205,7 @@ class SettingsController extends Controller
 
         $this->brandingService->clearSettingsCache($tenant);
 
-        return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+        return redirect()->route('tenant.settings.branding', ['tenant' => $tenant->slug])
             ->with('success', 'Branding settings updated successfully!');
     }
 
@@ -209,7 +223,7 @@ class SettingsController extends Controller
         ]);
 
         if (! Hash::check($validated['current_password'], $user->password)) {
-            return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+            return redirect()->route('tenant.settings.account', ['tenant' => $tenant->slug])
                 ->withErrors(['current_password' => 'Current password is incorrect.'])
                 ->withInput();
         }
@@ -219,7 +233,7 @@ class SettingsController extends Controller
             'must_reset_password' => false,
         ]);
 
-        return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+        return redirect()->route('tenant.settings.account', ['tenant' => $tenant->slug])
             ->with('success', 'Password updated successfully.');
     }
 
@@ -254,7 +268,7 @@ class SettingsController extends Controller
             ]);
         }
 
-        return redirect()->route('tenant.settings.index', ['tenant' => $tenant->slug])
+        return redirect()->route('tenant.settings.account', ['tenant' => $tenant->slug])
             ->with('success', 'Profile photo updated successfully.');
     }
 

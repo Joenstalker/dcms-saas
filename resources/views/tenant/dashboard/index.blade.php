@@ -75,7 +75,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mb-2">
                     <div>
                         <p class="text-sm text-base-content/70">Total Patients</p>
                         <p class="text-3xl font-bold text-primary">{{ $stats['total_patients'] }}</p>
@@ -86,6 +86,23 @@
                         </svg>
                     </div>
                 </div>
+                @if($tenant->pricingPlan)
+                    @php
+                        $patientLimit = $tenant->pricingPlan->max_patients;
+                        $isUltimate = ($tenant->pricingPlan->slug === 'ultimate');
+                        $displayLimit = $isUltimate ? '∞' : ($patientLimit ?: '∞');
+                        $patientPercent = (!$isUltimate && $patientLimit) ? min(100, round(($stats['total_patients'] / $patientLimit) * 100)) : 0;
+                    @endphp
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold opacity-50 uppercase tracking-tighter">
+                            <span>Usage</span>
+                            <span>{{ $stats['total_patients'] }} / {{ $displayLimit }}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-base-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary transition-all duration-1000" style="width: {{ $patientPercent }}%"></div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -123,7 +140,7 @@
 
         <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mb-2">
                     <div>
                         <p class="text-sm text-base-content/70">Team Members</p>
                         <p class="text-3xl font-bold text-info">{{ $stats['total_users'] }}</p>
@@ -134,6 +151,21 @@
                         </svg>
                     </div>
                 </div>
+                @if($tenant->pricingPlan)
+                    @php
+                        $userLimit = $tenant->pricingPlan->max_users;
+                        $userPercent = $userLimit ? min(100, round(($stats['total_users'] / $userLimit) * 100)) : 0;
+                    @endphp
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold opacity-50 uppercase tracking-tighter">
+                            <span>Usage</span>
+                            <span>{{ $stats['total_users'] }} / {{ $userLimit ?: '∞' }}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-base-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-info transition-all duration-1000" style="width: {{ $userPercent }}%"></div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -195,7 +227,7 @@
                             <span>Concerns</span>
                         </a>
                         @if(auth()->user()->isOwner())
-                        <a href="{{ route('tenant.settings.index', $tenant) }}" class="btn btn-outline btn-lg flex-col h-auto py-4">
+                        <a href="{{ route('tenant.settings.account', $tenant) }}" class="btn btn-outline btn-lg flex-col h-auto py-4">
                             <svg class="w-6 h-6 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

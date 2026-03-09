@@ -8,7 +8,6 @@
     </div>
     
     <div class="flex-1 min-w-0">
-        <h2 class="text-xl font-bold truncate"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h2>
     </div>
     
     <div class="flex-none gap-2">
@@ -42,7 +41,7 @@
                     <span><?php echo e(auth()->user()->name); ?></span>
                 </li>
                 <li><a href="javascript:void(0)" id="tenant-profile-photo-trigger">Update Profile Photo</a></li>
-                <li><a href="<?php echo e(route('tenant.settings.index', ['tenant' => $tenant->slug])); ?>">Account Settings</a></li>
+                <li><a href="<?php echo e(route('tenant.settings.account', ['tenant' => $tenant->slug])); ?>">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
                     <form action="<?php echo e(route('logout', ['tenant' => $tenant->slug])); ?>" method="POST">

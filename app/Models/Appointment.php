@@ -18,13 +18,16 @@ class Appointment extends Model
     protected $fillable = [
         'patient_id',
         'dentist_id',
+        'service_id',
         'scheduled_at',
         'status',
         'notes',
+        'is_guest_booking',
     ];
 
     protected $casts = [
         'scheduled_at' => 'datetime',
+        'is_guest_booking' => 'boolean',
     ];
 
     public function patient()
@@ -35,5 +38,10 @@ class Appointment extends Model
     public function dentist()
     {
         return $this->belongsTo(User::class, 'dentist_id');
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
     }
 }

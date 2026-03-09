@@ -30,9 +30,8 @@ class AppointmentController extends Controller
         // Cache dentists list
         $dentists = Cache::remember("tenant_{$tenant->id}_dentists", now()->addSeconds(30), function () use ($tenant) {
             return User::where('tenant_id', $tenant->id)
-                ->whereHas('roles', function($q) {
-                    $q->where('name', 'dentist');
-                })->get();
+                ->where('role', User::ROLE_DENTIST)
+                ->get();
         });
 
         // Cache patients list

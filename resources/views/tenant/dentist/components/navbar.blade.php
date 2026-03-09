@@ -8,7 +8,6 @@
     </div>
     
     <div class="flex-1">
-        <h2 class="text-xl font-semibold">@yield('page-title', 'Dentist Portal')</h2>
     </div>
     
     <div class="flex-none gap-2">
@@ -43,8 +42,8 @@
                 <li class="menu-title">
                     <span>{{ auth()->user()->name }}</span>
                 </li>
-                <li><a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}">Profile Photo</a></li>
-                <li><a href="{{ route('tenant.settings.index', ['tenant' => $tenant->slug]) }}">Account Settings</a></li>
+                <li><a href="{{ route('tenant.settings.account', ['tenant' => $tenant->slug]) }}">Profile Photo</a></li>
+                <li><a href="{{ route('tenant.settings.account', ['tenant' => $tenant->slug]) }}">Account Settings</a></li>
                 <li><hr class="my-2"></li>
                 <li>
                     <form action="{{ route('logout', ['tenant' => $tenant->slug]) }}" method="POST">

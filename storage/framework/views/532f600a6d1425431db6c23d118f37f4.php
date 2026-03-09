@@ -75,7 +75,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mb-2">
                     <div>
                         <p class="text-sm text-base-content/70">Total Patients</p>
                         <p class="text-3xl font-bold text-primary"><?php echo e($stats['total_patients']); ?></p>
@@ -86,6 +86,23 @@
                         </svg>
                     </div>
                 </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->pricingPlan): ?>
+                    <?php
+                        $patientLimit = $tenant->pricingPlan->max_patients;
+                        $isUltimate = ($tenant->pricingPlan->slug === 'ultimate');
+                        $displayLimit = $isUltimate ? '∞' : ($patientLimit ?: '∞');
+                        $patientPercent = (!$isUltimate && $patientLimit) ? min(100, round(($stats['total_patients'] / $patientLimit) * 100)) : 0;
+                    ?>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold opacity-50 uppercase tracking-tighter">
+                            <span>Usage</span>
+                            <span><?php echo e($stats['total_patients']); ?> / <?php echo e($displayLimit); ?></span>
+                        </div>
+                        <div class="w-full h-1.5 bg-base-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-primary transition-all duration-1000" style="width: <?php echo e($patientPercent); ?>%"></div>
+                        </div>
+                    </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
 
@@ -123,7 +140,7 @@
 
         <div class="card bg-base-100 shadow-lg">
             <div class="card-body">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mb-2">
                     <div>
                         <p class="text-sm text-base-content/70">Team Members</p>
                         <p class="text-3xl font-bold text-info"><?php echo e($stats['total_users']); ?></p>
@@ -134,6 +151,21 @@
                         </svg>
                     </div>
                 </div>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tenant->pricingPlan): ?>
+                    <?php
+                        $userLimit = $tenant->pricingPlan->max_users;
+                        $userPercent = $userLimit ? min(100, round(($stats['total_users'] / $userLimit) * 100)) : 0;
+                    ?>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[10px] font-bold opacity-50 uppercase tracking-tighter">
+                            <span>Usage</span>
+                            <span><?php echo e($stats['total_users']); ?> / <?php echo e($userLimit ?: '∞'); ?></span>
+                        </div>
+                        <div class="w-full h-1.5 bg-base-200 rounded-full overflow-hidden">
+                            <div class="h-full bg-info transition-all duration-1000" style="width: <?php echo e($userPercent); ?>%"></div>
+                        </div>
+                    </div>
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
         </div>
     </div>

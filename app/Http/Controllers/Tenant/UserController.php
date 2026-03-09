@@ -35,7 +35,7 @@ class UserController extends Controller
     /**
      * View a staff member's portal (owner only)
      */
-    public function viewPortal(Tenant $tenant, User $user): View
+    public function viewPortal(Tenant $tenant, User $user): View|RedirectResponse
     {
         // Ensure owner belongs to this tenant
         if (auth()->user()->tenant_id !== $tenant->id) {
@@ -59,16 +59,22 @@ class UserController extends Controller
         abort(404, 'Portal not available for this user role.');
     }
 
-    public function index(Tenant $tenant): View
+    public function index(Tenant $tenant): View|RedirectResponse
     {
         // Ensure user belongs to this tenant
         if (auth()->user()->tenant_id !== $tenant->id) {
             abort(403);
         }
 
-        $users = User::where('tenant_id', $tenant->id)
+        // Staff members (Dentists/Assistants) are stored in the Tenant DB (mongodb connection)
+        // Owners are in mongodb_central and are managed in Settings.
+        // We explicitly use 'mongodb' which is pointed to the tenant's database by TenantMiddleware.
+        $users = User::on('mongodb')
+            ->where('role', '!=', 'owner')
             ->get()
             ->map(function ($user) {
+                // Ensure the user instance knows it's using the mongodb connection
+                $user->setConnection('mongodb');
                 $user->role_name = $user->role ?? 'No Role';
                 return $user;
             });
@@ -91,6 +97,13 @@ class UserController extends Controller
         // Ensure user belongs to this tenant
         if (auth()->user()->tenant_id !== $tenant->id) {
             abort(403);
+        }
+
+        $limitService = app(\App\Services\CheckPlanLimits::class);
+        if ($limitService->hasReachedUserLimit($tenant)) {
+            return redirect()->route('tenant.users.index', $tenant)
+                ->with('error', 'User limit reached for your current plan (' . ($tenant->pricingPlan->max_users ?? '0') . ' users). Please upgrade to add more staff.')
+                ->with('show_upgrade_modal', true);
         }
 
         try {
@@ -160,7 +173,7 @@ class UserController extends Controller
         }
     }
 
-    public function show(Tenant $tenant, User $user): View
+    public function show(Tenant $tenant, User $user): View|RedirectResponse
     {
         // Ensure user belongs to this tenant and is viewing their own tenant's user
         if (auth()->user()->tenant_id !== $tenant->id || $user->tenant_id !== $tenant->id) {
@@ -169,23 +182,37 @@ class UserController extends Controller
 
         $user->role_name = $user->role ?? 'No Role';
 
+        if (request()->ajax()) {
+            return view('tenant.users.show', compact('tenant', 'user'));
+        }
+
         return view('tenant.users.show', compact('tenant', 'user'));
     }
 
-    public function edit(Tenant $tenant, User $user): View
+    public function edit(Tenant $tenant, User $user): View|RedirectResponse
     {
         // Ensure user belongs to this tenant and owner can't edit themselves
         if (auth()->user()->tenant_id !== $tenant->id || $user->tenant_id !== $tenant->id) {
             abort(403);
         }
 
-        // Prevent editing the owner
+        // Prevent editing the owner in staff management
         if ($user->isOwner()) {
+            // If it's the current user, redirect to settings
+            if ($user->id === auth()->id()) {
+                return redirect()->route('tenant.settings.account', $tenant);
+            }
+            
             return redirect()->route('tenant.users.index', $tenant)
-                ->with('error', 'Owner account cannot be edited here.');
+                ->with('info', 'Owner accounts are managed in the main account settings.');
         }
 
         $user->current_role = $user->role;
+
+        if (request()->ajax()) {
+            // We'll create a partial-friendly version of edit or just strip layout
+            return view('tenant.users.edit', compact('tenant', 'user'))->with('is_modal', true);
+        }
 
         return view('tenant.users.edit', compact('tenant', 'user'));
     }
@@ -209,11 +236,10 @@ class UserController extends Controller
                 'required',
                 'email',
                 'max:255',
-                \Illuminate\Validation\Rule::unique('users', 'email')
-                    ->ignore($user->id)
-                    ->where(function ($query) use ($tenant) {
-                        return $query->where('tenant_id', $tenant->id);
-                    }),
+                // 1. Unique in Tenant DB (ignoring current user)
+                \Illuminate\Validation\Rule::unique('mongodb.users', 'email')->ignore($user->id),
+                // 2. Unique in Central DB
+                \Illuminate\Validation\Rule::unique('mongodb_central.users', 'email'),
             ],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|string|in:dentist,assistant',

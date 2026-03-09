@@ -35,4 +35,26 @@ class Patient extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Re-calculate patient balance based on invoices and payments.
+     */
+    public function updateBalance(): void
+    {
+        $totalInvoiced = (float) $this->invoices()->where('status', '!=', 'Cancelled')->sum('grand_total');
+        $totalPaid = (float) $this->payments()->sum('amount_paid');
+        
+        $this->balance = $totalInvoiced - $totalPaid;
+        $this->save();
+    }
 }

@@ -15,6 +15,13 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
         return redirect()->route('tenant.login');
     });
 
+    // Public booking routes (QR Code)
+    Route::prefix('book')->name('tenant.booking.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Tenant\GuestBookingController::class, 'show'])->name('show');
+        Route::post('/', [\App\Http\Controllers\Tenant\GuestBookingController::class, 'store'])->name('store')->middleware('throttle:3,60');
+        Route::get('/success', [\App\Http\Controllers\Tenant\GuestBookingController::class, 'success'])->name('success');
+    });
+
     // Tenant login
     Route::get('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'showLoginForm'])->name('tenant.login');
     Route::post('/login', [\App\Http\Controllers\Tenant\TenantLoginController::class, 'login'])->name('tenant.login.submit');
@@ -61,11 +68,16 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
         // OWNER ONLY: Analytics & Management
         Route::middleware(['role:owner'])->group(function () {
             Route::get('/analytics', [\App\Http\Controllers\Tenant\AnalyticsController::class, 'index'])->name('analytics');
-            Route::resource('users', \App\Http\Controllers\Tenant\UserController::class);
+            
+            // User management with plan limits
+            Route::middleware(['check.limits:users'])->group(function () {
+                Route::resource('users', \App\Http\Controllers\Tenant\UserController::class)->only(['create', 'store']);
+            });
+            Route::resource('users', \App\Http\Controllers\Tenant\UserController::class)->except(['create', 'store']);
+
             Route::get('/expenses', function(\App\Models\Tenant $tenant) {      
                 return view('tenant.expenses.index', compact('tenant'));        
             })->name('expenses.index');
-            Route::get('/settings/branding', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.branding');
         });
 
         // DENTIST ONLY: Clinical View
@@ -85,13 +97,27 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
             Route::get('/patients', [\App\Http\Controllers\Tenant\PatientController::class, 'index'])->name('patients.index');
             Route::get('/patients/{patient}', [\App\Http\Controllers\Tenant\PatientController::class, 'show'])->name('patients.show');
             Route::patch('patients/{patient}/update-balance', [\App\Http\Controllers\Tenant\PatientController::class, 'updateBalance'])->name('patients.update-balance');
-            Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class)->except(['index', 'show']);
+            
+            // Patient management with plan limits
+            Route::middleware(['check.limits:patients'])->group(function () {
+                Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class)->only(['create', 'store']);
+            });
+            Route::resource('patients', \App\Http\Controllers\Tenant\PatientController::class)->except(['index', 'show', 'create', 'store']);
 
             // Appointments
             Route::get('/appointments', [\App\Http\Controllers\Tenant\AppointmentController::class, 'index'])->name('appointments.index');
             Route::get('/appointments/{appointment}', [\App\Http\Controllers\Tenant\AppointmentController::class, 'show'])->name('appointments.show');  
             Route::resource('appointments', \App\Http\Controllers\Tenant\AppointmentController::class)->except(['index', 'show']);
             Route::patch('/appointments/{appointment}/status', [\App\Http\Controllers\Tenant\AppointmentController::class, 'updateStatus'])->name('appointments.update-status');
+
+            // Billing & POS
+            Route::controller(\App\Http\Controllers\Tenant\BillingController::class)->prefix('billing')->name('billing.')->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::get('/create', 'create')->name('create');
+                Route::post('/', 'store')->name('store');
+                Route::get('/{invoice}', 'show')->name('show');
+                Route::post('/{invoice}/payment', 'recordPayment')->name('payment');
+            });
 
             // Catalog & Services
             Route::controller(\App\Http\Controllers\Tenant\CatalogController::class)->prefix('services')->name('services.')->group(function () {
@@ -132,8 +158,13 @@ Route::domain('{tenant}.' . $baseDomain)->middleware(['tenant'])->group(function
             Route::post('/role-permission/users/{user}/roles', [\App\Http\Controllers\Tenant\RolePermissionController::class, 'assignUserRole'])->name('role-permission.user-roles');
 
             // Settings
-            Route::get('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'index'])->name('settings.index');
+            Route::get('/settings/account', [\App\Http\Controllers\Tenant\SettingsController::class, 'account'])->name('settings.account');
+            Route::get('/settings', function(\App\Models\Tenant $tenant) {
+                return redirect()->route('tenant.settings.account', ['tenant' => $tenant->slug]);
+            })->name('settings.index');
+            Route::get('/settings/branding', [\App\Http\Controllers\Tenant\SettingsController::class, 'branding'])->name('settings.branding');
             Route::post('/settings', [\App\Http\Controllers\Tenant\SettingsController::class, 'update'])->name('settings.update');
+            Route::put('/settings/password', [\App\Http\Controllers\Tenant\SettingsController::class, 'updatePassword'])->name('settings.password.update');
             Route::put('/settings/profile-photo', [\App\Http\Controllers\Tenant\SettingsController::class, 'updateProfilePhoto'])->name('settings.profile-photo.update');
             Route::get('/settings/theme-builder', [\App\Http\Controllers\Admin\ThemeController::class, 'builder'])->name('settings.theme-builder');
             Route::post('/settings/theme', [\App\Http\Controllers\Admin\ThemeController::class, 'storeTenantTheme'])->name('settings.theme.store');

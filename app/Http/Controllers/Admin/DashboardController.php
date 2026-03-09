@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Payment;
+use App\Models\SubscriptionPayment;
 use App\Models\PricingPlan;
 use App\Models\Tenant;
 use App\Models\User;
@@ -25,7 +25,7 @@ class DashboardController extends Controller
                 'active_tenants' => Tenant::where('is_active', true)->count(),
                 'total_users'    => User::where('role', '!=', User::ROLE_SYSTEM_ADMIN)->count(),
                 'system_admins'  => User::where('role', User::ROLE_SYSTEM_ADMIN)->count(),
-                'total_income'   => (float) (string) Payment::where('status', 'succeeded')->sum('amount'),
+                'total_income'   => (float) (string) SubscriptionPayment::where('status', 'succeeded')->sum('amount'),
             ];
 
             $recentTenants = Tenant::with('pricingPlan')
@@ -45,7 +45,7 @@ class DashboardController extends Controller
                 })
                 ->values();
 
-            $recentPayments = Payment::with(['tenant', 'pricingPlan'])
+            $recentPayments = SubscriptionPayment::with(['tenant', 'pricingPlan'])
                 ->where('status', 'succeeded')
                 ->latest()
                 ->take(5)

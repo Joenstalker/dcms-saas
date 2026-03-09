@@ -84,7 +84,6 @@
                         <li>
                             <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200 flex justify-between items-center">
                                 Dental Chart
-                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$hasProAccess): ?> <span class="badge badge-ghost badge-xs">Pro</span> <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                             </a>
                         </li>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -107,10 +106,12 @@
                                 Calendar View
                             </a>
                         </li>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'online_booking')): ?>
                         <?php if(auth()->user()->isAssistant() || auth()->user()->isOwner()): ?>
                         <li>
                             <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200">Online Bookings</a>
                         </li>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </ul>
                 </details>
@@ -136,6 +137,7 @@
             </li>
 
             <!-- Billing Section -->
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'billing_pos')): ?>
             <?php if(auth()->user()->isOwner() || auth()->user()->isAssistant()): ?>
             <li>
                 <details <?php echo e(request()->routeIs('tenant.billing.*') ? 'open' : ''); ?> name="sidebar-menu" class="group">
@@ -143,29 +145,71 @@
                         <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        <span class="flex-1">Billing</span>
+                        <span class="flex-1">Billing & POS</span>
                     </summary>
                     <ul class="mt-1 ml-4 border-l-2 border-base-200 pl-2 gap-1">
                         <li>
-                            <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200">Invoices</a>
+                            <a href="<?php echo e(route('tenant.billing.index', $tenant->slug)); ?>" class="<?php echo e(request()->routeIs('tenant.billing.index') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
+                                Invoices
+                            </a>
                         </li>
                         <li>
-                            <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200">Payments</a>
+                            <a href="<?php echo e(route('tenant.billing.create', $tenant->slug)); ?>" class="<?php echo e(request()->routeIs('tenant.billing.create') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
+                                New Transaction
+                            </a>
                         </li>
                     </ul>
                 </details>
             </li>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-            <!-- Finance Section -->
+            <!-- SMS Notifications Section -->
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'sms_notifications')): ?>
             <?php if(auth()->user()->isOwner() || auth()->user()->isAssistant()): ?>
             <li>
                 <a href="#" class="text-base-content/80 font-semibold flex items-center gap-3 hover:bg-base-200 rounded-lg p-2.5 transition-all">
                     <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                     </svg>
-                    <span class="flex-1">Finance</span>
+                    <span class="flex-1">SMS Notifications</span>
                 </a>
+            </li>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <!-- Analytics & Reports Section -->
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'basic_reports')): ?>
+            <li>
+                <details <?php echo e(request()->routeIs('tenant.reports.*') || request()->routeIs('tenant.analytics') ? 'open' : ''); ?> name="sidebar-menu" class="group">
+                    <summary class="flex items-center gap-3 font-semibold text-base-content/80 hover:bg-base-200 rounded-lg p-2.5 transition-all cursor-pointer group-open:after:rotate-180">
+                        <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="flex-1">Reports & Analytics</span>
+                    </summary>
+                    <ul class="mt-1 ml-4 border-l-2 border-base-200 pl-2 gap-1">
+                        <li>
+                            <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200">
+                                Basic Reports
+                            </a>
+                        </li>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'enhanced_reports')): ?>
+                        <li>
+                            <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200">
+                                Enhanced Summaries
+                            </a>
+                        </li>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'advanced_analytics')): ?>
+                        <li>
+                            <a href="<?php echo e(route('tenant.analytics', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.analytics') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
+                                Advanced Performance
+                            </a>
+                        </li>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                    </ul>
+                </details>
             </li>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
@@ -194,21 +238,35 @@
                     </summary>
                     <ul class="mt-1 ml-4 border-l-2 border-base-200 pl-2 gap-1">
                         <li>
+                            <a href="<?php echo e(route('tenant.settings.account', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.settings.account') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
+                                Account Settings
+                            </a>
+                        </li>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'custom_branding')): ?>
+                        <li>
+                            <a href="<?php echo e(route('tenant.settings.branding', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.settings.branding') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
+                                Custom Branding
+                            </a>
+                        </li>
+                        <?php else: ?>
+                        <li>
                             <a href="<?php echo e(route('tenant.settings.branding', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.settings.branding') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
                                 Branding
                             </a>
                         </li>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         <?php if(auth()->user()->isOwner() && in_array($planSlug, ['pro', 'ultimate'])): ?>
                         <li>
                             <a href="<?php echo e(route('tenant.role-permission.index', ['tenant' => $tenant->slug])); ?>" class="<?php echo e(request()->routeIs('tenant.role-permission.*') ? 'active bg-primary/10 text-primary font-medium' : 'text-base-content/70'); ?> py-2 px-4 rounded-md">
                                 Roles & Permissions
                             </a>
                         </li>
-                        <?php elseif(auth()->user()->isOwner()): ?>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'multi_branch')): ?>
                         <li>
-                            <a href="#" onclick="showUpgradeModal(); return false;" class="text-base-content/50 py-2 px-4 rounded-md flex items-center gap-2 cursor-not-allowed opacity-60" title="Upgrade to Pro or Ultimate to access this feature">
-                                Roles & Permissions
-                                <span class="badge badge-warning badge-xs ml-auto">PRO</span>
+                            <a href="#" class="text-base-content/70 py-2 px-4 rounded-md hover:bg-base-200">
+                                Branches
                             </a>
                         </li>
                         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
@@ -236,6 +294,19 @@
                     </a>
                 </li>
             </div>
+            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+
+            <!-- Support Section -->
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if (\Illuminate\Support\Facades\Blade::check('feature', 'priority_support')): ?>
+            <li>
+                <a href="#" class="text-base-content/80 font-semibold flex items-center gap-3 hover:bg-base-200 rounded-lg p-2.5 transition-all">
+                    <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span class="flex-1">Priority Support</span>
+                    <span class="badge badge-warning badge-xs">VIP</span>
+                </a>
+            </li>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </ul>
     </aside>

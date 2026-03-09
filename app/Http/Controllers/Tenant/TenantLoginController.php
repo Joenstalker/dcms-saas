@@ -80,10 +80,21 @@ class TenantLoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         $normalizedEmail = strtolower(trim($credentials['email']));
-        // Use MongoDB-compatible case-insensitive regex for email matching
-        $user = User::where('email', 'regex', '/^' . preg_quote($normalizedEmail, '/') . '$/i')
+        $regex = '/^' . preg_quote($normalizedEmail, '/') . '$/i';
+
+        // 1. Try tenant database first (staff)
+        $user = User::on('mongodb')
+            ->where('email', 'regex', $regex)
             ->where('tenant_id', $tenant->id)
             ->first();
+
+        // 2. If not found, try central database (owner)
+        if (!$user) {
+            $user = User::on('mongodb_central')
+                ->where('email', 'regex', $regex)
+                ->where('tenant_id', $tenant->id)
+                ->first();
+        }
 
         // Check if user exists and password is correct
         if (!$user || !\Illuminate\Support\Facades\Hash::check($credentials['password'], $user->password)) {

@@ -59,7 +59,7 @@ class DashboardController extends Controller
                 'total_patients' => Patient::count(),
                 'total_appointments' => Appointment::count(),
                 'today_appointments' => Appointment::whereDate('scheduled_at', now()->today())->count(),
-                'total_users' => User::where('tenant_id', $tenant->id)->count(),
+                'total_users' => User::where('tenant_id', $tenant->id)->where('role', '!=', User::ROLE_TENANT)->count(),
             ];
 
             $needsPlan = $tenant->pricing_plan_id === null;
@@ -163,10 +163,8 @@ class DashboardController extends Controller
                 ->get();
 
             $dentists = User::where('tenant_id', $tenant->id)
-                ->whereHas('roles', function($q) {
-                    $q->where('name', 'dentist');
-                })->get();
-
+                ->where('role', User::ROLE_DENTIST)
+                ->get();
             $patients = Patient::where('tenant_id', $tenant->id)->get();
 
             return compact('tenant', 'stats', 'upcomingAppointments', 'dentists', 'patients');
