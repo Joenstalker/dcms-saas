@@ -20,7 +20,7 @@
                         <form id="logout-form-mobile" action="{{ route('logout', ['tenant' => $userTenantSlug]) }}" method="POST" style="display:none;">@csrf</form>
                     @endif
                 @else
-                    <li><a href="{{ route('admin.login') }}">Login</a></li>
+                    <li><a href="#" onclick="event.preventDefault(); document.getElementById('adminLoginModal').classList.add('modal-open');">Login</a></li>
                 @endauth
             </ul>
         </div>
@@ -58,7 +58,7 @@
                  <a href="{{ route('admin.dashboard') }}" class="btn btn-primary">Dashboard</a>
             @endif
         @else
-            <a href="{{ route('admin.login') }}" class="btn btn-primary px-8">Login</a>
+            <button type="button" class="btn btn-primary px-8" onclick="document.getElementById('adminLoginModal').classList.add('modal-open');">Login</button></li>
         @endauth
     </div>
 </nav>

@@ -53,7 +53,7 @@ class User extends Authenticatable
     }
 
 
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     /**

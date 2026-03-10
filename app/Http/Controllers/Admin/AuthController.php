@@ -15,9 +15,9 @@ class AuthController extends Controller
     /**
      * Show admin login form
      */
-    public function showLoginForm(): View
+    public function showLoginForm(): RedirectResponse
     {
-        return view('admin.auth.login');
+        return redirect()->route('home');
     }
 
     /**
@@ -25,17 +25,21 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validate input
-        $request->validate([
+        // Validate input — reCAPTCHA is only enforced in production
+        $rules = [
             'email' => 'required|email',
             'password' => 'required',
-            'g-recaptcha-response' => ['required', new \App\Rules\Recaptcha],
-        ], [
+        ];
+        $messages = [
             'email.required' => 'Email address is required.',
             'email.email' => 'Please enter a valid email address.',
             'password.required' => 'Password is required.',
-            'g-recaptcha-response.required' => 'Please complete the reCAPTCHA challenge.',
-        ]);
+        ];
+
+        $rules['g-recaptcha-response'] = ['required', new \App\Rules\Recaptcha];
+        $messages['g-recaptcha-response.required'] = 'Please complete the reCAPTCHA challenge.';
+
+        $request->validate($rules, $messages);
 
         $credentials = $request->only('email', 'password');
         $normalizedEmail = strtolower(trim($credentials['email']));

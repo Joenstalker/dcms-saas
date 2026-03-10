@@ -83,6 +83,7 @@ class RegistrationController extends Controller
             $isFreePlan = !$selectedPlan || ($selectedPlan->price == 0);
             $isActive = true; // All tenants are active immediately
             $planStatus = $isFreePlan ? 'trial' : 'pending_payment';
+            $needsPayment = !$isFreePlan;
 
             // Calculate trial end date for free plans
             $trialEndsAt = null;
@@ -134,11 +135,35 @@ class RegistrationController extends Controller
                 Log::warning('Failed to add to hosts file: ' . $e->getMessage());
             }
 
-            // Login the user
-            Auth::login($user);
+            // Login the user (optional here, but we'll do it if not needing payment)
+            if (!$needsPayment) {
+                Auth::login($user);
+            }
 
-            // For paid plans, redirect to wizard for payment
-            $needsPayment = !$isFreePlan;
+            // For paid plans, redirect to wizard for payment or handle via modal
+            $clientSecret = null;
+            if ($needsPayment && $selectedPlan) {
+                try {
+                    \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+                    $intent = \Stripe\PaymentIntent::create([
+                        'amount' => (int) ($selectedPlan->price * 100),
+                        'currency' => 'php',
+                        'automatic_payment_methods' => ['enabled' => true],
+                        'metadata' => [
+                            'tenant_id' => $tenant->id,
+                            'plan_id' => $selectedPlan->id,
+                            'type' => 'initial_registration',
+                        ],
+                    ]);
+                    $clientSecret = $intent->client_secret;
+                } catch (\Exception $e) {
+                    Log::error('Stripe PaymentIntent Creation Failed during Registration', [
+                        'tenant_id' => $tenant->id,
+                        'error' => $e->getMessage()
+                    ]);
+                    // We'll still return success but with a flag that payment initialization failed
+                }
+            }
 
             // Generate Auto-Login URL to bridge session to subdomain
             $port = $request->getPort();
@@ -155,9 +180,13 @@ class RegistrationController extends Controller
                 'tenant_object_id' => $tenant->id,
             ]);
 
-            // Cast IDs to string using getKey() for reliability
-            $userIdStr = (string)$user->getKey();
-            $tenantIdStr = (string)$tenant->getKey();
+            // Ensure models are fully loaded with their IDs from MongoDB
+            $user->refresh();
+            $tenant->refresh();
+
+            // Cast IDs to string explicitly from _id attribute
+            $userIdStr = (string)$user->getAttribute('_id');
+            $tenantIdStr = (string)$tenant->getAttribute('_id');
             
             $dataToSign = $userIdStr . $tenantIdStr . $timestamp;
             $signature = hash_hmac('sha256', $dataToSign, config('app.key'));
@@ -178,9 +207,13 @@ class RegistrationController extends Controller
                     return response()->json([
                         'success' => true,
                         'payment_required' => true,
-                        'message' => 'Your clinic is ready! Complete your setup and add payment method.',
+                        'client_secret' => $clientSecret,
+                        'stripe_key' => config('services.stripe.key'),
+                        'plan_name' => $selectedPlan ? $selectedPlan->name : 'Paid Plan',
+                        'amount' => $selectedPlan ? $selectedPlan->price : 0,
+                        'message' => 'Your clinic is ready! Please complete the payment to activate your account.',
                         'subdomain' => $normalizedSubdomain,
-                        'redirect_url' => $autoLoginUrl
+                        'auto_login_url' => $autoLoginUrl // We'll use this after payment success
                     ], 201);
                 }
 
@@ -197,22 +230,6 @@ class RegistrationController extends Controller
             }
 
             return redirect()->away($autoLoginUrl);
-
-            if ($request->ajax() || $request->wantsJson()) {
-                $port = $request->getPort();
-                $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-                
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Welcome to DCMS 🎉 Your clinic has been created successfully! Redirecting you now...',
-                    'subdomain' => $normalizedSubdomain,
-                    'redirect_url' => "http://{$generatedDomain}{$portSuffix}"
-                ], 201);
-            }
-
-            $port = $request->getPort();
-            $portSuffix = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-            return redirect()->away("http://{$generatedDomain}{$portSuffix}");
 
         } catch (\Exception $e) {
             // DB::rollBack();

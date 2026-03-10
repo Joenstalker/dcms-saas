@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PricingPlanSeeder::class,
             SystemInitializationSeeder::class,
+            PlatformUpdatePermissionSeeder::class,
         ]);
     }
 }

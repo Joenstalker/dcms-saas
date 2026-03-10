@@ -20,7 +20,7 @@
                         <form id="logout-form-mobile" action="<?php echo e(route('logout', ['tenant' => $userTenantSlug])); ?>" method="POST" style="display:none;"><?php echo csrf_field(); ?></form>
                     <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                 <?php else: ?>
-                    <li><a href="<?php echo e(route('admin.login')); ?>">Login</a></li>
+                    <li><a href="#" onclick="event.preventDefault(); document.getElementById('adminLoginModal').classList.add('modal-open');">Login</a></li>
                 <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </ul>
         </div>
@@ -58,7 +58,7 @@
                  <a href="<?php echo e(route('admin.dashboard')); ?>" class="btn btn-primary">Dashboard</a>
             <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         <?php else: ?>
-            <a href="<?php echo e(route('admin.login')); ?>" class="btn btn-primary px-8">Login</a>
+            <button type="button" class="btn btn-primary px-8" onclick="document.getElementById('adminLoginModal').classList.add('modal-open');">Login</button></li>
         <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
     </div>
 </nav>

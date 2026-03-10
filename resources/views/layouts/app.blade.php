@@ -23,6 +23,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @include('components.custom-theme-styles')
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    @stack('styles')
 </head>
 <body class="font-sans antialiased bg-base-100 transition-colors duration-300">
     <div class="min-h-screen">

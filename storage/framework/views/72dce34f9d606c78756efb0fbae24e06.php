@@ -1,6 +1,6 @@
-@extends('layouts.app')
 
-@section('content')
+
+<?php $__env->startSection('content'); ?>
 <div class="relative overflow-hidden bg-base-100 py-12 lg:py-24">
     <!-- Decorative background elements -->
     <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
@@ -36,8 +36,8 @@
                 </div>
                 
                 <div class="flex items-center justify-center lg:justify-start gap-6 pt-4 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                    <img src="{{ asset('images/BukSU-logo.png') }}" alt="BukSU" class="h-10 w-auto">
-                    <img src="{{ asset('images/COT-logo.png') }}" alt="COT" class="h-10 w-auto">
+                    <img src="<?php echo e(asset('images/BukSU-logo.png')); ?>" alt="BukSU" class="h-10 w-auto">
+                    <img src="<?php echo e(asset('images/COT-logo.png')); ?>" alt="COT" class="h-10 w-auto">
                 </div>
             </div>
 
@@ -50,7 +50,7 @@
                     
                     <!-- Main Image with specialized background -->
                     <div class="relative z-20 overflow-hidden rounded-[2rem] border-8 border-white shadow-2xl skew-y-2 hover:skew-y-0 transition-transform duration-700">
-                        <img src="{{ asset('images/dentist-model.png') }}" alt="Filipino Dentist" class="w-full h-auto scale-110 hover:scale-100 transition-transform duration-700">
+                        <img src="<?php echo e(asset('images/dentist-model.png')); ?>" alt="Filipino Dentist" class="w-full h-auto scale-110 hover:scale-100 transition-transform duration-700">
                         <div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent opacity-30"></div>
                     </div>
                     
@@ -183,7 +183,7 @@
                 <div class="lg:w-1/2">
                     <div class="relative group">
                         <div class="absolute -inset-4 bg-gradient-to-r from-primary to-secondary rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
-                        <img src="{{ asset('images/OneTop.png') }}" alt="OneTap Feature" class="relative rounded-[2rem] shadow-2xl border-4 border-white hover:scale-[1.02] transition-transform duration-500">
+                        <img src="<?php echo e(asset('images/OneTop.png')); ?>" alt="OneTap Feature" class="relative rounded-[2rem] shadow-2xl border-4 border-white hover:scale-[1.02] transition-transform duration-500">
                     </div>
                 </div>
             </div>
@@ -207,7 +207,7 @@
                 <div class="lg:w-1/2">
                     <div class="relative group">
                         <div class="absolute -inset-4 bg-gradient-to-r from-secondary to-primary rounded-[2.5rem] blur opacity-25 group-hover:opacity-40 transition-opacity"></div>
-                        <img src="{{ asset('images/dental-smile-for-landingpage.png') }}" alt="Dental Smile" class="relative rounded-[2rem] shadow-2xl border-4 border-white hover:scale-[1.02] transition-transform duration-500">
+                        <img src="<?php echo e(asset('images/dental-smile-for-landingpage.png')); ?>" alt="Dental Smile" class="relative rounded-[2rem] shadow-2xl border-4 border-white hover:scale-[1.02] transition-transform duration-500">
                     </div>
                 </div>
             </div>
@@ -221,7 +221,7 @@
     </div>
 </div>
 
-<div id="pricing" class="py-24 relative overflow-hidden bg-cover bg-fixed bg-center" style="background-image: url('{{ asset('images/landingpage-background.png') }}')">
+<div id="pricing" class="py-24 relative overflow-hidden bg-cover bg-fixed bg-center" style="background-image: url('<?php echo e(asset('images/landingpage-background.png')); ?>')">
     <div class="absolute inset-0 bg-base-100/90 backdrop-blur-sm"></div>
     <div class="container mx-auto px-4 relative z-10">
         <div class="text-center mb-20 overflow-visible">
@@ -230,62 +230,62 @@
         </div>
 
         <div class="flex flex-wrap justify-center gap-6 max-w-[95rem] mx-auto items-stretch px-4">
-            @foreach($pricingPlans as $index => $plan)
-            @php
+            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $pricingPlans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <?php
                 $colors = ['primary', 'secondary', 'accent', 'info'];
                 $color = $colors[$index % count($colors)];
-            @endphp
+            ?>
             <div class="group relative flex flex-col pt-8 w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(25%-1.5rem)] min-w-[220px] max-w-[320px]">
                 <!-- Floating Effect Background -->
-                <div class="absolute inset-0 bg-base-100 rounded-[2rem] shadow-lg group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 border-b-4 border-{{ $color }} group-hover:-translate-y-2"></div>
+                <div class="absolute inset-0 bg-base-100 rounded-[2rem] shadow-lg group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 border-b-4 border-<?php echo e($color); ?> group-hover:-translate-y-2"></div>
                 
                 <div class="relative flex flex-col flex-1 p-6">
-                    @if($plan->is_popular)
+                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->is_popular): ?>
                         <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-full flex justify-center">
                             <span class="badge badge-primary shadow-xl font-black italic tracking-widest px-4 py-3 h-auto scale-105">POPULAR</span>
                         </div>
-                    @endif
+                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     
                     <div class="mb-4">
-                        <h3 class="text-xl font-black italic {{ $plan->is_popular ? 'text-primary' : 'text-'.$color }}">{{ $plan->name }}</h3>
+                        <h3 class="text-xl font-black italic <?php echo e($plan->is_popular ? 'text-primary' : 'text-'.$color); ?>"><?php echo e($plan->name); ?></h3>
                         <div class="flex items-baseline gap-1 mt-2">
-                            <span class="text-3xl font-black tracking-tighter">{{ $plan->getFormattedPrice() }}</span>
-                            <span class="text-base-content/40 font-bold uppercase text-[10px]">/ {{ $plan->getFormattedBillingCycle() }}</span>
+                            <span class="text-3xl font-black tracking-tighter"><?php echo e($plan->getFormattedPrice()); ?></span>
+                            <span class="text-base-content/40 font-bold uppercase text-[10px]">/ <?php echo e($plan->getFormattedBillingCycle()); ?></span>
                         </div>
                     </div>
                     
-                    <p class="text-sm text-base-content/60 mb-6 min-h-[40px] leading-relaxed italic line-clamp-2">{{ $plan->description }}</p>
+                    <p class="text-sm text-base-content/60 mb-6 min-h-[40px] leading-relaxed italic line-clamp-2"><?php echo e($plan->description); ?></p>
 
                     <div class="h-px w-full bg-base-content/5 mb-6"></div>
 
                     <ul class="space-y-3 mb-8 flex-1">
-                        @if($plan->storage_limit_mb)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->storage_limit_mb): ?>
                         <li class="flex items-start gap-3 group/item">
-                            <div class="w-5 h-5 shrink-0 rounded-full bg-{{ $color }}/10 flex items-center justify-center text-{{ $color }} group-hover/item:bg-{{ $color }} group-hover/item:text-white transition-colors duration-300">
+                            <div class="w-5 h-5 shrink-0 rounded-full bg-<?php echo e($color); ?>/10 flex items-center justify-center text-<?php echo e($color); ?> group-hover/item:bg-<?php echo e($color); ?> group-hover/item:text-white transition-colors duration-300">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" /></svg>
                             </div>
-                            <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors">{{ $plan->getFormattedStorage() }}</span>
+                            <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors"><?php echo e($plan->getFormattedStorage()); ?></span>
                         </li>
-                        @endif
-                        @foreach($plan->features ?? [] as $feature)
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $plan->features ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <li class="flex items-start gap-3 group/item">
-                                <div class="w-5 h-5 shrink-0 rounded-full bg-{{ $color }}/10 flex items-center justify-center text-{{ $color }} group-hover/item:bg-{{ $color }} group-hover/item:text-white transition-colors duration-300">
+                                <div class="w-5 h-5 shrink-0 rounded-full bg-<?php echo e($color); ?>/10 flex items-center justify-center text-<?php echo e($color); ?> group-hover/item:bg-<?php echo e($color); ?> group-hover/item:text-white transition-colors duration-300">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                 </div>
-                                <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors line-clamp-1">{{ $feature }}</span>
+                                <span class="font-bold text-xs text-base-content/80 group-hover/item:text-base-content transition-colors line-clamp-1"><?php echo e($feature); ?></span>
                             </li>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </ul>
 
                     <div class="mt-auto">
-                        <button type="button" onclick="openRegistrationModal('{{ $plan->id }}')" 
-                           class="btn btn-sm btn-block h-12 rounded-xl font-black italic shadow-md hover:shadow-{{ $color }}/30 active:scale-95 transition-all {{ $plan->is_popular ? 'btn-primary' : 'btn-outline border-2 hover:bg-'.$color.' hover:text-white hover:border-'.$color }}">
+                        <button type="button" onclick="openRegistrationModal('<?php echo e($plan->id); ?>')" 
+                           class="btn btn-sm btn-block h-12 rounded-xl font-black italic shadow-md hover:shadow-<?php echo e($color); ?>/30 active:scale-95 transition-all <?php echo e($plan->is_popular ? 'btn-primary' : 'btn-outline border-2 hover:bg-'.$color.' hover:text-white hover:border-'.$color); ?>">
                             Choose Plan
                         </button>
                     </div>
                 </div>
             </div>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
         </div>
     </div>
 </div>
@@ -302,7 +302,7 @@
             <div class="flex flex-col lg:flex-row items-center gap-12 relative z-10">
                 <div class="w-32 h-32 lg:w-48 lg:h-48 rounded-full bg-gradient-to-br from-primary to-secondary p-1 shrink-0 shadow-2xl">
                     <div class="w-full h-full rounded-full bg-base-100 flex items-center justify-center overflow-hidden">
-                        <img src="{{ asset('images/dcms-logo.png') }}" alt="DCMS Logo" class="w-24 h-auto">
+                        <img src="<?php echo e(asset('images/dcms-logo.png')); ?>" alt="DCMS Logo" class="w-24 h-auto">
                     </div>
                 </div>
                 <div class="text-center lg:text-left space-y-6">
@@ -312,11 +312,11 @@
                     </p>
                     <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-4">
                         <div class="flex items-center gap-2 px-4 py-2 bg-base-100 rounded-xl shadow-sm border border-base-300">
-                            <img src="{{ asset('images/BukSU-logo.png') }}" alt="BukSU" class="h-6 w-auto">
+                            <img src="<?php echo e(asset('images/BukSU-logo.png')); ?>" alt="BukSU" class="h-6 w-auto">
                             <span class="text-xs font-bold uppercase tracking-wider">BukSU</span>
                         </div>
                         <div class="flex items-center gap-2 px-4 py-2 bg-base-100 rounded-xl shadow-sm border border-base-300">
-                            <img src="{{ asset('images/COT-logo.png') }}" alt="COT" class="h-6 w-auto">
+                            <img src="<?php echo e(asset('images/COT-logo.png')); ?>" alt="COT" class="h-6 w-auto">
                             <span class="text-xs font-bold uppercase tracking-wider">College of Tech</span>
                         </div>
                     </div>
@@ -333,20 +333,20 @@
 
         <div class="text-center mb-6">
             <div class="flex justify-center mb-4">
-                @if(file_exists(public_path('images/dcms-logo.png')))
-                    <img src="{{ asset('images/dcms-logo.png') }}" alt="DCMS Logo" class="h-14 w-auto">
-                @else
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('images/dcms-logo.png'))): ?>
+                    <img src="<?php echo e(asset('images/dcms-logo.png')); ?>" alt="DCMS Logo" class="h-14 w-auto">
+                <?php else: ?>
                     <svg class="w-14 h-14 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
                     </svg>
-                @endif
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
             <h3 class="text-2xl font-extrabold tracking-tight">Admin Login</h3>
             <p class="text-sm text-base-content/60 mt-1">Sign in to the admin dashboard</p>
         </div>
 
         <form id="modalAdminLoginForm" class="space-y-4">
-            @csrf
+            <?php echo csrf_field(); ?>
             <div class="form-control">
                 <input type="email" name="email" placeholder="Email address" required autofocus
                     class="input input-bordered w-full" />
@@ -392,9 +392,9 @@
         <!-- Header -->
         <div class="text-center mb-8">
             <div class="flex justify-center mb-3">
-                @if(file_exists(public_path('images/dcms-logo.png')))
-                    <img src="{{ asset('images/dcms-logo.png') }}" alt="DCMS Logo" class="h-12 w-auto">
-                @endif
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(file_exists(public_path('images/dcms-logo.png'))): ?>
+                    <img src="<?php echo e(asset('images/dcms-logo.png')); ?>" alt="DCMS Logo" class="h-12 w-auto">
+                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
             <h3 class="text-3xl font-extrabold tracking-tight text-primary">Register Your Clinic</h3>
             <p class="text-base text-base-content/60 mt-2">Create your clinic account in just 2 simple steps</p>
@@ -414,7 +414,7 @@
         </div>
 
         <form id="modalRegistrationForm">
-            @csrf
+            <?php echo csrf_field(); ?>
             <input type="hidden" name="pricing_plan_id" id="regPlanId" value="">
 
             <!-- ===== STEP 1: Clinic Information ===== -->
@@ -442,7 +442,7 @@
                     <label class="label"><span class="label-text text-base font-semibold">Desired Subdomain <span class="text-error">*</span></span></label>
                     <div class="join w-full">
                         <input type="text" name="desired_subdomain" class="input input-bordered input-lg join-item flex-1 text-base" placeholder="smiledental" required>
-                        <span class="join-item bg-base-200 px-4 flex items-center border border-base-300 text-base font-medium">.{{ env('LOCAL_BASE_DOMAIN', 'lvh.me') }}</span>
+                        <span class="join-item bg-base-200 px-4 flex items-center border border-base-300 text-base font-medium">.<?php echo e(env('LOCAL_BASE_DOMAIN', 'lvh.me')); ?></span>
                     </div>
                     <label class="label py-1"><span class="label-text-alt text-base-content/50">This will be your clinic's unique web address (URL)</span></label>
                     <span class="error-text text-error text-sm mt-1"></span>
@@ -561,7 +561,7 @@
         </div>
         
         <div class="prose prose-sm max-w-none h-96 overflow-y-auto pr-4 custom-scrollbar">
-            @include('legal.terms')
+            <?php echo $__env->make('legal.terms', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
 
         <div class="modal-action">
@@ -580,7 +580,7 @@
         </div>
 
         <div class="prose prose-sm max-w-none h-96 overflow-y-auto pr-4 custom-scrollbar">
-            @include('legal.privacy')
+            <?php echo $__env->make('legal.privacy', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
         </div>
 
         <div class="modal-action">
@@ -690,49 +690,50 @@
 
         <div class="p-8 lg:p-12">
             <div class="flex flex-wrap justify-center gap-6 items-stretch">
-                @foreach($pricingPlans as $index => $plan)
-                @php
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = $pricingPlans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $plan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php
                     $colors = ['primary', 'secondary', 'accent', 'info'];
                     $color = $colors[$index % count($colors)];
-                @endphp
+                ?>
                 <div class="group relative flex flex-col pt-8 w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] min-w-[280px] max-w-[340px]">
-                    <div class="absolute inset-0 bg-base-100 rounded-[2rem] shadow-lg group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 border-b-4 border-{{ $color }} group-hover:-translate-y-2"></div>
+                    <div class="absolute inset-0 bg-base-100 rounded-[2rem] shadow-lg group-hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 border-b-4 border-<?php echo e($color); ?> group-hover:-translate-y-2"></div>
                     
                     <div class="relative flex flex-col flex-1 p-6">
-                        @if($plan->is_popular)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($plan->is_popular): ?>
                             <div class="absolute -top-4 left-1/2 -translate-x-1/2 w-full flex justify-center">
                                 <span class="badge badge-primary shadow-xl font-black italic tracking-widest px-4 py-3 h-auto scale-105">POPULAR</span>
                             </div>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         
                         <div class="mb-4">
-                            <h3 class="text-xl font-black italic {{ $plan->is_popular ? 'text-primary' : 'text-'.$color }}">{{ $plan->name }}</h3>
+                            <h3 class="text-xl font-black italic <?php echo e($plan->is_popular ? 'text-primary' : 'text-'.$color); ?>"><?php echo e($plan->name); ?></h3>
                             <div class="flex items-baseline gap-1 mt-2">
-                                <span class="text-3xl font-black tracking-tighter">{{ $plan->getFormattedPrice() }}</span>
-                                <span class="text-base-content/40 font-bold uppercase text-[10px]">/ {{ $plan->getFormattedBillingCycle() }}</span>
+                                <span class="text-3xl font-black tracking-tighter"><?php echo e($plan->getFormattedPrice()); ?></span>
+                                <span class="text-base-content/40 font-bold uppercase text-[10px]">/ <?php echo e($plan->getFormattedBillingCycle()); ?></span>
                             </div>
                         </div>
                         
                         <ul class="space-y-3 mb-8 flex-1">
-                            @foreach(array_slice($plan->features ?? [], 0, 4) as $feature)
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__currentLoopData = array_slice($plan->features ?? [], 0, 4); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <li class="flex items-start gap-3">
-                                    <div class="w-5 h-5 shrink-0 rounded-full bg-{{ $color }}/10 flex items-center justify-center text-{{ $color }}">
+                                    <div class="w-5 h-5 shrink-0 rounded-full bg-<?php echo e($color); ?>/10 flex items-center justify-center text-<?php echo e($color); ?>">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
                                     </div>
-                                    <span class="font-bold text-xs text-base-content/70 line-clamp-1">{{ $feature }}</span>
+                                    <span class="font-bold text-xs text-base-content/70 line-clamp-1"><?php echo e($feature); ?></span>
                                 </li>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </ul>
 
                         <div class="mt-auto">
-                            <button type="button" onclick="selectPlanAndSubmit('{{ $plan->id }}')" 
-                               class="btn btn-sm btn-block h-12 rounded-xl font-black italic shadow-md active:scale-95 transition-all {{ $plan->is_popular ? 'btn-primary' : 'btn-outline border-2 hover:bg-'.$color.' hover:text-white hover:border-'.$color }}">
-                                Choose {{ $plan->name }}
+                            <button type="button" onclick="selectPlanAndSubmit('<?php echo e($plan->id); ?>')" 
+                               class="btn btn-sm btn-block h-12 rounded-xl font-black italic shadow-md active:scale-95 transition-all <?php echo e($plan->is_popular ? 'btn-primary' : 'btn-outline border-2 hover:bg-'.$color.' hover:text-white hover:border-'.$color); ?>">
+                                Choose <?php echo e($plan->name); ?>
+
                             </button>
                         </div>
                     </div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
             </div>
 
             <div class="mt-12 text-center">
@@ -745,9 +746,9 @@
     <div class="modal-backdrop bg-base-content/20 backdrop-blur-md"></div>
 </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <style>
     /* Force SweetAlert2 and Sub-modals to stay on top of EVERYTHING */
     .swal2-container, #termsModal, #privacyModal {
@@ -798,9 +799,9 @@
         @apply opacity-50 cursor-not-allowed grayscale;
     }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -847,7 +848,7 @@ function initLoginRecaptcha() {
 
     if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
         loginRecaptchaWidgetId = grecaptcha.render('loginRecaptchaWidget', {
-            'sitekey': '{{ config("services.recaptcha.site_key") }}',
+            'sitekey': '<?php echo e(config("services.recaptcha.site_key")); ?>',
             'callback': function(token) {
                 loginRecaptchaToken = token;
                 const btn = document.getElementById('modalLoginBtn');
@@ -919,7 +920,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('g-recaptcha-response', loginRecaptchaToken);
             }
 
-            fetch("{{ route('admin.login.submit') }}", {
+            fetch("<?php echo e(route('admin.login.submit')); ?>", {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -932,7 +933,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     document.getElementById('adminLoginModal').classList.remove('modal-open');
                     
-                    const redirectUrl = data.redirect || "{{ route('admin.dashboard') }}";
+                    const redirectUrl = data.redirect || "<?php echo e(route('admin.dashboard')); ?>";
                     
                     Swal.fire({
                         icon: 'success',
@@ -1190,7 +1191,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const formData = new FormData(regForm);
-            const response = await fetch("{{ route('tenant.registration.store') }}", {
+            const response = await fetch("<?php echo e(route('tenant.registration.store')); ?>", {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -1386,4 +1387,6 @@ async function confirmStripePayment(redirectUrl) {
     }
 }
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\dentistmng\dcms-saas\resources\views/welcome.blade.php ENDPATH**/ ?>

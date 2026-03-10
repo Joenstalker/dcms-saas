@@ -249,6 +249,18 @@ Route::group($centralGroupOptions, function () {
             Route::put('role-permission/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'update'])->name('role-permission.update');
             Route::delete('role-permission/{role}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'destroy'])->name('role-permission.destroy');
             Route::get('role-permission/tenant/{tenant}', [\App\Http\Controllers\Admin\RolePermissionController::class, 'viewTenantRoles'])->name('role-permission.tenant');
+
+            // Platform Updates
+            Route::get('platform-updates', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'index'])->name('platform-updates.index');
+            Route::post('platform-updates/check', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'checkForUpdates'])->name('platform-updates.check');
+            Route::post('platform-updates/deploy', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'deploy'])->name('platform-updates.deploy');
+            Route::post('platform-updates/rollback', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'rollback'])->name('platform-updates.rollback');
+            Route::post('platform-updates/maintenance/enable', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'enableMaintenanceMode'])->name('platform-updates.maintenance.enable');
+            Route::post('platform-updates/maintenance/disable', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'disableMaintenanceMode'])->name('platform-updates.maintenance.disable');
+            Route::get('platform-updates/settings', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'getSettings'])->name('platform-updates.settings');
+            Route::put('platform-updates/settings', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'updateSettings'])->name('platform-updates.settings.update');
+            Route::get('platform-updates/history', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'getHistory'])->name('platform-updates.history');
+            Route::post('platform-updates/version', [\App\Http\Controllers\Admin\PlatformUpdateController::class, 'createVersion'])->name('platform-updates.version.create');
         });
     });
 

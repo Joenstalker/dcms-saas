@@ -16,7 +16,7 @@ class Tenant extends Model
 
     protected $connection = 'mongodb_central';
 
-    public $incrementing = false;
+    public $incrementing = true;
     protected $keyType = 'string';
 
     protected $fillable = [
