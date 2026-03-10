@@ -272,6 +272,11 @@ Route::group($centralGroupOptions, function () {
         Route::post('/verify-email', [\App\Http\Controllers\Tenant\RegistrationController::class, 'verifyEmail'])->name('verify-email');
         Route::get('/success/{tenant}', [\App\Http\Controllers\Tenant\RegistrationController::class, 'success'])->name('success');
         Route::get('/payment-success', [\App\Http\Controllers\Tenant\RegistrationController::class, 'handlePaymentSuccess'])->name('payment-success');
+        
+        // Advanced Payment Flow
+        Route::post('/update-plan', [\App\Http\Controllers\Tenant\RegistrationController::class, 'updatePlan'])->name('update-plan');
+        Route::post('/cancel', [\App\Http\Controllers\Tenant\RegistrationController::class, 'cancelRegistration'])->name('cancel');
+        Route::post('/confirm-payment', [\App\Http\Controllers\Tenant\RegistrationController::class, 'confirmInitialPayment'])->name('confirm-payment');
     });
 
     // Tenant Email Verification (accessible from central domain for activation)

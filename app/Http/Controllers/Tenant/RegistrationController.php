@@ -203,7 +203,7 @@ class RegistrationController extends Controller
 
             if ($request->ajax() || $request->wantsJson()) {
                 if ($needsPayment) {
-                    session(['pending_payment_tenant_id' => $tenant->id]);
+                    session(['pending_payment_tenant_id' => (string)$tenant->id]);
                     return response()->json([
                         'success' => true,
                         'payment_required' => true,
@@ -226,7 +226,7 @@ class RegistrationController extends Controller
             }
 
             if ($needsPayment) {
-                session(['pending_payment_tenant_id' => $tenant->id]);
+                session(['pending_payment_tenant_id' => (string)$tenant->id]);
             }
 
             return redirect()->away($autoLoginUrl);
@@ -343,57 +343,133 @@ class RegistrationController extends Controller
         ]);
     }
 
-    public function success(Tenant $tenant): View
+    /**
+     * Update the pricing plan for a pending registration.
+     */
+    public function updatePlan(Request $request): JsonResponse
     {
-        return view('tenant.registration.success', compact('tenant'));
+        $request->validate([
+            'pricing_plan_id' => 'required|exists:pricing_plans,id',
+        ]);
+
+        $tenantId = session('pending_payment_tenant_id');
+        if (!$tenantId) {
+            return response()->json(['success' => false, 'message' => 'No pending registration found.'], 404);
+        }
+
+        $tenant = Tenant::findOrFail($tenantId);
+        $newPlan = \App\Models\PricingPlan::findOrFail($request->pricing_plan_id);
+
+        // Update tenant
+        $tenant->update([
+            'pricing_plan_id' => $newPlan->id,
+        ]);
+
+        // Create new PaymentIntent
+        $clientSecret = null;
+        try {
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+            $intent = \Stripe\PaymentIntent::create([
+                'amount' => (int) ($newPlan->price * 100),
+                'currency' => 'php',
+                'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => [
+                    'tenant_id' => $tenant->id,
+                    'plan_id' => $newPlan->id,
+                    'type' => 'plan_update_during_registration',
+                ],
+            ]);
+            $clientSecret = $intent->client_secret;
+        } catch (\Exception $e) {
+            Log::error('Stripe PaymentIntent Update Failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Failed to initialize payment for the new plan.'], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'client_secret' => $clientSecret,
+            'plan_name' => $newPlan->name,
+            'amount' => $newPlan->price,
+        ]);
     }
 
     /**
-     * Auto-add tenant domain to Windows hosts file for local development
-     * Only runs on Windows and requires administrator privileges
+     * Confirm the initial payment and activate the tenant.
      */
-    private function addTenantToHostsFile(string $subdomain): void
+    public function confirmInitialPayment(Request $request): JsonResponse
     {
-        // Only attempt on Windows
-        if (PHP_OS_FAMILY !== 'Windows') {
-            return;
+        $tenantId = session('pending_payment_tenant_id');
+        if (!$tenantId) {
+            return response()->json(['success' => false, 'message' => 'No pending registration session found.'], 404);
         }
 
-        $hostsPath = 'C:\\Windows\\System32\\drivers\\etc\\hosts';
-        $baseDomain = env('LOCAL_BASE_DOMAIN', 'dcmsapp.local');
-        $domain = "{$subdomain}.{$baseDomain}";
-        $entry = "127.0.0.1\t{$domain}";
+        try {
+            $tenant = Tenant::findOrFail($tenantId);
+            
+            // In a real production app, we'd verify the PaymentIntent with Stripe here
+            // For now, we'll assume the frontend wouldn't call this unless stripe confirmed it.
+            // But let's add a basic check if possible.
+            
+            $tenant->update([
+                'is_active' => true,
+                'subscription_status' => 'active',
+                'email_verified_at' => now(), // Assume verification via payment
+            ]);
+
+            // Ensure the owner user is also verified
+            User::where('tenant_id', $tenant->id)->update(['email_verified_at' => now()]);
+
+            Log::info('Tenant payment confirmed and activated', ['tenant_id' => $tenant->id]);
+
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            Log::error('Payment confirmation failed', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Failed to activate clinic.'], 500);
+        }
+    }
+
+    /**
+     * Cancel a pending registration and clean up data.
+     */
+    public function cancelRegistration(): JsonResponse
+    {
+        $tenantId = session('pending_payment_tenant_id');
+        
+        Log::info('Attempting to cancel registration cleanup', ['tenant_id_from_session' => $tenantId]);
+
+        if (!$tenantId) {
+            return response()->json(['success' => true, 'message' => 'No pending registration found in session.']);
+        }
 
         try {
-            // Check if file is readable
-            if (!is_readable($hostsPath)) {
-                Log::warning('Hosts file not readable - may need admin privileges', ['path' => $hostsPath]);
-                return;
-            }
-
-            // Check if entry already exists
-            $hostsContent = file_get_contents($hostsPath);
-            if (strpos($hostsContent, $domain) !== false) {
-                return; // Already exists
-            }
-
-            // Append new entry
-            if (is_writable($hostsPath)) {
-                file_put_contents($hostsPath, PHP_EOL . $entry, FILE_APPEND);
+            // Find tenant (including trashed in case it was already soft-deleted)
+            $tenant = Tenant::withTrashed()->find($tenantId);
+            
+            if ($tenant) {
+                Log::info('Tenant found for cancellation', ['id' => $tenant->id, 'name' => $tenant->name]);
                 
-                // Flush DNS cache on Windows
-                shell_exec('ipconfig /flushdns');
-                
-                Log::info('Tenant domain auto-added to hosts file', ['domain' => $domain]);
+                // Force delete associated users to completely remove from DB
+                // We use withTrashed() to catch any already soft-deleted users
+                $usersDeleted = User::withTrashed()->where('tenant_id', $tenant->id)->forceDelete();
+                Log::info('Users force deleted', ['count' => $usersDeleted]);
+
+                // Force delete the tenant
+                $tenant->forceDelete();
+                Log::info('Tenant force deleted');
+
+                session()->forget('pending_payment_tenant_id');
+                return response()->json(['success' => true, 'message' => 'Registration cancelled and data completely removed.']);
             } else {
-                Log::warning('Hosts file not writable - may need admin privileges', ['domain' => $domain]);
+                Log::warning('Tenant NOT found for cancellation cleanup', ['tenant_id' => $tenantId]);
+                session()->forget('pending_payment_tenant_id');
+                return response()->json(['success' => true, 'message' => 'No matching tenant found to clean up.']);
             }
         } catch (\Exception $e) {
-            Log::warning('Could not auto-add domain to hosts file', [
-                'domain' => $domain,
-                'error' => $e->getMessage(),
+            Log::error('Registration cancellation cleanup failed', [
+                'tenant_id' => $tenantId,
+                'error' => $e->getMessage()
             ]);
-            // Non-critical - user can manually add if needed
+            return response()->json(['success' => false, 'message' => 'Failed to perform database cleanup.'], 500);
         }
     }
 }

@@ -598,7 +598,28 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-2xl font-bold">Secure Payment</h3>
-                    <p class="text-primary-content/80 text-sm">Activate your <span id="paymentPlanName" class="font-bold"></span></p>
+                    <div class="flex items-center gap-2 text-primary-content/90 text-sm mt-1">
+                        <span>Activate your</span>
+                        <div class="dropdown dropdown-bottom">
+                            <div tabindex="0" role="button" class="flex items-center gap-1 font-bold bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded cursor-pointer transition-colors border border-white/10">
+                                <span id="paymentPlanName">Select Plan</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </div>
+                            <ul tabindex="0" class="dropdown-content z-[30] menu p-2 shadow-2xl bg-base-100 rounded-box w-52 text-base-content mt-2 border border-base-200">
+                                <li class="menu-title text-[10px] uppercase tracking-widest opacity-50 px-4 py-2">Switch Plan</li>
+                                @foreach($pricingPlans as $plan)
+                                    @if($plan->price > 0)
+                                    <li>
+                                        <a href="#" onclick="event.preventDefault(); updatePaymentPlan('{{ $plan->id }}', '{{ $plan->name }}', {{ $plan->price }})" class="flex justify-between items-center py-3 hover:bg-primary/5 active:bg-primary/10">
+                                            <span class="font-bold">{{ $plan->name }}</span>
+                                            <span class="text-xs opacity-60">₱{{ number_format($plan->price, 0) }}</span>
+                                        </a>
+                                    </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 <div class="text-right">
                     <p class="text-sm opacity-80 uppercase tracking-widest font-bold">Amount Due</p>
@@ -1296,8 +1317,21 @@ async function initStripePayment(data) {
         stripe = Stripe(data.stripe_key);
     }
 
+    mountStripeElement(data.client_secret);
+
+    // Handle Form Submit
+    const form = document.getElementById('payment-form');
+    if (form) {
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            await confirmStripePayment(data.auto_login_url || data.redirect_url);
+        };
+    }
+}
+
+function mountStripeElement(clientSecret) {
     const options = {
-        clientSecret: data.client_secret,
+        clientSecret: clientSecret,
         appearance: {
             theme: 'stripe',
             variables: {
@@ -1311,61 +1345,162 @@ async function initStripePayment(data) {
         },
     };
 
+    if (paymentElement) {
+        paymentElement.unmount();
+    }
+
     elements = stripe.elements(options);
     paymentElement = elements.create('payment');
     paymentElement.mount('#payment-element');
+}
 
-    // Handle Form Submit
-    const form = document.getElementById('payment-form');
-    if (form) {
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            await confirmStripePayment(data.auto_login_url || data.redirect_url);
-        };
+async function updatePaymentPlan(planId, planName, planPrice) {
+    // Show loading state
+    const amountEl = document.getElementById('paymentAmount');
+    const planNameEl = document.getElementById('paymentPlanName');
+    const originalAmount = amountEl.textContent;
+    const originalPlanName = planNameEl.textContent;
+
+    amountEl.innerHTML = '<span class="loading loading-dots loading-xs"></span>';
+    
+    try {
+        const response = await fetch("{{ route('tenant.registration.update-plan') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ pricing_plan_id: planId })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Update UI
+            planNameEl.textContent = data.plan_name;
+            amountEl.textContent = parseFloat(data.amount).toLocaleString(undefined, {minimumFractionDigits: 2});
+            
+            // Re-mount Stripe with new client secret
+            mountStripeElement(data.client_secret);
+            
+            // Close dropdown
+            const activeDropdown = document.activeElement;
+            if (activeDropdown) activeDropdown.blur();
+
+            Toast.fire({
+                icon: 'success',
+                title: `Plan switched to ${data.plan_name}`
+            });
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        console.error('Plan update error:', error);
+        amountEl.textContent = originalAmount;
+        planNameEl.textContent = originalPlanName;
+        Swal.fire('Update Failed', error.message || 'Could not update plan. Please try again.', 'error');
     }
 }
 
-async function confirmStripePayment(redirectUrl) {
-    const submitBtn = document.getElementById('stripeSubmitBtn');
-    const spinner = document.getElementById('payment-spinner');
-    const btnText = document.getElementById('button-text');
-    const errorEl = document.getElementById('payment-errors');
+function closePaymentModal() {
+    confirmCancelRegistration();
+}
 
-    if (!submitBtn || !spinner || !btnText || !errorEl) return;
+function confirmCancelRegistration() {
+    Swal.fire({
+        title: 'Cancel Registration?',
+        text: "Are you sure you want to cancel? Your progress will be lost and your registration will be deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, cancel it!',
+        cancelButtonText: 'No, stay here',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform cleanup on backend
+            fetch("{{ route('tenant.registration.cancel') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }).finally(() => {
+                document.getElementById('paymentModal').classList.remove('modal-open');
+                // Redirect or refresh to clear state
+                window.location.reload(); 
+            });
+        }
+    });
+}
+
+async function confirmStripePayment(redirectUrl) {
+    const errorEl = document.getElementById('payment-errors');
+    if (!errorEl) return;
 
     setLoading(true);
     errorEl.classList.add('hidden');
 
     try {
-        const { error } = await stripe.confirmPayment({
+        const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {
-                return_url: redirectUrl, 
+                return_url: window.location.origin + "/register/payment-success", 
             },
             redirect: 'if_required' 
         });
 
         if (error) {
-            if (error.type === "card_error" || error.type === "validation_error") {
-                errorEl.textContent = error.message;
-            } else {
-                errorEl.textContent = "An unexpected error occurred.";
-            }
-            errorEl.classList.remove('hidden');
-            setLoading(false);
-        } else {
-            // Payment successful!
+            handlePaymentError(error);
+        } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+            // Show processing modal as requested
             Swal.fire({
-                title: 'Payment Successful! 🎉',
-                text: 'Your clinic is being activated. Redirecting you now...',
-                icon: 'success',
-                timer: 2000,
-                showConfirmButton: false,
+                title: 'Processing Payment...',
+                text: 'Please wait while we activate your clinic.',
                 allowOutsideClick: false,
-                didClose: () => {
-                    window.location.href = redirectUrl;
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
                 }
             });
+
+            // Notify backend to activate tenant
+            try {
+                const response = await fetch("{{ route('tenant.registration.confirm-payment') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Payment Successful! 🎉',
+                        text: 'Your clinic is now active. Redirecting you to your portal...',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didClose: () => {
+                            window.location.href = redirectUrl;
+                        }
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to activate clinic.');
+                }
+            } catch (backendError) {
+                console.error('Backend activation error:', backendError);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Activation Issue',
+                    text: 'Payment was successful, but we had trouble activating your clinic. Please contact support.',
+                });
+            }
         }
     } catch (e) {
         console.error(e);
@@ -1374,14 +1509,28 @@ async function confirmStripePayment(redirectUrl) {
         setLoading(false);
     }
 
-    function setLoading(isLoading) {
-        submitBtn.disabled = isLoading;
-        if (isLoading) {
-            spinner.classList.remove('hidden');
-            btnText.textContent = 'Processing...';
+    function handlePaymentError(error) {
+        if (error.type === "card_error" || error.type === "validation_error") {
+            errorEl.textContent = error.message;
         } else {
-            spinner.classList.add('hidden');
-            btnText.textContent = 'Confirm Payment';
+            errorEl.textContent = "An unexpected error occurred.";
+        }
+        errorEl.classList.remove('hidden');
+        setLoading(false);
+    }
+
+    function setLoading(isLoading) {
+        const submitBtn = document.getElementById('stripeSubmitBtn');
+        const spinner = document.getElementById('payment-spinner');
+        const btnText = document.getElementById('button-text');
+        
+        if (submitBtn) submitBtn.disabled = isLoading;
+        if (isLoading) {
+            if (spinner) spinner.classList.remove('hidden');
+            if (btnText) btnText.textContent = 'Processing...';
+        } else {
+            if (spinner) spinner.classList.add('hidden');
+            if (btnText) btnText.textContent = 'Confirm & Pay';
         }
     }
 }

@@ -136,16 +136,29 @@ class TenantLoginController extends Controller
     public function autoLogin(Request $request)
     {
         $tenantId = session('tenant_id');
-        if (!$tenantId) {
-            // Find tenant by subdomain if not in session (Middleware should have handled this)
+        $tenant = null;
+
+        if ($tenantId) {
+            $tenant = Tenant::find($tenantId);
+        }
+
+        // If not in session or not found, try resolving via host (middleware safety)
+        if (!$tenant) {
             $host = $request->getHost();
             $subdomain = explode('.', $host)[0];
+            
+            // Allow resolving even if is_active is false (for initial activation flow)
             $tenant = Tenant::where('slug', $subdomain)->first();
-            if (!$tenant) {
-                 abort(404, 'Clinic not found');
+            
+            if ($tenant) {
+                // Manually re-establish session for this request
+                session(['tenant_id' => $tenant->id, 'tenant_slug' => $tenant->slug]);
             }
-        } else {
-             $tenant = Tenant::find($tenantId);
+        }
+
+        if (!$tenant) {
+            Log::error('Auto-login failed: Tenant not found', ['host' => $request->getHost()]);
+            abort(404, 'Clinic not found');
         }
 
         $userId = $request->input('user_id');
